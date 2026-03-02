@@ -1,4 +1,8 @@
-import { Link, useParams } from 'react-router-dom'
+import { LessonCard } from '../components/lesson/LessonCard'
+import { LessonNav } from '../components/lesson/LessonNav'
+import { QuizBlock } from '../components/lesson/QuizBlock'
+import { TextLesson } from '../components/lesson/TextLesson'
+import { useParams } from 'react-router-dom'
 
 export function LessonPage() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
@@ -11,16 +15,13 @@ export function LessonPage() {
         <p className="text-slate-600">Course: {courseId}</p>
       </header>
 
-      <article className="rounded-xl border border-slate-200 bg-white p-6 leading-relaxed text-slate-700 shadow-sm">
-        This is a starter lesson container. Upcoming iterations can render text, audio, video, or
-        interactive content from Supabase-backed lesson records.
-      </article>
+      <LessonCard title="Build an effective reset routine" type="text">
+        <TextLesson body="When focus drops, use a short reset: stand up, stretch for one minute, and write the next smallest task you can complete." />
+      </LessonCard>
 
-      <div>
-        <Link className="text-sm font-semibold text-brand-700" to={`/courses/${courseId}`}>
-          ← Back to course
-        </Link>
-      </div>
+      <QuizBlock answer="smallest task" prompt="What should you identify after your reset break?" />
+
+      <LessonNav backTo={`/courses/${courseId}`} nextTo={undefined} />
     </main>
   )
 }

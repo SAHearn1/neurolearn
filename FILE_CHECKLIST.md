@@ -70,20 +70,20 @@ Mark items `[x]` as files are created and verified.
 
 ## Source — Components / Lesson
 
-- [ ] `src/components/lesson/LessonCard.tsx`
-- [ ] `src/components/lesson/TextLesson.tsx`
-- [ ] `src/components/lesson/AudioLesson.tsx`
-- [ ] `src/components/lesson/VideoLesson.tsx`
-- [ ] `src/components/lesson/InteractiveLesson.tsx`
-- [ ] `src/components/lesson/QuizBlock.tsx`
-- [ ] `src/components/lesson/LessonNav.tsx`
+- [x] `src/components/lesson/LessonCard.tsx`
+- [x] `src/components/lesson/TextLesson.tsx`
+- [x] `src/components/lesson/AudioLesson.tsx`
+- [x] `src/components/lesson/VideoLesson.tsx`
+- [x] `src/components/lesson/InteractiveLesson.tsx`
+- [x] `src/components/lesson/QuizBlock.tsx`
+- [x] `src/components/lesson/LessonNav.tsx`
 
 ## Source — Components / Dashboard
 
-- [ ] `src/components/dashboard/ProgressWidget.tsx`
-- [ ] `src/components/dashboard/CourseCard.tsx`
-- [ ] `src/components/dashboard/StreakBadge.tsx`
-- [ ] `src/components/dashboard/RecentActivity.tsx`
+- [x] `src/components/dashboard/ProgressWidget.tsx`
+- [x] `src/components/dashboard/CourseCard.tsx`
+- [x] `src/components/dashboard/StreakBadge.tsx`
+- [x] `src/components/dashboard/RecentActivity.tsx`
 
 ## Source — Hooks
 
@@ -127,5 +127,5 @@ Mark items `[x]` as files are created and verified.
 ---
 
 **Total tracked:** 83 files  
-**Created:** 49  
-**Remaining:** 34
+**Created:** 60  
+**Remaining:** 23
