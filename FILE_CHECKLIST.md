@@ -39,13 +39,13 @@ Mark items `[x]` as files are created and verified.
 - [x] `src/pages/HomePage.tsx`
 - [x] `src/pages/LoginPage.tsx`
 - [x] `src/pages/SignUpPage.tsx`
-- [ ] `src/pages/DashboardPage.tsx`
-- [ ] `src/pages/CoursesPage.tsx`
-- [ ] `src/pages/CoursePage.tsx`
-- [ ] `src/pages/LessonPage.tsx`
-- [ ] `src/pages/ProfilePage.tsx`
-- [ ] `src/pages/SettingsPage.tsx`
-- [ ] `src/pages/NotFoundPage.tsx`
+- [x] `src/pages/DashboardPage.tsx`
+- [x] `src/pages/CoursesPage.tsx`
+- [x] `src/pages/CoursePage.tsx`
+- [x] `src/pages/LessonPage.tsx`
+- [x] `src/pages/ProfilePage.tsx`
+- [x] `src/pages/SettingsPage.tsx`
+- [x] `src/pages/NotFoundPage.tsx`
 
 ## Source — Components / UI
 
