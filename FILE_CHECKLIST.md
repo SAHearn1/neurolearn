@@ -1,0 +1,131 @@
+# NeuroLearn — File Checklist
+
+Tracks the 82 core files for the NeuroLearn project scaffold.  
+Mark items `[x]` as files are created and verified.
+
+---
+
+## Root Configuration
+
+- [x] `README.md`
+- [x] `TECHNICAL_SPECS.md`
+- [x] `DEVELOPER_GUIDE.md`
+- [x] `SETUP_GUIDE.md`
+- [x] `FILE_CHECKLIST.md`
+- [x] `CONTRIBUTING.md`
+- [x] `CHANGELOG.md`
+- [x] `LICENSE`
+- [x] `.gitignore`
+- [x] `.env.example`
+- [x] `index.html`
+- [x] `package.json`
+- [x] `tsconfig.json`
+- [x] `tsconfig.node.json`
+- [x] `vite.config.ts`
+- [x] `postcss.config.mjs`
+- [ ] `tailwind.config.js`
+- [ ] `eslint.config.js`
+- [ ] `.prettierrc`
+
+## Source — Core
+
+- [x] `src/main.tsx`
+- [ ] `src/App.tsx`
+- [ ] `src/vite-env.d.ts`
+- [ ] `src/styles/index.css`
+
+## Source — Pages
+
+- [ ] `src/pages/HomePage.tsx`
+- [ ] `src/pages/LoginPage.tsx`
+- [ ] `src/pages/SignUpPage.tsx`
+- [ ] `src/pages/DashboardPage.tsx`
+- [ ] `src/pages/CoursesPage.tsx`
+- [ ] `src/pages/CoursePage.tsx`
+- [ ] `src/pages/LessonPage.tsx`
+- [ ] `src/pages/ProfilePage.tsx`
+- [ ] `src/pages/SettingsPage.tsx`
+- [ ] `src/pages/NotFoundPage.tsx`
+
+## Source — Components / UI
+
+- [ ] `src/components/ui/Button.tsx`
+- [ ] `src/components/ui/Card.tsx`
+- [ ] `src/components/ui/Modal.tsx`
+- [ ] `src/components/ui/Input.tsx`
+- [ ] `src/components/ui/Badge.tsx`
+- [ ] `src/components/ui/Spinner.tsx`
+- [ ] `src/components/ui/ProgressBar.tsx`
+- [ ] `src/components/ui/Avatar.tsx`
+- [ ] `src/components/ui/Tooltip.tsx`
+- [ ] `src/components/ui/Alert.tsx`
+
+## Source — Components / Layout
+
+- [ ] `src/components/layout/Header.tsx`
+- [ ] `src/components/layout/Sidebar.tsx`
+- [ ] `src/components/layout/Footer.tsx`
+- [ ] `src/components/layout/PageWrapper.tsx`
+- [ ] `src/components/layout/FocusMode.tsx`
+
+## Source — Components / Lesson
+
+- [ ] `src/components/lesson/LessonCard.tsx`
+- [ ] `src/components/lesson/TextLesson.tsx`
+- [ ] `src/components/lesson/AudioLesson.tsx`
+- [ ] `src/components/lesson/VideoLesson.tsx`
+- [ ] `src/components/lesson/InteractiveLesson.tsx`
+- [ ] `src/components/lesson/QuizBlock.tsx`
+- [ ] `src/components/lesson/LessonNav.tsx`
+
+## Source — Components / Dashboard
+
+- [ ] `src/components/dashboard/ProgressWidget.tsx`
+- [ ] `src/components/dashboard/CourseCard.tsx`
+- [ ] `src/components/dashboard/StreakBadge.tsx`
+- [ ] `src/components/dashboard/RecentActivity.tsx`
+
+## Source — Hooks
+
+- [ ] `src/hooks/useAuth.ts`
+- [ ] `src/hooks/useCourses.ts`
+- [ ] `src/hooks/useLessons.ts`
+- [ ] `src/hooks/useProgress.ts`
+- [ ] `src/hooks/useProfile.ts`
+- [ ] `src/hooks/useSettings.ts`
+
+## Source — Store (Zustand)
+
+- [ ] `src/store/authStore.ts`
+- [ ] `src/store/settingsStore.ts`
+- [ ] `src/store/progressStore.ts`
+
+## Source — Types
+
+- [ ] `src/types/index.ts`
+- [ ] `src/types/course.ts`
+- [ ] `src/types/lesson.ts`
+- [ ] `src/types/profile.ts`
+- [ ] `src/types/progress.ts`
+
+## Utils / Supabase
+
+- [x] `utils/supabase/info.tsx`
+- [ ] `utils/supabase/client.ts`
+- [ ] `utils/supabase/server.ts`
+- [ ] `utils/helpers.ts`
+
+## Supabase
+
+- [ ] `supabase/config.toml`
+- [ ] `supabase/migrations/001_create_profiles.sql`
+- [ ] `supabase/migrations/002_create_courses.sql`
+- [ ] `supabase/migrations/003_create_lessons.sql`
+- [ ] `supabase/migrations/004_create_progress.sql`
+- [ ] `supabase/seed.sql`
+
+---
+
+**Total tracked:** 82 files  
+**Created:** 19  
+**Remaining:** 63
