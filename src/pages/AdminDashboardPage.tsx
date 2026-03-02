@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../utils/supabase/client'
+import { Alert } from '../components/ui/Alert'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { UserManagement } from '../components/admin/UserManagement'
@@ -20,23 +21,31 @@ export function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [stats, setStats] = useState<PlatformStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchStats() {
       setStatsLoading(true)
-      const [usersRes, activeLearnerRes, coursesRes, completedRes] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('lesson_progress').select('user_id', { count: 'exact', head: true }),
-        supabase.from('courses').select('*', { count: 'exact', head: true }),
-        supabase.from('lesson_progress').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-      ])
-      setStats({
-        totalUsers: usersRes.count ?? 0,
-        activeLearners: activeLearnerRes.count ?? 0,
-        totalCourses: coursesRes.count ?? 0,
-        lessonsCompleted: completedRes.count ?? 0,
-      })
-      setStatsLoading(false)
+      setStatsError(null)
+      try {
+        const [usersRes, activeLearnerRes, coursesRes, completedRes] = await Promise.all([
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('lesson_progress').select('user_id', { count: 'exact', head: true }),
+          supabase.from('courses').select('*', { count: 'exact', head: true }),
+          supabase.from('lesson_progress').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+        ])
+        if (usersRes.error) throw usersRes.error
+        setStats({
+          totalUsers: usersRes.count ?? 0,
+          activeLearners: activeLearnerRes.count ?? 0,
+          totalCourses: coursesRes.count ?? 0,
+          lessonsCompleted: completedRes.count ?? 0,
+        })
+      } catch (e) {
+        setStatsError(e instanceof Error ? e.message : 'Failed to load stats')
+      } finally {
+        setStatsLoading(false)
+      }
     }
     fetchStats()
   }, [])
@@ -80,6 +89,7 @@ export function AdminDashboardPage() {
       </nav>
 
       <div id="admin-panel-overview" role="tabpanel" aria-labelledby="admin-tab-overview" hidden={activeTab !== 'overview'}>
+        {statsError && <Alert variant="error" className="mb-4">{statsError}</Alert>}
         <section className="grid gap-4 md:grid-cols-4">
           <Card>
             <p className="text-sm font-medium text-slate-500">Total Users</p>

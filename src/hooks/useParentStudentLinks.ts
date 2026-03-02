@@ -69,7 +69,7 @@ export function useParentStudentLinks() {
   )
 
   const updateLinkStatus = useCallback(
-    async (linkId: string, status: 'active' | 'revoked') => {
+    async (linkId: string, status: 'active' | 'approved' | 'revoked' | 'rejected') => {
       const { error: err } = await supabase
         .from('parent_student_links')
         .update({ status })
