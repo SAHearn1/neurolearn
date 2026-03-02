@@ -13,6 +13,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <App />
     </BrowserRouter>
   </StrictMode>,

@@ -1,7 +1,7 @@
 {
   "name": "neurolearn",
   "version": "0.1.0",
-  "description": "NeuroLearn \u2014 Multimodal learning app for neurodivergent learners",
+  "description": "NeuroLearn — Multimodal learning app for neurodivergent learners",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,6 +19,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.22.0",
+    "zod": "^4.3.6",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
