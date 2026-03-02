@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Settings preferences now persist via `useSettings.saveSettings` with Supabase sync and local fallback messaging.
 - Settings page now includes in-app account password update flow wired through `useAuth.changePassword`.
 - Profile and settings pages now consume hook/store-driven state with loading/saved feedback instead of static values.
 - Added skip-link navigation, explicit main-content landmark targeting, and modal focus trapping/aria labeling improvements.
@@ -46,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] — 2026-03-02
 
 ### Added
+- Settings preferences now persist via `useSettings.saveSettings` with Supabase sync and local fallback messaging.
 - Settings page now includes in-app account password update flow wired through `useAuth.changePassword`.
 - Profile and settings pages now consume hook/store-driven state with loading/saved feedback instead of static values.
 - Added skip-link navigation, explicit main-content landmark targeting, and modal focus trapping/aria labeling improvements.

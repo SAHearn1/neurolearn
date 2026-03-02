@@ -54,6 +54,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - Added skip-link/main landmark support and keyboard focus trapping in modal dialogs.
 - Deepened live data coverage for profile/settings experiences using hooks/store-backed state.
 - Added auth account-management support with in-app password update flow in Settings.
+- Added settings persistence flow with Supabase upsert + local-session fallback messaging.
 
 ## Current Completion Status
 - `FILE_CHECKLIST.md`: **83 / 83 files complete**.
@@ -62,6 +63,6 @@ This log tracks completed repository issues/workstreams and what is next.
 1. Expand routed-flow tests to cover dashboard/course/lesson transitions.
 2. Add jsdom-backed component tests once dependency policy allows installation.
 3. Continue accessibility hardening with screen-reader walkthrough audits.
-4. Persist settings/profile updates back to Supabase.
+4. Persist profile updates (display name/learning style) back to Supabase.
 5. Add additional account-management flows (session history / device management when supported).
 

@@ -100,6 +100,7 @@ Current implementation includes:
 - Core learning pages now use hook-driven data (dashboard/courses/course/lesson)
 - Profile/settings pages now use hook/store-backed state with loading/saved feedback.
 - Settings now includes account password update UX.
+- Settings preference changes now support Supabase persistence with local fallback.
 - Auth pages now include password reset and verification resend states.
 - Layout shell now includes skip-link navigation and strengthened modal keyboard accessibility.
 - Issue tracking and sequencing are maintained in `ISSUE_PROGRESS.md`

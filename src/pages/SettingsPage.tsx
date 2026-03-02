@@ -6,14 +6,27 @@ import { useAuth } from '../hooks/useAuth'
 import { useSettings } from '../hooks/useSettings'
 
 export function SettingsPage() {
-  const { reduceMotion, setReduceMotion, setTextSize, textSize } = useSettings()
+  const { userId } = useAuth()
+  const {
+    clearStatus,
+    isSaving,
+    reduceMotion,
+    saveSettings,
+    setReduceMotion,
+    setTextSize,
+    settingsError,
+    settingsMessage,
+    textSize,
+  } = useSettings()
   const { authError, authMessage, changePassword, clearError, clearMessage, isLoading } = useAuth()
   const [saved, setSaved] = useState(false)
   const [newPassword, setNewPassword] = useState('')
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSaved(true)
+    setSaved(false)
+    const ok = await saveSettings(userId)
+    setSaved(ok)
   }
 
   async function handlePasswordChange(event: FormEvent<HTMLFormElement>) {
@@ -33,6 +46,7 @@ export function SettingsPage() {
           <select
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             onChange={(event) => {
+              clearStatus()
               setTextSize(event.target.value as 'small' | 'medium' | 'large')
               setSaved(false)
             }}
@@ -49,6 +63,7 @@ export function SettingsPage() {
             checked={reduceMotion}
             className="h-4 w-4"
             onChange={(event) => {
+              clearStatus()
               setReduceMotion(event.target.checked)
               setSaved(false)
             }}
@@ -57,9 +72,13 @@ export function SettingsPage() {
           Reduce motion
         </label>
 
-        <Button type="submit">Save preferences</Button>
+        <Button disabled={isSaving} type="submit">
+          {isSaving ? 'Saving…' : 'Save preferences'}
+        </Button>
 
         {saved ? <Alert variant="success">Preferences saved.</Alert> : null}
+        {settingsMessage ? <Alert>{settingsMessage}</Alert> : null}
+        {settingsError ? <Alert variant="error">{settingsError}</Alert> : null}
       </form>
 
       <form className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" onSubmit={handlePasswordChange}>
