@@ -1,82 +1,58 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { Lesson } from '../types'
-import { getSupabaseClient } from '../../utils/supabase/client'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../utils/supabase/client'
+import type { Lesson } from '../types/lesson'
 
-const mockLessons: Lesson[] = [
-  {
-    contentBody: 'Use short reset routines to reduce cognitive overload.',
-    contentType: 'text',
-    courseId: 'focus-fundamentals',
-    id: 'intro-routines',
-    orderIndex: 1,
-    title: 'Intro to routines',
-  },
-]
-
-interface LessonRecord {
-  content_body: string | null
-  content_type: Lesson['contentType']
-  content_url: string | null
-  course_id: string
-  id: string
-  order_index: number
-  title: string
-}
-
-export function useLessons(courseId?: string) {
-  const [lessons, setLessons] = useState<Lesson[]>(
-    mockLessons.filter((lesson) => !courseId || lesson.courseId === courseId),
-  )
-  const [isLoading, setIsLoading] = useState(true)
+export function useLessons(courseId: string | undefined) {
+  const [lessons, setLessons] = useState<Lesson[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const supabase = getSupabaseClient()
-    if (!supabase) {
-      setIsLoading(false)
+    if (!courseId) {
+      setLoading(false)
       return
     }
 
-    let isMounted = true
-
-    let query = supabase
+    setLoading(true)
+    supabase
       .from('lessons')
-      .select('id,course_id,title,content_type,content_url,content_body,order_index')
-      .order('order_index', { ascending: true })
-
-    if (courseId) {
-      query = query.eq('course_id', courseId)
-    }
-
-    query.then(({ data, error }) => {
-      if (!isMounted) {
-        return
-      }
-
-      if (error || !data) {
-        setLessons(mockLessons.filter((lesson) => !courseId || lesson.courseId === courseId))
-        setIsLoading(false)
-        return
-      }
-
-      const mapped = (data as LessonRecord[]).map((lesson) => ({
-        contentBody: lesson.content_body ?? undefined,
-        contentType: lesson.content_type,
-        contentUrl: lesson.content_url ?? undefined,
-        courseId: lesson.course_id,
-        id: lesson.id,
-        orderIndex: lesson.order_index,
-        title: lesson.title,
-      }))
-
-      const fallback = mockLessons.filter((lesson) => !courseId || lesson.courseId === courseId)
-      setLessons(mapped.length > 0 ? mapped : fallback)
-      setIsLoading(false)
-    })
-
-    return () => {
-      isMounted = false
-    }
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true })
+      .then(({ data, error: err }) => {
+        if (err) setError(err.message)
+        else setLessons((data ?? []) as Lesson[])
+        setLoading(false)
+      })
   }, [courseId])
 
-  return useMemo(() => ({ isLoading, lessons }), [isLoading, lessons])
+  return { lessons, loading, error }
+}
+
+export function useLesson(lessonId: string | undefined) {
+  const [lesson, setLesson] = useState<Lesson | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!lessonId) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    supabase
+      .from('lessons')
+      .select('*')
+      .eq('id', lessonId)
+      .single()
+      .then(({ data, error: err }) => {
+        if (err) setError(err.message)
+        else setLesson(data as Lesson)
+        setLoading(false)
+      })
+  }, [lessonId])
+
+  return { lesson, loading, error }
 }

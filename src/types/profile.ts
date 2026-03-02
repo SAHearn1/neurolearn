@@ -1,13 +1,21 @@
-export interface SensoryPreferences {
-  contrast: 'normal' | 'high'
-  fontSize: 'small' | 'medium' | 'large'
-  reduceMotion: boolean
+export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading'
+
+export interface AccessibilityPreferences {
+  text_size: 'small' | 'medium' | 'large'
+  reduce_motion: boolean
+  high_contrast: boolean
+  screen_reader_hints: boolean
 }
 
-export interface Profile {
-  avatarUrl?: string
-  displayName: string
+export interface UserProfile {
   id: string
-  learningStyle: 'visual' | 'auditory' | 'kinesthetic'
-  sensoryPreferences: SensoryPreferences
+  user_id: string
+  display_name: string
+  avatar_url: string | null
+  learning_styles: LearningStyle[]
+  accessibility: AccessibilityPreferences
+  streak_days: number
+  lessons_completed: number
+  created_at: string
+  updated_at: string
 }

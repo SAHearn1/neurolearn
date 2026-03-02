@@ -2,14 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { useAuthStore } from './authStore'
 
 describe('useAuthStore', () => {
-  it('sets authentication state and user id', () => {
-    useAuthStore.setState({ isAuthenticated: false, userId: null })
-
-    useAuthStore.getState().setUserId('user-123')
-    useAuthStore.getState().setAuthenticated(true)
-
+  it('starts with no user and not initialized', () => {
     const state = useAuthStore.getState()
-    expect(state.userId).toBe('user-123')
-    expect(state.isAuthenticated).toBe(true)
+    expect(state.user).toBeNull()
+    expect(state.session).toBeNull()
+    expect(state.loading).toBe(false)
+    expect(state.initialized).toBe(false)
   })
 })

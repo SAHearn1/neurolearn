@@ -2,20 +2,17 @@ import { describe, expect, it } from 'vitest'
 import { useProgressStore } from './progressStore'
 
 describe('useProgressStore', () => {
-  it('replaces progress items', () => {
-    useProgressStore.setState({ items: [] })
-
-    useProgressStore.getState().setItems([
-      {
-        completed: true,
-        id: 'p1',
-        lessonId: 'l1',
-        userId: 'u1',
-      },
-    ])
-
+  it('starts with empty state', () => {
     const state = useProgressStore.getState()
-    expect(state.items).toHaveLength(1)
-    expect(state.items[0]?.completed).toBe(true)
+    expect(state.lessonProgress).toEqual({})
+    expect(state.courseProgress).toEqual({})
+    expect(state.loading).toBe(false)
+  })
+
+  it('resets state', () => {
+    useProgressStore.getState().reset()
+    const state = useProgressStore.getState()
+    expect(state.lessonProgress).toEqual({})
+    expect(state.courseProgress).toEqual({})
   })
 })

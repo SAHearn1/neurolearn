@@ -1,8 +1,23 @@
-project_id = "neurolearn"
+[project]
+id = "lwswycdksrmputowfbwu"
 
 [api]
-enabled = true
 port = 54321
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+port = 54323
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://neurolearn-one.vercel.app"]
+jwt_expiry = 3600
+
+[auth.external.google]
+enabled = false

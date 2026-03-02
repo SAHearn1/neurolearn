@@ -1,0 +1,44 @@
+import { Button } from '../ui/Button'
+
+interface Props {
+  regulationLevel: number
+  onDismiss: () => void
+}
+
+export function RegulationIntervention({ regulationLevel, onDismiss }: Props) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+          <span className="text-3xl" role="img" aria-label="breathing">
+            &#x1F32C;
+          </span>
+        </div>
+        <h2 className="mb-2 text-xl font-bold text-slate-900">Take a moment</h2>
+        <p className="mb-6 text-sm text-slate-600">
+          It looks like you might be feeling frustrated or overwhelmed. That is completely
+          okay. Learning hard things takes real effort, and your brain might need a break.
+        </p>
+
+        <div className="mb-6 space-y-3 text-left text-sm text-slate-700">
+          <p>Try one of these:</p>
+          <ul className="ml-4 list-disc space-y-1">
+            <li>Take 3 slow, deep breaths</li>
+            <li>Stretch your arms above your head</li>
+            <li>Look at something across the room for 20 seconds</li>
+            <li>Get a drink of water</li>
+          </ul>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs text-slate-400">
+            Regulation level: {regulationLevel}/100
+          </p>
+          <Button onClick={onDismiss} variant="primary">
+            I am ready to continue
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}

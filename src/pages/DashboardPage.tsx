@@ -50,3 +50,7 @@ export function DashboardPage() {
     </main>
   )
 }
+
+/* EpistemicDashboard widget placeholder — activated when Layer 4 flag is on.
+   To integrate: import { EpistemicDashboard } from '../components/raca/EpistemicDashboard'
+   and render inside a section gated by racaFlags.epistemicMonitoring */
