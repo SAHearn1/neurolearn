@@ -31,6 +31,12 @@ const SettingsPage = lazy(() =>
 const EducatorDashboardPage = lazy(() =>
   import('./pages/EducatorDashboardPage').then((m) => ({ default: m.EducatorDashboardPage })),
 )
+const ParentDashboardPage = lazy(() =>
+  import('./pages/ParentDashboardPage').then((m) => ({ default: m.ParentDashboardPage })),
+)
+const AdminDashboardPage = lazy(() =>
+  import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })),
+)
 
 function PageFallback() {
   return (
@@ -54,6 +60,8 @@ export function App() {
         <Route element={<LessonPage />} path="/courses/:courseId/lessons/:lessonId" />
         <Route element={<SessionPage />} path="/courses/:courseId/lessons/:lessonId/session" />
         <Route element={<EducatorDashboardPage />} path="/educator" />
+        <Route element={<ParentDashboardPage />} path="/parent" />
+        <Route element={<AdminDashboardPage />} path="/admin" />
         <Route element={<ProfilePage />} path="/profile" />
         <Route element={<SettingsPage />} path="/settings" />
         <Route element={<NotFoundPage />} path="*" />
