@@ -28,6 +28,9 @@ const ProfilePage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 )
+const EducatorDashboardPage = lazy(() =>
+  import('./pages/EducatorDashboardPage').then((m) => ({ default: m.EducatorDashboardPage })),
+)
 
 function PageFallback() {
   return (
@@ -50,6 +53,7 @@ export function App() {
         <Route element={<CoursePage />} path="/courses/:courseId" />
         <Route element={<LessonPage />} path="/courses/:courseId/lessons/:lessonId" />
         <Route element={<SessionPage />} path="/courses/:courseId/lessons/:lessonId/session" />
+        <Route element={<EducatorDashboardPage />} path="/educator" />
         <Route element={<ProfilePage />} path="/profile" />
         <Route element={<SettingsPage />} path="/settings" />
         <Route element={<NotFoundPage />} path="*" />
