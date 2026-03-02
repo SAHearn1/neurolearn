@@ -84,16 +84,28 @@ neurolearn/
 - [Contributing](CONTRIBUTING.md) — How to contribute, code of conduct
 - [Changelog](CHANGELOG.md) — Version history
 
+
+## ✅ Implementation Status
+
+The scaffold backlog in `FILE_CHECKLIST.md` is now fully completed (83/83 files).
+Current implementation includes:
+
+- Route-based app navigation and nested layout shell (`Header`, `Sidebar`, `Footer`, `FocusMode`)
+- Core pages for home/auth/dashboard/courses/lesson/profile/settings/404
+- Reusable UI primitives under `src/components/ui`
+- Lesson and dashboard component modules under `src/components/lesson` and `src/components/dashboard`
+- Initial hooks, Zustand stores, shared types, Supabase helpers, and starter SQL migrations/seed
+
 ## 🗺 Roadmap
 
 - [x] Project scaffold and documentation
 - [ ] Authentication (Supabase Auth)
 - [ ] User profiles and learning preferences
-- [ ] Core lesson components (text, audio, interactive)
+- [x] Core lesson components (text, audio, interactive)
 - [ ] Adaptive learning algorithm
-- [ ] Progress dashboard
+- [x] Progress dashboard
 - [ ] Educator / parent portal
-- [ ] Mobile-responsive design
+- [x] Mobile-responsive design
 - [ ] Accessibility audit and fixes
 - [ ] v1.0 release
 

@@ -1,6 +1,6 @@
 # NeuroLearn — File Checklist
 
-Tracks the 82 core files for the NeuroLearn project scaffold.  
+Tracks the 83 core files for the NeuroLearn project scaffold.  
 Mark items `[x]` as files are created and verified.
 
 ---
@@ -87,45 +87,45 @@ Mark items `[x]` as files are created and verified.
 
 ## Source — Hooks
 
-- [ ] `src/hooks/useAuth.ts`
-- [ ] `src/hooks/useCourses.ts`
-- [ ] `src/hooks/useLessons.ts`
-- [ ] `src/hooks/useProgress.ts`
-- [ ] `src/hooks/useProfile.ts`
-- [ ] `src/hooks/useSettings.ts`
+- [x] `src/hooks/useAuth.ts`
+- [x] `src/hooks/useCourses.ts`
+- [x] `src/hooks/useLessons.ts`
+- [x] `src/hooks/useProgress.ts`
+- [x] `src/hooks/useProfile.ts`
+- [x] `src/hooks/useSettings.ts`
 
 ## Source — Store (Zustand)
 
-- [ ] `src/store/authStore.ts`
-- [ ] `src/store/settingsStore.ts`
-- [ ] `src/store/progressStore.ts`
+- [x] `src/store/authStore.ts`
+- [x] `src/store/settingsStore.ts`
+- [x] `src/store/progressStore.ts`
 
 ## Source — Types
 
-- [ ] `src/types/index.ts`
-- [ ] `src/types/course.ts`
-- [ ] `src/types/lesson.ts`
-- [ ] `src/types/profile.ts`
-- [ ] `src/types/progress.ts`
+- [x] `src/types/index.ts`
+- [x] `src/types/course.ts`
+- [x] `src/types/lesson.ts`
+- [x] `src/types/profile.ts`
+- [x] `src/types/progress.ts`
 
 ## Utils / Supabase
 
 - [x] `utils/supabase/info.tsx`
-- [ ] `utils/supabase/client.ts`
-- [ ] `utils/supabase/server.ts`
-- [ ] `utils/helpers.ts`
+- [x] `utils/supabase/client.ts`
+- [x] `utils/supabase/server.ts`
+- [x] `utils/helpers.ts`
 
 ## Supabase
 
-- [ ] `supabase/config.toml`
-- [ ] `supabase/migrations/001_create_profiles.sql`
-- [ ] `supabase/migrations/002_create_courses.sql`
-- [ ] `supabase/migrations/003_create_lessons.sql`
-- [ ] `supabase/migrations/004_create_progress.sql`
-- [ ] `supabase/seed.sql`
+- [x] `supabase/config.toml`
+- [x] `supabase/migrations/001_create_profiles.sql`
+- [x] `supabase/migrations/002_create_courses.sql`
+- [x] `supabase/migrations/003_create_lessons.sql`
+- [x] `supabase/migrations/004_create_progress.sql`
+- [x] `supabase/seed.sql`
 
 ---
 
 **Total tracked:** 83 files  
-**Created:** 60  
-**Remaining:** 23
+**Created:** 83  
+**Remaining:** 0
