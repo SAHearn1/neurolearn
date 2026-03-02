@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Spinner } from './components/ui/Spinner'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { useAuth } from './hooks/useAuth'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
@@ -47,23 +49,100 @@ function PageFallback() {
 }
 
 export function App() {
+  // Initialize Supabase auth listener once at app root
+  useAuth()
+
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
+        {/* Public routes */}
         <Route element={<HomePage />} path="/" />
         <Route element={<LoginPage />} path="/login" />
         <Route element={<SignUpPage />} path="/signup" />
         <Route element={<PasswordResetPage />} path="/reset-password" />
-        <Route element={<DashboardPage />} path="/dashboard" />
-        <Route element={<CoursesPage />} path="/courses" />
-        <Route element={<CoursePage />} path="/courses/:courseId" />
-        <Route element={<LessonPage />} path="/courses/:courseId/lessons/:lessonId" />
-        <Route element={<SessionPage />} path="/courses/:courseId/lessons/:lessonId/session" />
-        <Route element={<EducatorDashboardPage />} path="/educator" />
-        <Route element={<ParentDashboardPage />} path="/parent" />
-        <Route element={<AdminDashboardPage />} path="/admin" />
-        <Route element={<ProfilePage />} path="/profile" />
-        <Route element={<SettingsPage />} path="/settings" />
+
+        {/* Authenticated routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+          path="/dashboard"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <CoursesPage />
+            </ProtectedRoute>
+          }
+          path="/courses"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <CoursePage />
+            </ProtectedRoute>
+          }
+          path="/courses/:courseId"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <LessonPage />
+            </ProtectedRoute>
+          }
+          path="/courses/:courseId/lessons/:lessonId"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <SessionPage />
+            </ProtectedRoute>
+          }
+          path="/courses/:courseId/lessons/:lessonId/session"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <EducatorDashboardPage />
+            </ProtectedRoute>
+          }
+          path="/educator"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <ParentDashboardPage />
+            </ProtectedRoute>
+          }
+          path="/parent"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+          path="/admin"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+          path="/profile"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+          path="/settings"
+        />
+
         <Route element={<NotFoundPage />} path="*" />
       </Routes>
     </Suspense>

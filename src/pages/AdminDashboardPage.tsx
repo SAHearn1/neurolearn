@@ -28,7 +28,7 @@ export function AdminDashboardPage() {
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('lesson_progress').select('user_id', { count: 'exact', head: true }),
         supabase.from('courses').select('*', { count: 'exact', head: true }),
-        supabase.from('lesson_progress').select('*', { count: 'exact', head: true }).eq('completed', true),
+        supabase.from('lesson_progress').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       ])
       setStats({
         totalUsers: usersRes.count ?? 0,
