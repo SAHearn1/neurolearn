@@ -36,9 +36,9 @@ Mark items `[x]` as files are created and verified.
 
 ## Source — Pages
 
-- [ ] `src/pages/HomePage.tsx`
-- [ ] `src/pages/LoginPage.tsx`
-- [ ] `src/pages/SignUpPage.tsx`
+- [x] `src/pages/HomePage.tsx`
+- [x] `src/pages/LoginPage.tsx`
+- [x] `src/pages/SignUpPage.tsx`
 - [ ] `src/pages/DashboardPage.tsx`
 - [ ] `src/pages/CoursesPage.tsx`
 - [ ] `src/pages/CoursePage.tsx`
