@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - GitHub Actions CI workflow added to run test/lint/build on push and pull request.
-- Dashboard, courses, course, and lesson pages now consume hook-driven data instead of static placeholder arrays.
 - Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
 - Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Login and sign-up pages now use auth hook actions with loading/error UX feedback.
@@ -43,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - GitHub Actions CI workflow added to run test/lint/build on push and pull request.
-- Dashboard, courses, course, and lesson pages now consume hook-driven data instead of static placeholder arrays.
 - Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
 - Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Login and sign-up pages now use auth hook actions with loading/error UX feedback.

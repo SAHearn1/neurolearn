@@ -237,3 +237,27 @@ content: ['./index.html', './src/**/*.{ts,tsx}']
 ### Supabase RLS blocking requests
 
 Check that Row Level Security policies are set up correctly in the Supabase dashboard and that the user is authenticated before making requests.
+
+---
+
+## Security Practices
+
+### Environment Variables
+
+- All secrets go in `.env.local` (git-ignored)
+- `.env.example` has placeholder keys — **never real values**
+- Only `VITE_*` vars are bundled into the browser; server-only secrets must not use that prefix
+- See [Technical Specs → Security](TECHNICAL_SPECS.md#security) for the full variable reference
+
+### Vercel
+
+- Production env vars are set in the Vercel dashboard (Settings → Environment Variables)
+- Sensitive values (service role key, DB URL) are encrypted at rest
+- Production URL: `https://neurolearn-one.vercel.app`
+- Auto-deploys on push to `main` via GitHub integration
+
+### Supabase
+
+- `anon` key is safe for browser use — access is governed by RLS policies
+- `service_role` key bypasses RLS — keep server-side only (Edge Functions)
+- OAuth redirect URLs must be registered in Supabase Auth → URL Configuration
