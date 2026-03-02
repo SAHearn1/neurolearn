@@ -1,14 +1,31 @@
+import { Route, Routes } from 'react-router-dom'
+import { PageWrapper } from './components/layout/PageWrapper'
+import { CoursePage } from './pages/CoursePage'
+import { CoursesPage } from './pages/CoursesPage'
+import { DashboardPage } from './pages/DashboardPage'
+import { HomePage } from './pages/HomePage'
+import { LessonPage } from './pages/LessonPage'
+import { LoginPage } from './pages/LoginPage'
+import { NotFoundPage } from './pages/NotFoundPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { SettingsPage } from './pages/SettingsPage'
+import { SignUpPage } from './pages/SignUpPage'
+
 export function App() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-center justify-center p-6 text-center">
-      <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-700">
-        NeuroLearn
-      </span>
-      <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900">Learning that adapts to you</h1>
-      <p className="mt-4 max-w-2xl text-lg text-slate-700">
-        A multimodal platform to support neurodivergent learners with personalized lessons,
-        accessibility-first experiences, and progress that celebrates every milestone.
-      </p>
-    </main>
+    <Routes>
+      <Route element={<PageWrapper />}>
+        <Route element={<HomePage />} path="/" />
+        <Route element={<LoginPage />} path="/login" />
+        <Route element={<SignUpPage />} path="/signup" />
+        <Route element={<DashboardPage />} path="/dashboard" />
+        <Route element={<CoursesPage />} path="/courses" />
+        <Route element={<CoursePage />} path="/courses/:courseId" />
+        <Route element={<LessonPage />} path="/courses/:courseId/lessons/:lessonId" />
+        <Route element={<ProfilePage />} path="/profile" />
+        <Route element={<SettingsPage />} path="/settings" />
+        <Route element={<NotFoundPage />} path="*" />
+      </Route>
+    </Routes>
   )
 }
