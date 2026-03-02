@@ -1,0 +1,59 @@
+import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '../../utils/supabase/client'
+import { useAuthStore } from '../store/authStore'
+import type { EducatorProfile } from '../types/educator'
+
+export function useEducatorProfile() {
+  const user = useAuthStore((s) => s.user)
+  const [profile, setProfile] = useState<EducatorProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error: err } = await supabase
+        .from('educator_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (err && err.code !== 'PGRST116') throw err
+      setProfile(data as EducatorProfile | null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load educator profile')
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
+  const upsertProfile = useCallback(
+    async (updates: Partial<Omit<EducatorProfile, 'user_id' | 'created_at' | 'updated_at'>>) => {
+      if (!user?.id) return
+
+      const { error: err } = await supabase
+        .from('educator_profiles')
+        .upsert({
+          user_id: user.id,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (err) throw err
+      await fetchProfile()
+    },
+    [user?.id, fetchProfile],
+  )
+
+  return { profile, loading, error, upsertProfile, refetch: fetchProfile }
+}
