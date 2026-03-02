@@ -183,6 +183,8 @@ export function useCourses() {
 
 ## Testing
 
+CI executes `npm run test -- --run`, `npm run lint`, and `npm run build` via `.github/workflows/ci.yml`.
+
 Tests live alongside source files as `*.test.tsx` / `*.test.ts`.
 
 ```bash

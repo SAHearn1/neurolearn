@@ -47,14 +47,16 @@ This log tracks completed repository issues/workstreams and what is next.
 - Implemented Supabase session-aware auth hook methods (`signIn`, `signUp`, `signOut`) with store synchronization.
 - Added user-facing auth error handling and loading states on login/sign-up flows.
 - Applied initial accessibility hardening for modal keyboard/escape behavior, active navigation states, and tooltip/quiz semantics.
+- Attempted routed-flow jsdom tests but environment policy blocked installing `jsdom`; deferred until dependency access is available.
+- Added CI workflow to enforce test/lint/build gates on pushes and pull requests.
 
 ## Current Completion Status
 - `FILE_CHECKLIST.md`: **83 / 83 files complete**.
 
 ## Next Execution Plan
-1. Add integration/component tests for routed flows and critical user paths.
-2. Add CI workflow for test/lint/build gates on pull requests.
-3. Replace remaining static page placeholders with live data-driven views.
-4. Expand auth UX (password reset/email verification states).
-5. Continue accessibility hardening (focus trapping and screen-reader walkthrough audits).
+1. Replace remaining static page placeholders with live data-driven views.
+2. Expand auth UX (password reset/email verification states).
+3. Continue accessibility hardening (focus trapping and screen-reader walkthrough audits).
+4. Expand routed-flow tests to cover dashboard/course/lesson transitions.
+5. Add jsdom-backed component tests once dependency policy allows installation.
 
