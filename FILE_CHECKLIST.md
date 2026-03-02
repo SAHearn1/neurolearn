@@ -49,16 +49,16 @@ Mark items `[x]` as files are created and verified.
 
 ## Source — Components / UI
 
-- [ ] `src/components/ui/Button.tsx`
-- [ ] `src/components/ui/Card.tsx`
-- [ ] `src/components/ui/Modal.tsx`
-- [ ] `src/components/ui/Input.tsx`
-- [ ] `src/components/ui/Badge.tsx`
-- [ ] `src/components/ui/Spinner.tsx`
-- [ ] `src/components/ui/ProgressBar.tsx`
-- [ ] `src/components/ui/Avatar.tsx`
-- [ ] `src/components/ui/Tooltip.tsx`
-- [ ] `src/components/ui/Alert.tsx`
+- [x] `src/components/ui/Button.tsx`
+- [x] `src/components/ui/Card.tsx`
+- [x] `src/components/ui/Modal.tsx`
+- [x] `src/components/ui/Input.tsx`
+- [x] `src/components/ui/Badge.tsx`
+- [x] `src/components/ui/Spinner.tsx`
+- [x] `src/components/ui/ProgressBar.tsx`
+- [x] `src/components/ui/Avatar.tsx`
+- [x] `src/components/ui/Tooltip.tsx`
+- [x] `src/components/ui/Alert.tsx`
 
 ## Source — Components / Layout
 
@@ -126,6 +126,6 @@ Mark items `[x]` as files are created and verified.
 
 ---
 
-**Total tracked:** 82 files  
-**Created:** 25  
-**Remaining:** 57
+**Total tracked:** 83 files  
+**Created:** 44  
+**Remaining:** 39
