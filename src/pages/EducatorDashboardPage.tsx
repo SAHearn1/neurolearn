@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuthStore } from '../store/authStore'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { Spinner } from '../components/ui/Spinner'
@@ -14,9 +15,13 @@ import { EducatorAnalytics } from '../components/educator/EducatorAnalytics'
 type Tab = 'overview' | 'classes' | 'progress' | 'assignments' | 'content' | 'analytics'
 
 export function EducatorDashboardPage() {
+  const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading, error: profileError } = useEducatorProfile()
   const { classes, loading: classesLoading } = useClassManagement()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
+
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined) ?? 'Educator'
 
   if (profileLoading || classesLoading) {
     return (
@@ -48,7 +53,7 @@ export function EducatorDashboardPage() {
       <header className="space-y-3">
         <Badge>Educator Dashboard</Badge>
         <h1 className="text-3xl font-bold text-slate-900">
-          Welcome, {profile?.bio ? 'Educator' : 'Educator'} 👋
+          Welcome, {displayName} 👋
         </h1>
         <p className="text-slate-600">
           Manage your classes, track student progress, and create learning content.
