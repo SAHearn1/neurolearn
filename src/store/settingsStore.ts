@@ -1,15 +1,32 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { AccessibilityPreferences } from '../types/profile'
 
 interface SettingsState {
-  reduceMotion: boolean
-  setReduceMotion: (value: boolean) => void
-  textSize: 'small' | 'medium' | 'large'
-  setTextSize: (value: 'small' | 'medium' | 'large') => void
+  accessibility: AccessibilityPreferences
+  updateAccessibility: (prefs: Partial<AccessibilityPreferences>) => void
+  reset: () => void
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
-  reduceMotion: false,
-  setReduceMotion: (value) => set({ reduceMotion: value }),
-  setTextSize: (value) => set({ textSize: value }),
-  textSize: 'medium',
-}))
+const defaults: AccessibilityPreferences = {
+  text_size: 'medium',
+  reduce_motion: true,
+  high_contrast: false,
+  screen_reader_hints: false,
+}
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      accessibility: { ...defaults },
+
+      updateAccessibility: (prefs) =>
+        set((state) => ({
+          accessibility: { ...state.accessibility, ...prefs },
+        })),
+
+      reset: () => set({ accessibility: { ...defaults } }),
+    }),
+    { name: 'neurolearn.settings' },
+  ),
+)

@@ -7,6 +7,7 @@ import { LessonPage } from './pages/LessonPage'
 import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { SessionPage } from './pages/SessionPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SignUpPage } from './pages/SignUpPage'
 
@@ -20,6 +21,7 @@ export function App() {
       <Route element={<CoursesPage />} path="/courses" />
       <Route element={<CoursePage />} path="/courses/:courseId" />
       <Route element={<LessonPage />} path="/courses/:courseId/lessons/:lessonId" />
+      <Route element={<SessionPage />} path="/courses/:courseId/lessons/:lessonId/session" />
       <Route element={<ProfilePage />} path="/profile" />
       <Route element={<SettingsPage />} path="/settings" />
       <Route element={<NotFoundPage />} path="*" />

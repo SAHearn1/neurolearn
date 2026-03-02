@@ -1,69 +1,61 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { Course } from '../types'
-import { getSupabaseClient } from '../../utils/supabase/client'
-
-const mockCourses: Course[] = [
-  {
-    description: 'Build practical strategies for staying focused with less overwhelm.',
-    difficulty: 'beginner',
-    id: 'focus-fundamentals',
-    tags: ['focus', 'habits'],
-    title: 'Focus Fundamentals',
-  },
-]
-
-interface CourseRecord {
-  description: string
-  difficulty: Course['difficulty']
-  id: string
-  tags: string[] | null
-  title: string
-}
+import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '../../utils/supabase/client'
+import type { Course } from '../types/course'
 
 export function useCourses() {
-  const [courses, setCourses] = useState<Course[]>(mockCourses)
-  const [isLoading, setIsLoading] = useState(true)
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const supabase = getSupabaseClient()
-    if (!supabase) {
-      setIsLoading(false)
-      return
-    }
+  const fetchCourses = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error: err } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
 
-    let isMounted = true
-
-    supabase
-      .from('courses')
-      .select('id,title,description,difficulty,tags')
-      .order('created_at', { ascending: true })
-      .then(({ data, error }) => {
-        if (!isMounted) {
-          return
-        }
-
-        if (error || !data) {
-          setCourses(mockCourses)
-          setIsLoading(false)
-          return
-        }
-
-        const mapped = (data as CourseRecord[]).map((course) => ({
-          description: course.description,
-          difficulty: course.difficulty,
-          id: course.id,
-          tags: course.tags ?? [],
-          title: course.title,
-        }))
-
-        setCourses(mapped.length > 0 ? mapped : mockCourses)
-        setIsLoading(false)
-      })
-
-    return () => {
-      isMounted = false
+      if (err) throw err
+      setCourses((data ?? []) as Course[])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load courses')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
-  return useMemo(() => ({ courses, isLoading }), [courses, isLoading])
+  useEffect(() => {
+    fetchCourses()
+  }, [fetchCourses])
+
+  return { courses, loading, error, refetch: fetchCourses }
+}
+
+export function useCourse(courseId: string | undefined) {
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!courseId) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    supabase
+      .from('courses')
+      .select('*')
+      .eq('id', courseId)
+      .single()
+      .then(({ data, error: err }) => {
+        if (err) setError(err.message)
+        else setCourse(data as Course)
+        setLoading(false)
+      })
+  }, [courseId])
+
+  return { course, loading, error }
 }

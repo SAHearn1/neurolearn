@@ -1,11 +1,16 @@
-export type LessonContentType = 'text' | 'audio' | 'video' | 'interactive'
+export type LessonType = 'text' | 'video' | 'audio' | 'interactive' | 'quiz'
+export type LessonStatus = 'draft' | 'published' | 'archived'
 
 export interface Lesson {
-  contentBody?: string
-  contentType: LessonContentType
-  contentUrl?: string
-  courseId: string
   id: string
-  orderIndex: number
+  course_id: string
   title: string
+  description: string
+  type: LessonType
+  status: LessonStatus
+  content: string | null
+  sort_order: number
+  duration_minutes: number | null
+  created_at: string
+  updated_at: string
 }
