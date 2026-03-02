@@ -14,7 +14,12 @@ export function Sidebar() {
         <ul className="space-y-1">
           {links.map((link) => (
             <li key={link.to}>
-              <NavLink className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100" to={link.to}>
+              <NavLink
+                className={({ isActive }) =>
+                  `block rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+                to={link.to}
+              >
                 {link.label}
               </NavLink>
             </li>

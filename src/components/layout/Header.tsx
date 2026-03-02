@@ -10,18 +10,22 @@ export function Header() {
         </Link>
 
         <nav aria-label="Primary" className="flex flex-wrap items-center gap-2 text-sm">
-          <NavLink className="rounded px-2 py-1 text-slate-700 hover:bg-slate-100" to="/dashboard">
-            Dashboard
-          </NavLink>
-          <NavLink className="rounded px-2 py-1 text-slate-700 hover:bg-slate-100" to="/courses">
-            Courses
-          </NavLink>
-          <NavLink className="rounded px-2 py-1 text-slate-700 hover:bg-slate-100" to="/profile">
-            Profile
-          </NavLink>
-          <NavLink className="rounded px-2 py-1 text-slate-700 hover:bg-slate-100" to="/settings">
-            Settings
-          </NavLink>
+          {[
+            { label: 'Dashboard', to: '/dashboard' },
+            { label: 'Courses', to: '/courses' },
+            { label: 'Profile', to: '/profile' },
+            { label: 'Settings', to: '/settings' },
+          ].map((item) => (
+            <NavLink
+              className={({ isActive }) =>
+                `rounded px-2 py-1 ${isActive ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100'}`
+              }
+              key={item.to}
+              to={item.to}
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
       </div>
     </header>

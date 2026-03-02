@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
 - Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Login and sign-up pages now use auth hook actions with loading/error UX feedback.
 - Complete application scaffold with routed pages for home, auth, dashboard, courses, lessons, profile, settings, and not-found
@@ -39,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] — 2026-03-02
 
 ### Added
+- Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
 - Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Login and sign-up pages now use auth hook actions with loading/error UX feedback.
 - Initial repository created with basic README

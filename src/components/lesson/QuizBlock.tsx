@@ -14,8 +14,12 @@ export function QuizBlock({ answer, prompt }: QuizBlockProps) {
   return (
     <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
       <p className="font-medium text-slate-900">{prompt}</p>
+      <label className="sr-only" htmlFor="quiz-answer">
+        Your answer
+      </label>
       <input
         className="w-full rounded-lg border border-slate-300 px-3 py-2"
+        id="quiz-answer"
         onChange={(event) => setValue(event.target.value)}
         placeholder="Type your answer"
         value={value}
