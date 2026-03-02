@@ -40,6 +40,7 @@ describe('signUpSchema', () => {
       email: 'test@example.com',
       password: 'Password1',
       displayName: 'Test User',
+      age_confirmed: true,
     })
     expect(result.success).toBe(true)
   })
@@ -49,10 +50,20 @@ describe('signUpSchema', () => {
       email: 'test@example.com',
       password: 'weak',
       displayName: 'Test User',
+      age_confirmed: true,
     })
     expect(result.success).toBe(false)
     const errors = getValidationErrors(result)
     expect(errors.password).toBeDefined()
+  })
+
+  it('rejects missing age confirmation', () => {
+    const result = signUpSchema.safeParse({
+      email: 'test@example.com',
+      password: 'Password1',
+      displayName: 'Test User',
+    })
+    expect(result.success).toBe(false)
   })
 
   it('rejects password without uppercase', () => {

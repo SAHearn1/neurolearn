@@ -77,6 +77,21 @@ export function useClassManagement() {
     [fetchClasses],
   )
 
+  const archiveClass = useCallback(
+    async (classId: string) => {
+      if (!user?.id) return
+      const { error: err } = await supabase
+        .from('classes')
+        .update({ archived: true, updated_at: new Date().toISOString() })
+        .eq('id', classId)
+        .eq('educator_id', user.id)
+
+      if (err) throw err
+      await fetchClasses()
+    },
+    [user?.id, fetchClasses],
+  )
+
   const enrollStudent = useCallback(
     async (classId: string, studentId: string) => {
       const { error: err } = await supabase
@@ -121,6 +136,7 @@ export function useClassManagement() {
     createClass,
     updateClass,
     deleteClass,
+    archiveClass,
     enrollStudent,
     unenrollStudent,
     getClassEnrollments,

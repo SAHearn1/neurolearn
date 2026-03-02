@@ -8,6 +8,8 @@ export interface ParentProfile {
   contact_phone: string | null
   contact_preference: ContactPreference
   notification_frequency: NotificationFrequency
+  notification_email: boolean
+  notification_push: boolean
   timezone: string
   max_linked_students: number
   created_at: string
@@ -18,7 +20,7 @@ export interface ParentStudentLink {
   id: string
   parent_id: string
   student_id: string
-  status: 'pending' | 'active' | 'revoked'
+  status: 'pending' | 'active' | 'approved' | 'revoked' | 'rejected'
   created_at: string
 }
 

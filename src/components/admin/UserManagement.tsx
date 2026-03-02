@@ -15,6 +15,7 @@ interface ManagedUser {
   role: UserRole
   created_at: string
   lessons_completed: number
+  deleted_at: string | null
 }
 
 export function UserManagement() {
@@ -30,7 +31,7 @@ export function UserManagement() {
     try {
       const { data, error: err } = await supabase
         .from('profiles')
-        .select('user_id, display_name, role, created_at, lessons_completed')
+        .select('user_id, display_name, role, created_at, lessons_completed, deleted_at')
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -69,6 +70,32 @@ export function UserManagement() {
         await fetchUsers()
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to update role')
+      }
+    },
+    [fetchUsers],
+  )
+
+  const softDelete = useCallback(
+    async (userId: string) => {
+      setError(null)
+      try {
+        const { error: err } = await supabase
+          .from('profiles')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('user_id', userId)
+
+        if (err) throw err
+
+        await supabase.from('audit_log').insert({
+          action: 'user_deactivated',
+          resource_type: 'profile',
+          resource_id: userId,
+          metadata: {},
+        })
+
+        await fetchUsers()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to deactivate user')
       }
     },
     [fetchUsers],
@@ -139,8 +166,9 @@ export function UserManagement() {
                   Joined {new Date(u.created_at).toLocaleDateString()} · {u.lessons_completed} lessons
                 </p>
               </div>
-              <div className="flex gap-1">
-                {roles
+              <div className="flex items-center gap-1">
+                {u.deleted_at && <Badge>Inactive</Badge>}
+                {!u.deleted_at && roles
                   .filter((r) => r !== u.role)
                   .map((r) => (
                     <Button
@@ -151,6 +179,19 @@ export function UserManagement() {
                       Make {r}
                     </Button>
                   ))}
+                {!u.deleted_at && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (confirm(`Deactivate ${u.display_name ?? 'this user'}?`)) {
+                        softDelete(u.user_id)
+                      }
+                    }}
+                    aria-label={`Deactivate ${u.display_name ?? 'user'}`}
+                  >
+                    Deactivate
+                  </Button>
+                )}
               </div>
             </div>
           </Card>

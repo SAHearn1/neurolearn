@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signInSchema, getValidationErrors } from '../lib/validation'
+import { authRateLimit } from '../lib/rate-limit'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -19,6 +20,11 @@ export function LoginPage() {
     const result = signInSchema.safeParse({ email, password })
     if (!result.success) {
       setFieldErrors(getValidationErrors(result))
+      return
+    }
+
+    if (!authRateLimit('login')) {
+      setError('Too many login attempts. Please wait a minute before trying again.')
       return
     }
 

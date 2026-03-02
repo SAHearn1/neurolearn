@@ -1,43 +1,26 @@
-// Client-side rate limit tracking for auth actions
-// Server-side rate limiting is handled by Supabase (30 req/min for auth endpoints)
+// In-memory sliding window rate limiter
+// Key = identifier (e.g. 'auth:login'), limit = max requests, windowMs = window in ms
 
-interface RateLimitEntry {
-  count: number
-  resetAt: number
-}
+const buckets = new Map<string, number[]>()
 
-const limits = new Map<string, RateLimitEntry>()
-
-const RATE_LIMITS = {
-  'auth:signin': { max: 5, windowMs: 60_000 },
-  'auth:signup': { max: 3, windowMs: 60_000 },
-  'auth:reset': { max: 3, windowMs: 300_000 },
-  'api:general': { max: 60, windowMs: 60_000 },
-} as const
-
-type RateLimitKey = keyof typeof RATE_LIMITS
-
-export function checkRateLimit(key: RateLimitKey): { allowed: boolean; retryAfterMs: number } {
-  const config = RATE_LIMITS[key]
+export function checkRateLimit(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now()
-  const entry = limits.get(key)
-
-  if (!entry || now >= entry.resetAt) {
-    limits.set(key, { count: 1, resetAt: now + config.windowMs })
-    return { allowed: true, retryAfterMs: 0 }
-  }
-
-  if (entry.count >= config.max) {
-    return { allowed: false, retryAfterMs: entry.resetAt - now }
-  }
-
-  entry.count += 1
-  return { allowed: true, retryAfterMs: 0 }
+  const timestamps = buckets.get(key) ?? []
+  // Remove timestamps outside window
+  const recent = timestamps.filter((ts) => now - ts < windowMs)
+  if (recent.length >= limit) return false // Rate limited
+  recent.push(now)
+  buckets.set(key, recent)
+  return true // Allowed
 }
 
-export function formatRetryMessage(retryAfterMs: number): string {
-  const seconds = Math.ceil(retryAfterMs / 1000)
-  if (seconds < 60) return `Please wait ${seconds} seconds before trying again.`
-  const minutes = Math.ceil(seconds / 60)
-  return `Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before trying again.`
+export function resetRateLimit(key: string): void {
+  buckets.delete(key)
 }
+
+// Pre-configured limiters
+export const authRateLimit = (identifier: string): boolean =>
+  checkRateLimit(`auth:${identifier}`, 5, 60_000) // 5 per minute
+
+export const apiRateLimit = (identifier: string): boolean =>
+  checkRateLimit(`api:${identifier}`, 100, 60_000) // 100 per minute

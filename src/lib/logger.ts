@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react'
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -39,6 +41,14 @@ export function createLogger(module: string) {
     error(message: string, data?: unknown) {
       if (shouldLog('error')) {
         console.error(formatMessage('error', module, message), data ?? '')
+      }
+      // Forward errors to Sentry when configured
+      if (import.meta.env.VITE_SENTRY_DSN) {
+        if (data instanceof Error) {
+          Sentry.captureException(data, { extra: { module, message } })
+        } else {
+          Sentry.captureMessage(message, { level: 'error', extra: { module, data } })
+        }
       }
     },
   }

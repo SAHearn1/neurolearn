@@ -31,6 +31,9 @@ export const signUpSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   displayName: displayNameSchema,
+  age_confirmed: z.literal(true, {
+    message: 'You must confirm you are 13 or older',
+  }),
 })
 
 export const passwordResetSchema = z.object({
@@ -56,6 +59,19 @@ export const settingsSchema = z.object({
   high_contrast: z.boolean().optional(),
   screen_reader_hints: z.boolean().optional(),
 })
+
+// --- Content creation schemas ---
+
+export const lessonCreateSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters').max(200),
+  content: z.string().min(10, 'Content must be at least 10 characters').max(50000),
+  lesson_type: z.enum(['text', 'audio', 'video', 'interactive']),
+  order_index: z.number().int().min(0),
+  duration_minutes: z.number().int().min(1).max(480).optional(),
+  accessibility_notes: z.string().max(1000).optional(),
+})
+
+export type LessonCreateInput = z.infer<typeof lessonCreateSchema>
 
 // --- Sanitization ---
 

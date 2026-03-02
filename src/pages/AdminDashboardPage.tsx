@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../utils/supabase/client'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { UserManagement } from '../components/admin/UserManagement'
@@ -8,8 +9,37 @@ import { AuditLogViewer } from '../components/admin/AuditLogViewer'
 
 type Tab = 'overview' | 'users' | 'content' | 'analytics' | 'audit'
 
+interface PlatformStats {
+  totalUsers: number
+  activeLearners: number
+  totalCourses: number
+  lessonsCompleted: number
+}
+
 export function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
+  const [stats, setStats] = useState<PlatformStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      setStatsLoading(true)
+      const [usersRes, activeLearnerRes, coursesRes, completedRes] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('lesson_progress').select('user_id', { count: 'exact', head: true }),
+        supabase.from('courses').select('*', { count: 'exact', head: true }),
+        supabase.from('lesson_progress').select('*', { count: 'exact', head: true }).eq('completed', true),
+      ])
+      setStats({
+        totalUsers: usersRes.count ?? 0,
+        activeLearners: activeLearnerRes.count ?? 0,
+        totalCourses: coursesRes.count ?? 0,
+        lessonsCompleted: completedRes.count ?? 0,
+      })
+      setStatsLoading(false)
+    }
+    fetchStats()
+  }, [])
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: 'Overview' },
@@ -50,20 +80,32 @@ export function AdminDashboardPage() {
       {activeTab === 'overview' && (
         <section className="grid gap-4 md:grid-cols-4">
           <Card>
-            <p className="text-sm font-medium text-slate-500">System Status</p>
-            <p className="text-2xl font-bold text-emerald-600">Healthy</p>
+            <p className="text-sm font-medium text-slate-500" aria-label="Total users">Total Users</p>
+            {statsLoading
+              ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
+              : <p className="text-2xl font-bold text-slate-900">{stats?.totalUsers ?? 0}</p>
+            }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500">Uptime</p>
-            <p className="text-2xl font-bold text-slate-900">99.9%</p>
+            <p className="text-sm font-medium text-slate-500" aria-label="Active learners">Active Learners</p>
+            {statsLoading
+              ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
+              : <p className="text-2xl font-bold text-slate-900">{stats?.activeLearners ?? 0}</p>
+            }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500">Active Sessions</p>
-            <p className="text-2xl font-bold text-slate-900">—</p>
+            <p className="text-sm font-medium text-slate-500" aria-label="Total courses">Total Courses</p>
+            {statsLoading
+              ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
+              : <p className="text-2xl font-bold text-slate-900">{stats?.totalCourses ?? 0}</p>
+            }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500">Pending Actions</p>
-            <p className="text-2xl font-bold text-slate-900">0</p>
+            <p className="text-sm font-medium text-slate-500" aria-label="Lessons completed">Lessons Completed</p>
+            {statsLoading
+              ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
+              : <p className="text-2xl font-bold text-slate-900">{stats?.lessonsCompleted ?? 0}</p>
+            }
           </Card>
         </section>
       )}

@@ -13,6 +13,7 @@ export type {
 export type { Database } from './database'
 export type {
   EducatorProfile,
+  EducatorStudentLink,
   ClassRecord,
   ClassEnrollment,
   ClassWithStudents,

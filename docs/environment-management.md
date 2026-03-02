@@ -51,5 +51,27 @@ Developer → Feature Branch → PR (Preview Deploy)
                            Cherry-pick to staging → Staging Deploy
 ```
 
+## Promotion Workflow
+
+1. Feature developed on feature branch → PR → CI passes (typecheck, lint, test, build)
+2. Merge to `main` → triggers production deployment on Vercel
+3. CI `migrate` job runs automatically → `supabase db push` applies pending migrations
+4. Lighthouse CI runs → performance and accessibility gates enforced
+5. For staged rollout: toggle RACA feature flags in Vercel env vars
+
+## Staging Checklist (human verification)
+
+Before enabling a feature flag in production, verify on staging:
+
+- [ ] Login/logout flows work
+- [ ] Lesson content loads and navigation works
+- [ ] RACA session starts and state transitions complete
+- [ ] Educator dashboard shows real data
+- [ ] Parent dashboard shows linked children's progress
+- [ ] Admin dashboard loads with user list and audit log
+- [ ] Sentry receives test error (`Sentry.captureMessage('staging test')` in browser console)
+- [ ] Accessibility: keyboard navigation works across all pages
+- [ ] Mobile viewport: responsive layout on Pixel 5 / iPhone 14
+
 ## Rollback
 See `docs/rollback-procedure.md` for Vercel and database rollback steps.

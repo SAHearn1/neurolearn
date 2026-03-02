@@ -18,6 +18,8 @@ export function ParentNotificationPrefs() {
   const [frequency, setFrequency] = useState<NotificationFrequency>(
     profile?.notification_frequency ?? 'weekly',
   )
+  const [emailEnabled, setEmailEnabled] = useState(profile?.notification_email ?? true)
+  const [pushEnabled, setPushEnabled] = useState(profile?.notification_push ?? false)
 
   const handleSave = useCallback(async () => {
     setSaving(true)
@@ -27,6 +29,8 @@ export function ParentNotificationPrefs() {
       await upsertProfile({
         contact_preference: contactPref,
         notification_frequency: frequency,
+        notification_email: emailEnabled,
+        notification_push: pushEnabled,
       })
       setSaved(true)
     } catch (e) {
@@ -34,7 +38,7 @@ export function ParentNotificationPrefs() {
     } finally {
       setSaving(false)
     }
-  }, [contactPref, frequency, upsertProfile])
+  }, [contactPref, frequency, emailEnabled, pushEnabled, upsertProfile])
 
   if (loading) return <Spinner />
   if (error) return <Alert variant="error">{error}</Alert>
@@ -94,6 +98,46 @@ export function ParentNotificationPrefs() {
                   {opt.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-slate-700 mb-2">Notification Channels</p>
+            <div className="space-y-2">
+              <label htmlFor="email-toggle" className="flex items-center gap-3">
+                <input
+                  id="email-toggle"
+                  type="checkbox"
+                  checked={emailEnabled}
+                  onChange={(e) => setEmailEnabled(e.target.checked)}
+                  aria-describedby="email-toggle-desc"
+                  className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  disabled={saving}
+                />
+                <div>
+                  <span className="text-sm font-medium text-slate-700">Email notifications</span>
+                  <span id="email-toggle-desc" className="block text-xs text-slate-500">
+                    Receive weekly progress summaries via email
+                  </span>
+                </div>
+              </label>
+              <label htmlFor="push-toggle" className="flex items-center gap-3">
+                <input
+                  id="push-toggle"
+                  type="checkbox"
+                  checked={pushEnabled}
+                  onChange={(e) => setPushEnabled(e.target.checked)}
+                  aria-describedby="push-toggle-desc"
+                  className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                  disabled={saving}
+                />
+                <div>
+                  <span className="text-sm font-medium text-slate-700">Push notifications</span>
+                  <span id="push-toggle-desc" className="block text-xs text-slate-500">
+                    Get real-time alerts on your device
+                  </span>
+                </div>
+              </label>
             </div>
           </div>
 

@@ -19,3 +19,13 @@ export interface UserProfile {
   created_at: string
   updated_at: string
 }
+
+// Re-export educator and parent profile types for unified access
+export type {
+  EducatorProfile,
+  EducatorStudentLink,
+} from './educator'
+export type {
+  ParentProfile,
+  ParentStudentLink,
+} from './parent'
