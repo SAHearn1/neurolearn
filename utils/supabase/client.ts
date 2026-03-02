@@ -1,20 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const hasSupabaseEnv = Boolean(supabaseUrl && supabaseAnonKey)
-
-let cachedClient: ReturnType<typeof createClient> | null = null
-
-export function getSupabaseClient() {
-  if (!hasSupabaseEnv) {
-    return null
-  }
-
-  if (!cachedClient) {
-    cachedClient = createClient(supabaseUrl as string, supabaseAnonKey as string)
-  }
-
-  return cachedClient
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables. ' +
+    'Copy .env.example to .env.local and fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+  )
 }
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
