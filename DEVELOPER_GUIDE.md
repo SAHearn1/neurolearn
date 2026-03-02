@@ -172,7 +172,18 @@ export function useCourses() {
 
 ---
 
+## Current Scaffold Status
+
+- Core scaffold files listed in `FILE_CHECKLIST.md` are complete.
+- Baseline automated checks now include unit tests for helper and Zustand store behavior:
+  - `utils/helpers.test.ts`
+  - `src/store/authStore.test.ts`
+  - `src/store/settingsStore.test.ts`
+  - `src/store/progressStore.test.ts`
+
 ## Testing
+
+CI executes `npm run test -- --run`, `npm run lint`, and `npm run build` via `.github/workflows/ci.yml`.
 
 Tests live alongside source files as `*.test.tsx` / `*.test.ts`.
 

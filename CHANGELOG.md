@@ -10,29 +10,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Professional README.md with project overview, features, tech stack, and roadmap
-- TECHNICAL_SPECS.md covering dependencies, architecture, DB schema, API endpoints, security, and performance targets
-- DEVELOPER_GUIDE.md with architecture overview, code conventions, key code snippets, testing guide, and troubleshooting
-- SETUP_GUIDE.md with step-by-step local environment setup
-- FILE_CHECKLIST.md tracking 82 core project files
-- CONTRIBUTING.md with code of conduct, accessibility guidelines, and PR checklist
-- CHANGELOG.md for version tracking
-- MIT LICENSE
-- .gitignore for Node.js, environment files, build artefacts, and editor files
-- .env.example environment variable template
-- index.html app entry point
-- package.json with React, TypeScript, Supabase, Zustand, Tailwind CSS, and Vite
-- tsconfig.json and tsconfig.node.json TypeScript configuration
-- vite.config.ts Vite build configuration
-- postcss.config.mjs PostCSS configuration with Autoprefixer
-- src/main.tsx React application bootstrap
-- utils/supabase/info.tsx Supabase project configuration placeholder
+- Settings page now includes in-app account password update flow wired through `useAuth.changePassword`.
+- Profile and settings pages now consume hook/store-driven state with loading/saved feedback instead of static values.
+- Added skip-link navigation, explicit main-content landmark targeting, and modal focus trapping/aria labeling improvements.
+- Auth UX expanded with password reset trigger and signup verification resend messaging/states.
+- GitHub Actions CI workflow added to run test/lint/build on push and pull request.
+- Dashboard, courses, course, and lesson pages now consume hook-driven data instead of static placeholder arrays.
+- Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
+- Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
+- Login and sign-up pages now use auth hook actions with loading/error UX feedback.
+- Complete application scaffold with routed pages for home, auth, dashboard, courses, lessons, profile, settings, and not-found
+- Reusable layout shell components (`Header`, `Sidebar`, `Footer`, `PageWrapper`, `FocusMode`)
+- Reusable UI component library (`Button`, `Card`, `Input`, `Badge`, `Spinner`, `ProgressBar`, `Avatar`, `Tooltip`, `Modal`, `Alert`)
+- Dashboard and lesson component modules with page integrations
+- Initial hooks (`useAuth`, `useCourses`, `useLessons`, `useProgress`, `useProfile`, `useSettings`)
+- Initial Zustand stores (`authStore`, `settingsStore`, `progressStore`)
+- Shared domain types under `src/types`
+- Supabase helper files (`utils/supabase/client.ts`, `utils/supabase/server.ts`) and generic helper utilities (`utils/helpers.ts`)
+- Supabase scaffold (`config.toml`, migrations `001-004`, and `seed.sql`)
+- Checklist completion updates showing all tracked scaffold files created
+
+### Changed
+- Status docs updated for sequential issue-completion progress and next execution queue refinement
+- README updated with implementation status section and roadmap progress checkboxes
+- Issue progress log added to document completed workstreams and next issue queue
+- Status documentation refreshed with dated snapshot and next execution plan
+
+### Validation
+- `npm run test -- --run`
+- `npm run lint`
+- `npm run build`
 
 ---
 
 ## [0.1.0] — 2026-03-02
 
 ### Added
+- Settings page now includes in-app account password update flow wired through `useAuth.changePassword`.
+- Profile and settings pages now consume hook/store-driven state with loading/saved feedback instead of static values.
+- Added skip-link navigation, explicit main-content landmark targeting, and modal focus trapping/aria labeling improvements.
+- Auth UX expanded with password reset trigger and signup verification resend messaging/states.
+- GitHub Actions CI workflow added to run test/lint/build on push and pull request.
+- Dashboard, courses, course, and lesson pages now consume hook-driven data instead of static placeholder arrays.
+- Initial accessibility hardening added for modal keyboard close/backdrop close, nav active state visibility, and tooltip/quiz semantics.
+- Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
+- Login and sign-up pages now use auth hook actions with loading/error UX feedback.
 - Initial repository created with basic README
 
 [Unreleased]: https://github.com/SAHearn1/neurolearn/compare/v0.1.0...HEAD
