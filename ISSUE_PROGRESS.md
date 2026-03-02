@@ -49,17 +49,14 @@ This log tracks completed repository issues/workstreams and what is next.
 - Applied initial accessibility hardening for modal keyboard/escape behavior, active navigation states, and tooltip/quiz semantics.
 - Attempted routed-flow jsdom tests but environment policy blocked installing `jsdom`; deferred until dependency access is available.
 - Added CI workflow to enforce test/lint/build gates on pushes and pull requests.
-- Replaced key static page placeholders with hook-driven data on dashboard/courses/course/lesson pages.
-- Expanded auth UX with password-reset trigger and verification-email resend states/messages.
-- Added skip-link/main landmark support and keyboard focus trapping in modal dialogs.
 
 ## Current Completion Status
 - `FILE_CHECKLIST.md`: **83 / 83 files complete**.
 
 ## Next Execution Plan
-1. Expand routed-flow tests to cover dashboard/course/lesson transitions.
-2. Add jsdom-backed component tests once dependency policy allows installation.
-3. Deepen live data coverage for profile/settings pages.
-4. Add auth account-management flows (change password/session management).
-5. Continue accessibility hardening with screen-reader walkthrough audits.
+1. Replace remaining static page placeholders with live data-driven views.
+2. Expand auth UX (password reset/email verification states).
+3. Continue accessibility hardening (focus trapping and screen-reader walkthrough audits).
+4. Expand routed-flow tests to cover dashboard/course/lesson transitions.
+5. Add jsdom-backed component tests once dependency policy allows installation.
 

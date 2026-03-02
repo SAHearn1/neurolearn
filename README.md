@@ -97,9 +97,6 @@ Current implementation includes:
 - Lesson and dashboard component modules under `src/components/lesson` and `src/components/dashboard`
 - Initial hooks, Zustand stores, shared types, Supabase helpers, and starter SQL migrations/seed
 - Hooks now support Supabase-backed reads/writes with local fallback when env is not configured
-- Core learning pages now use hook-driven data (dashboard/courses/course/lesson)
-- Auth pages now include password reset and verification resend states.
-- Layout shell now includes skip-link navigation and strengthened modal keyboard accessibility.
 - Issue tracking and sequencing are maintained in `ISSUE_PROGRESS.md`
 
 ## 🗺 Roadmap

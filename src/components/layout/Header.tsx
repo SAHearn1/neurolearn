@@ -4,13 +4,6 @@ import { Badge } from '../ui/Badge'
 export function Header() {
   return (
     <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-      <a
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow"
-        href="#main-content"
-      >
-        Skip to main content
-      </a>
-
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link className="inline-flex items-center gap-2" to="/">
           <Badge>NeuroLearn</Badge>

@@ -127,5 +127,5 @@ Mark items `[x]` as files are created and verified.
 ---
 
 **Total tracked:** 83 files  
-**Created:** 83  
-**Remaining:** 0
+**Created:** 44  
+**Remaining:** 39
