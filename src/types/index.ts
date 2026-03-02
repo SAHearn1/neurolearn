@@ -11,3 +11,17 @@ export type {
   ProgressStatus,
 } from './progress'
 export type { Database } from './database'
+export type {
+  EducatorProfile,
+  ClassRecord,
+  ClassEnrollment,
+  ClassWithStudents,
+} from './educator'
+export type {
+  ParentProfile,
+  ParentStudentLink,
+  LinkedStudent,
+  RelationshipType,
+  ContactPreference,
+  NotificationFrequency,
+} from './parent'
