@@ -83,6 +83,7 @@ neurolearn/
 - [Technical Specs](TECHNICAL_SPECS.md) — Dependencies, DB schema, API endpoints
 - [Contributing](CONTRIBUTING.md) — How to contribute, code of conduct
 - [Changelog](CHANGELOG.md) — Version history
+- [Issue Progress Log](ISSUE_PROGRESS.md) — Completed workstreams and next issue queue
 
 
 ## ✅ Implementation Status

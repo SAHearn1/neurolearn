@@ -1,0 +1,46 @@
+# NeuroLearn — Issue Progress Log
+
+This log tracks completed repository issues/workstreams and what is next.
+
+## Completed Workstreams
+
+### 1) Project scaffold + tooling
+- Core Vite + React + TypeScript setup finalized.
+- Tailwind, PostCSS, and ESLint configuration added.
+- Foundational documentation (`README`, setup/dev/specs/contributing/changelog) in place.
+
+### 2) App routing + page scaffolds
+- Client-side routing implemented with `react-router-dom`.
+- Route coverage includes home, auth, dashboard, courses, course detail, lesson detail, profile, settings, and 404.
+- Nested app-shell behavior applied through layout wrapper components.
+
+### 3) Reusable UI and layout system
+- UI primitives completed (`Button`, `Card`, `Input`, `Badge`, `Spinner`, `ProgressBar`, `Avatar`, `Tooltip`, `Modal`, `Alert`).
+- Layout components completed (`Header`, `Sidebar`, `Footer`, `PageWrapper`, `FocusMode`).
+
+### 4) Domain components and state scaffolding
+- Lesson component set completed (`LessonCard`, `TextLesson`, `AudioLesson`, `VideoLesson`, `InteractiveLesson`, `QuizBlock`, `LessonNav`).
+- Dashboard component set completed (`CourseCard`, `ProgressWidget`, `RecentActivity`, `StreakBadge`).
+- Hooks, Zustand stores, and shared types scaffolded.
+
+### 5) Supabase scaffold
+- Supabase config, schema migrations, and seed script created.
+- Client/server helper placeholders added for future integration.
+
+### 6) Baseline validation
+- Unit tests added for utility and store behavior.
+- Standard validation commands currently passing:
+  - `npm run test -- --run`
+  - `npm run lint`
+  - `npm run build`
+
+## Current Completion Status
+- `FILE_CHECKLIST.md`: **83 / 83 files complete**.
+
+## Next Issue Queue (Proceeding)
+1. Replace mock data with live Supabase reads/writes for courses, lessons, and progress.
+2. Implement real authentication flow (sign up/sign in/sign out/session restore).
+3. Apply accessibility hardening (keyboard traps, focus management, tooltip semantics).
+4. Add integration/component tests for routed flows and critical user paths.
+5. Add CI workflow for test/lint/build gates on pull requests.
+
