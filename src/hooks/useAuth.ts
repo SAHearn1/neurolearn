@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthStore } from '../store/authStore'
-import { getSupabaseClient } from '../../utils/supabase/client'
+import { getSupabaseClient, hasSupabaseEnv } from '../../utils/supabase/client'
 
 export function useAuth() {
   const { isAuthenticated, setAuthenticated, setUserId, userId } = useAuthStore()
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const supabase = getSupabaseClient()
@@ -28,28 +30,66 @@ export function useAuth() {
     }
   }, [setAuthenticated, setUserId])
 
+  function clearError() {
+    setAuthError(null)
+  }
+
   async function signIn(email: string, password: string) {
-    const supabase = getSupabaseClient()
-    if (!supabase) {
-      return
+    if (!hasSupabaseEnv) {
+      setAuthError('Authentication is not configured yet. Add Supabase environment variables to continue.')
+      return false
     }
 
-    const { data } = await supabase.auth.signInWithPassword({ email, password })
+    const supabase = getSupabaseClient()
+    if (!supabase) {
+      setAuthError('Authentication client is unavailable.')
+      return false
+    }
+
+    setIsLoading(true)
+    setAuthError(null)
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    setIsLoading(false)
+
+    if (error) {
+      setAuthError(error.message)
+      return false
+    }
+
     const sessionUserId = data.user?.id ?? null
     setUserId(sessionUserId)
     setAuthenticated(Boolean(sessionUserId))
+    return true
   }
 
   async function signUp(email: string, password: string) {
-    const supabase = getSupabaseClient()
-    if (!supabase) {
-      return
+    if (!hasSupabaseEnv) {
+      setAuthError('Sign-up is not configured yet. Add Supabase environment variables to continue.')
+      return false
     }
 
-    const { data } = await supabase.auth.signUp({ email, password })
+    const supabase = getSupabaseClient()
+    if (!supabase) {
+      setAuthError('Authentication client is unavailable.')
+      return false
+    }
+
+    setIsLoading(true)
+    setAuthError(null)
+
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    setIsLoading(false)
+
+    if (error) {
+      setAuthError(error.message)
+      return false
+    }
+
     const sessionUserId = data.user?.id ?? null
     setUserId(sessionUserId)
     setAuthenticated(Boolean(sessionUserId))
+    return true
   }
 
   async function signOut() {
@@ -62,5 +102,5 @@ export function useAuth() {
     setAuthenticated(false)
   }
 
-  return { isAuthenticated, signIn, signOut, signUp, userId }
+  return { authError, clearError, isAuthenticated, isLoading, signIn, signOut, signUp, userId }
 }

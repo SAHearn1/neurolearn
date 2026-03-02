@@ -45,14 +45,15 @@ This log tracks completed repository issues/workstreams and what is next.
 - Updated changelog/developer docs to reflect current scaffold and validation flow.
 - Replaced course/lesson/progress hooks with Supabase-backed data access plus local fallback behavior.
 - Implemented Supabase session-aware auth hook methods (`signIn`, `signUp`, `signOut`) with store synchronization.
+- Added user-facing auth error handling and loading states on login/sign-up flows.
 
 ## Current Completion Status
 - `FILE_CHECKLIST.md`: **83 / 83 files complete**.
 
 ## Next Execution Plan
-1. Validate and harden Supabase-backed hooks/auth flow with error states and user-facing messages.
-2. Apply accessibility hardening (keyboard traps, focus management, tooltip semantics).
-3. Add integration/component tests for routed flows and critical user paths.
-4. Add CI workflow for test/lint/build gates on pull requests.
-5. Replace remaining static page placeholders with live data-driven views.
+1. Apply accessibility hardening (keyboard traps, focus management, tooltip semantics).
+2. Add integration/component tests for routed flows and critical user paths.
+3. Add CI workflow for test/lint/build gates on pull requests.
+4. Replace remaining static page placeholders with live data-driven views.
+5. Expand auth UX (password reset/email verification states).
 
