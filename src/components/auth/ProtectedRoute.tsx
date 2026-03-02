@@ -1,29 +1,45 @@
 import { type ReactNode, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { useUserRole, type UserRole } from '../../hooks/useUserRole'
 import { Spinner } from '../ui/Spinner'
 
 interface ProtectedRouteProps {
   children: ReactNode
+  /**
+   * When set, only users with this role (or 'admin') may access the route.
+   * Unauthorised users are redirected to /dashboard.
+   */
+  requiredRole?: UserRole
 }
 
 /**
- * Wraps authenticated routes. Redirects unauthenticated users to /login.
- * Role-level enforcement is handled within each role-specific dashboard page
- * via its own profile hook once the user is confirmed authenticated.
+ * Wraps authenticated routes.
+ * - Unauthenticated users → /login
+ * - Wrong role → /dashboard
+ * - Admin users bypass all role restrictions.
  */
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { session, initialized, loading } = useAuthStore()
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const { session, initialized, loading: authLoading } = useAuthStore()
+  const { role, loading: roleLoading } = useUserRole()
   const navigate = useNavigate()
 
+  const isLoading = !initialized || authLoading || (!!requiredRole && roleLoading)
+
   useEffect(() => {
-    if (!initialized || loading) return
+    if (isLoading) return
+
     if (!session) {
       navigate('/login', { replace: true, state: { from: window.location.pathname } })
+      return
     }
-  }, [session, initialized, loading, navigate])
 
-  if (!initialized || loading) {
+    if (requiredRole && role !== requiredRole && role !== 'admin') {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [session, initialized, isLoading, navigate, requiredRole, role])
+
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center" aria-label="Loading…">
         <Spinner />
@@ -32,6 +48,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!session) return null
+
+  if (requiredRole && role !== requiredRole && role !== 'admin') return null
 
   return <>{children}</>
 }

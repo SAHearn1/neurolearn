@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../../../utils/supabase/client'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
@@ -25,6 +25,7 @@ export function ParentMessages() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   // Find educators linked to the parent's children via class enrollments
   useEffect(() => {
@@ -104,6 +105,39 @@ export function ParentMessages() {
   useEffect(() => {
     fetchMessages()
   }, [fetchMessages])
+
+  // Supabase Realtime — subscribe to new notifications for the selected educator thread
+  useEffect(() => {
+    if (!user?.id || !selectedEducatorId) return
+
+    // Clean up previous channel
+    if (channelRef.current) {
+      void supabase.removeChannel(channelRef.current)
+    }
+
+    const channel = supabase
+      .channel(`messages:${user.id}:${selectedEducatorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          void fetchMessages()
+        },
+      )
+      .subscribe()
+
+    channelRef.current = channel
+
+    return () => {
+      void supabase.removeChannel(channel)
+      channelRef.current = null
+    }
+  }, [user?.id, selectedEducatorId, fetchMessages])
 
   const sendMessage = useCallback(async () => {
     if (!user?.id || !selectedEducatorId || !newMessage.trim()) return

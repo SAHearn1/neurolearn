@@ -5,8 +5,26 @@ import { Spinner } from '../components/ui/Spinner'
 import { TextLesson } from '../components/lesson/TextLesson'
 import { VideoLesson } from '../components/lesson/VideoLesson'
 import { AudioLesson } from '../components/lesson/AudioLesson'
+import { InteractiveLesson } from '../components/lesson/InteractiveLesson'
+import { QuizBlock } from '../components/lesson/QuizBlock'
 import { useLesson } from '../hooks/useLessons'
 import { racaFlags } from '../lib/raca/feature-flags'
+
+interface QuizContent {
+  prompt: string
+  answer: string
+  instructions?: string
+}
+
+function parseQuizContent(raw: string | null): QuizContent | null {
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as QuizContent
+  } catch {
+    // Treat plain text as the prompt with no answer
+    return { prompt: raw, answer: '' }
+  }
+}
 
 export function LessonPage() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
@@ -40,12 +58,31 @@ export function LessonPage() {
           {lesson.type === 'text' && lesson.content && <TextLesson body={lesson.content} />}
           {lesson.type === 'video' && lesson.content && <VideoLesson src={lesson.content} />}
           {lesson.type === 'audio' && lesson.content && <AudioLesson src={lesson.content} />}
-          {(lesson.type === 'interactive' || lesson.type === 'quiz') && (
-            <p className="leading-relaxed text-slate-700">
-              Interactive content for this lesson is loading. Stay tuned.
-            </p>
-          )}
-          {!lesson.content && (
+          {lesson.type === 'quiz' && (() => {
+            const quiz = parseQuizContent(lesson.content)
+            return quiz ? (
+              <QuizBlock prompt={quiz.prompt} answer={quiz.answer} />
+            ) : (
+              <p className="leading-relaxed text-slate-500">Quiz content coming soon.</p>
+            )
+          })()}
+          {lesson.type === 'interactive' && (() => {
+            const quiz = parseQuizContent(lesson.content)
+            return quiz?.instructions ? (
+              <InteractiveLesson instructions={quiz.instructions}>
+                {quiz.answer ? (
+                  <QuizBlock prompt={quiz.prompt} answer={quiz.answer} />
+                ) : (
+                  <p className="text-sm text-slate-500">{quiz.prompt}</p>
+                )}
+              </InteractiveLesson>
+            ) : (
+              <InteractiveLesson instructions="Complete the interactive activity below.">
+                <p className="text-sm text-slate-500">{lesson.content ?? 'Content coming soon.'}</p>
+              </InteractiveLesson>
+            )
+          })()}
+          {!lesson.content && lesson.type !== 'quiz' && lesson.type !== 'interactive' && (
             <p className="leading-relaxed text-slate-500">Content coming soon.</p>
           )}
         </article>

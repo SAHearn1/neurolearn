@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../components/ui/Avatar'
 import { Alert } from '../components/ui/Alert'
@@ -9,14 +10,26 @@ import { Spinner } from '../components/ui/Spinner'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useCourses } from '../hooks/useCourses'
 import { useProfile } from '../hooks/useProfile'
+import { useProgressStore } from '../store/progressStore'
+import { useAuthStore } from '../store/authStore'
 
 export function DashboardPage() {
+  const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading } = useProfile()
   const { courses, loading: coursesLoading, error: coursesError } = useCourses()
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
+  const { courseProgress, fetchCourseProgress } = useProgressStore()
 
   const displayName = profile?.display_name ?? 'learner'
+
+  // Fetch progress for all visible courses
+  useEffect(() => {
+    if (!user?.id || !courses.length) return
+    courses.slice(0, 4).forEach((course) => {
+      fetchCourseProgress(user.id, course.id)
+    })
+  }, [user?.id, courses, fetchCourseProgress])
 
   if (profileLoading || coursesLoading) {
     return (
@@ -49,7 +62,10 @@ export function DashboardPage() {
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-700">
                 {course.level}
               </p>
-              <ProgressBar label="progress" value={0} />
+              <ProgressBar
+                label={`${courseProgress[course.id]?.percent_complete ?? 0}% complete`}
+                value={courseProgress[course.id]?.percent_complete ?? 0}
+              />
               <Link
                 className="mt-4 inline-block text-sm font-semibold text-brand-700"
                 to={`/courses/${course.id}`}

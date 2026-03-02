@@ -104,7 +104,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="educator">
               <EducatorDashboardPage />
             </ProtectedRoute>
           }
@@ -112,7 +112,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="parent">
               <ParentDashboardPage />
             </ProtectedRoute>
           }
@@ -120,7 +120,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="admin">
               <AdminDashboardPage />
             </ProtectedRoute>
           }

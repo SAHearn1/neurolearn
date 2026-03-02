@@ -50,7 +50,7 @@ export function AdminDashboardPage() {
   ]
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6">
+    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6">
       <header className="space-y-3">
         <Badge>Admin Dashboard</Badge>
         <h1 className="text-3xl font-bold text-slate-900">System Administration</h1>
@@ -59,12 +59,14 @@ export function AdminDashboardPage() {
         </p>
       </header>
 
-      <nav className="flex flex-wrap gap-2 border-b border-slate-200 pb-2" role="tablist">
+      <nav aria-label="Admin dashboard tabs" className="flex flex-wrap gap-2 border-b border-slate-200 pb-2" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
+            id={`admin-tab-${tab.key}`}
             role="tab"
             aria-selected={activeTab === tab.key}
+            aria-controls={`admin-panel-${tab.key}`}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
               activeTab === tab.key
                 ? 'bg-brand-600 text-white'
@@ -77,43 +79,51 @@ export function AdminDashboardPage() {
         ))}
       </nav>
 
-      {activeTab === 'overview' && (
+      <div id="admin-panel-overview" role="tabpanel" aria-labelledby="admin-tab-overview" hidden={activeTab !== 'overview'}>
         <section className="grid gap-4 md:grid-cols-4">
           <Card>
-            <p className="text-sm font-medium text-slate-500" aria-label="Total users">Total Users</p>
+            <p className="text-sm font-medium text-slate-500">Total Users</p>
             {statsLoading
               ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
               : <p className="text-2xl font-bold text-slate-900">{stats?.totalUsers ?? 0}</p>
             }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500" aria-label="Active learners">Active Learners</p>
+            <p className="text-sm font-medium text-slate-500">Active Learners</p>
             {statsLoading
               ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
               : <p className="text-2xl font-bold text-slate-900">{stats?.activeLearners ?? 0}</p>
             }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500" aria-label="Total courses">Total Courses</p>
+            <p className="text-sm font-medium text-slate-500">Total Courses</p>
             {statsLoading
               ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
               : <p className="text-2xl font-bold text-slate-900">{stats?.totalCourses ?? 0}</p>
             }
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500" aria-label="Lessons completed">Lessons Completed</p>
+            <p className="text-sm font-medium text-slate-500">Lessons Completed</p>
             {statsLoading
               ? <div className="h-8 w-16 animate-pulse rounded bg-slate-200" />
               : <p className="text-2xl font-bold text-slate-900">{stats?.lessonsCompleted ?? 0}</p>
             }
           </Card>
         </section>
-      )}
+      </div>
 
-      {activeTab === 'users' && <UserManagement />}
-      {activeTab === 'content' && <ContentModeration />}
-      {activeTab === 'analytics' && <SystemAnalytics />}
-      {activeTab === 'audit' && <AuditLogViewer />}
+      <div id="admin-panel-users" role="tabpanel" aria-labelledby="admin-tab-users" hidden={activeTab !== 'users'}>
+        <UserManagement />
+      </div>
+      <div id="admin-panel-content" role="tabpanel" aria-labelledby="admin-tab-content" hidden={activeTab !== 'content'}>
+        <ContentModeration />
+      </div>
+      <div id="admin-panel-analytics" role="tabpanel" aria-labelledby="admin-tab-analytics" hidden={activeTab !== 'analytics'}>
+        <SystemAnalytics />
+      </div>
+      <div id="admin-panel-audit" role="tabpanel" aria-labelledby="admin-tab-audit" hidden={activeTab !== 'audit'}>
+        <AuditLogViewer />
+      </div>
     </main>
   )
 }
