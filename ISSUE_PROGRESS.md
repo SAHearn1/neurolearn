@@ -34,10 +34,20 @@ This log tracks completed repository issues/workstreams and what is next.
   - `npm run lint`
   - `npm run build`
 
+## Status Snapshot
+- Date: 2026-03-02 (UTC)
+- `FILE_CHECKLIST.md`: **83 / 83 files complete**
+- Validation baseline: tests + lint + build passing locally
+
+## Recently Completed
+- Added baseline unit tests for utility and Zustand stores.
+- Added `ISSUE_PROGRESS.md` and linked it from project documentation.
+- Updated changelog/developer docs to reflect current scaffold and validation flow.
+
 ## Current Completion Status
 - `FILE_CHECKLIST.md`: **83 / 83 files complete**.
 
-## Next Issue Queue (Proceeding)
+## Next Execution Plan
 1. Replace mock data with live Supabase reads/writes for courses, lessons, and progress.
 2. Implement real authentication flow (sign up/sign in/sign out/session restore).
 3. Apply accessibility hardening (keyboard traps, focus management, tooltip semantics).
