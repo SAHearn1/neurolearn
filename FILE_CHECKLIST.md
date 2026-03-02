@@ -23,16 +23,16 @@ Mark items `[x]` as files are created and verified.
 - [x] `tsconfig.node.json`
 - [x] `vite.config.ts`
 - [x] `postcss.config.mjs`
-- [ ] `tailwind.config.js`
-- [ ] `eslint.config.js`
-- [ ] `.prettierrc`
+- [x] `tailwind.config.js`
+- [x] `eslint.config.js`
+- [x] `.prettierrc`
 
 ## Source — Core
 
 - [x] `src/main.tsx`
-- [ ] `src/App.tsx`
-- [ ] `src/vite-env.d.ts`
-- [ ] `src/styles/index.css`
+- [x] `src/App.tsx`
+- [x] `src/vite-env.d.ts`
+- [x] `src/styles/index.css`
 
 ## Source — Pages
 
@@ -127,5 +127,5 @@ Mark items `[x]` as files are created and verified.
 ---
 
 **Total tracked:** 82 files  
-**Created:** 19  
-**Remaining:** 63
+**Created:** 25  
+**Remaining:** 57
