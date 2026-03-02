@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { signUpSchema, getValidationErrors } from '../lib/validation'
+import { authRateLimit } from '../lib/rate-limit'
 
 export function SignUpPage() {
   const navigate = useNavigate()
@@ -9,6 +10,7 @@ export function SignUpPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
@@ -21,9 +23,15 @@ export function SignUpPage() {
       email,
       password,
       displayName: fullName,
+      age_confirmed: ageConfirmed || undefined,
     })
     if (!result.success) {
       setFieldErrors(getValidationErrors(result))
+      return
+    }
+
+    if (!authRateLimit('signup')) {
+      setError('Too many sign-up attempts. Please wait a minute before trying again.')
       return
     }
 
@@ -100,6 +108,23 @@ export function SignUpPage() {
               At least 8 characters with uppercase, lowercase, and a number
             </span>
           </label>
+
+          <div className="flex items-start gap-2">
+            <input
+              aria-required="true"
+              checked={ageConfirmed}
+              className="mt-1 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              id="age-confirm"
+              onChange={(e) => setAgeConfirmed(e.target.checked)}
+              type="checkbox"
+            />
+            <label className="text-sm text-slate-700" htmlFor="age-confirm">
+              I confirm I am 13 years of age or older (or have parental consent)
+            </label>
+          </div>
+          {fieldErrors.age_confirmed && (
+            <span className="block text-xs text-red-600">{fieldErrors.age_confirmed}</span>
+          )}
 
           <button
             className="w-full rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"

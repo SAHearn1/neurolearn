@@ -180,6 +180,91 @@ System Monitoring → User Management → Content Moderation → Compliance
 
 ---
 
+## Sequence Diagrams
+
+### Learner Session Flow
+
+```mermaid
+sequenceDiagram
+    actor L as Learner
+    participant App as NeuroLearn App
+    participant Auth as Supabase Auth
+    participant RACA as RACA Engine
+    participant DB as Database
+
+    L->>App: Opens neurolearn.app
+    App->>L: Shows landing page
+    L->>App: Clicks "Sign Up"
+    App->>Auth: createUser(email, password)
+    Auth->>DB: INSERT INTO profiles
+    Auth->>L: Email verification sent
+    L->>Auth: Clicks verification link
+    L->>App: Logs in
+    App->>DB: Fetch courses, progress, adaptive state
+    App->>L: Shows personalized Dashboard
+    L->>App: Selects recommended lesson
+    App->>RACA: startSession(lessonId, userId)
+    RACA->>DB: INSERT INTO cognitive_sessions
+    App->>L: Renders lesson content
+    L->>App: Completes quiz
+    App->>DB: INSERT INTO lesson_progress (score, time)
+    App->>RACA: emitEvent('LESSON_COMPLETE')
+    RACA->>DB: UPDATE adaptive_learning_state
+    App->>L: Shows MilestoneCelebration
+```
+
+### Parent Monitoring Flow
+
+```mermaid
+sequenceDiagram
+    actor P as Parent
+    actor S as Student
+    participant App as NeuroLearn App
+    participant DB as Database
+
+    P->>App: Registers as parent
+    P->>App: Requests link to child (email)
+    App->>DB: INSERT INTO parent_student_links (status=pending)
+    App->>S: Sends link approval notification
+    S->>App: Approves parent link
+    App->>DB: UPDATE parent_student_links SET status=approved
+    P->>App: Views ParentDashboard
+    App->>DB: Fetch child progress, lessons, streaks
+    App->>P: Shows progress charts and reports
+    P->>App: Views weekly progress report
+    App->>P: Shows ParentProgressReports with bar charts
+    P->>App: Exports CSV report
+```
+
+### Educator Class Management Flow
+
+```mermaid
+sequenceDiagram
+    actor E as Educator
+    actor S as Student
+    participant App as NeuroLearn App
+    participant DB as Database
+
+    E->>App: Registers and creates educator profile
+    E->>App: Creates a class
+    App->>DB: INSERT INTO classes
+    E->>App: Adds students to class
+    App->>DB: INSERT INTO class_enrollments
+    E->>App: Assigns course to class
+    App->>DB: INSERT INTO course_enrollments (per student)
+    S->>App: Sees assigned course in dashboard
+    S->>App: Completes lessons
+    App->>DB: INSERT INTO lesson_progress
+    E->>App: Views StudentProgressTable
+    App->>DB: SELECT lesson_progress JOIN class_enrollments
+    App->>E: Shows completion rates, time-on-task
+    E->>App: Exports analytics as CSV
+    E->>App: Creates new lesson via ContentManager
+    App->>DB: INSERT INTO lessons (moderation_status=pending)
+```
+
+---
+
 ## Journey Interconnections
 
 ```
