@@ -93,10 +93,55 @@ npm run typecheck   # Check TypeScript types
 
 ## Environment Variable Reference
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_SUPABASE_URL` | ✅ | Your Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | ✅ | Supabase anon (public) key |
+| Variable | Required | Scope | Description |
+|----------|----------|-------|-------------|
+| `VITE_SUPABASE_URL` | ✅ | Client | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | ✅ | Client | Supabase anon (public) key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge Fns | Server | Bypasses RLS — **never expose to client** |
+| `SUPABASE_DB_URL` | Edge Fns | Server | Direct PostgreSQL connection string |
+| `VITE_APP_URL` | ✅ | Client | App base URL (`http://localhost:5173` locally) |
+| `VITE_APP_ENV` | Optional | Client | `development` / `production` |
+
+> **Security:** Only `VITE_*` variables are bundled into the browser. Server-only secrets must never be prefixed with `VITE_`.
+
+---
+
+## Vercel Deployment
+
+The app is deployed on Vercel at **https://neurolearn-one.vercel.app**.
+
+### Auto-deploy
+
+Pushes to `main` trigger automatic production deployments via the connected GitHub repo.
+
+### Environment Variables (Vercel)
+
+Set these in **Vercel Dashboard → Settings → Environment Variables**:
+
+| Variable | Environments | Sensitive |
+|----------|-------------|-----------|
+| `VITE_SUPABASE_URL` | Production, Preview | No |
+| `VITE_SUPABASE_ANON_KEY` | Production, Preview | No |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production | **Yes** (encrypted) |
+| `SUPABASE_DB_URL` | Production | **Yes** (encrypted) |
+| `VITE_APP_URL` | Production | No |
+
+Or set via CLI:
+
+```bash
+vercel env add VITE_SUPABASE_URL         # paste project URL
+vercel env add VITE_SUPABASE_ANON_KEY    # paste anon key
+vercel env add SUPABASE_SERVICE_ROLE_KEY # paste service role key (sensitive)
+```
+
+### OAuth Callback URLs
+
+Register in **Supabase Dashboard → Auth → URL Configuration**:
+
+- Site URL: `https://neurolearn-one.vercel.app`
+- Redirect URLs:
+  - `https://neurolearn-one.vercel.app/auth/callback`
+  - `http://localhost:5173/auth/callback` (for local dev)
 
 ---
 
