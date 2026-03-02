@@ -96,6 +96,7 @@ Current implementation includes:
 - Reusable UI primitives under `src/components/ui`
 - Lesson and dashboard component modules under `src/components/lesson` and `src/components/dashboard`
 - Initial hooks, Zustand stores, shared types, Supabase helpers, and starter SQL migrations/seed
+- Hooks now support Supabase-backed reads/writes with local fallback when env is not configured
 - Issue tracking and sequencing are maintained in `ISSUE_PROGRESS.md`
 
 ## 🗺 Roadmap

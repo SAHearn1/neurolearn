@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Complete application scaffold with routed pages for home, auth, dashboard, courses, lessons, profile, settings, and not-found
 - Reusable layout shell components (`Header`, `Sidebar`, `Footer`, `PageWrapper`, `FocusMode`)
 - Reusable UI component library (`Button`, `Card`, `Input`, `Badge`, `Spinner`, `ProgressBar`, `Avatar`, `Tooltip`, `Modal`, `Alert`)
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Checklist completion updates showing all tracked scaffold files created
 
 ### Changed
+- Status docs updated for sequential issue-completion progress and next execution queue refinement
 - README updated with implementation status section and roadmap progress checkboxes
 - Issue progress log added to document completed workstreams and next issue queue
 - Status documentation refreshed with dated snapshot and next execution plan
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] — 2026-03-02
 
 ### Added
+- Supabase-backed data access added in hooks for courses, lessons, progress, and auth session sync.
 - Initial repository created with basic README
 
 [Unreleased]: https://github.com/SAHearn1/neurolearn/compare/v0.1.0...HEAD
