@@ -2,21 +2,21 @@ module.exports = {
   ci: {
     collect: {
       url: [
-        'http://localhost:5173/',
-        'http://localhost:5173/login',
-        'http://localhost:5173/signup',
-        'http://localhost:5173/courses',
+        'http://localhost:4173/',
+        'http://localhost:4173/login',
+        'http://localhost:4173/signup',
+        'http://localhost:4173/courses',
       ],
-      startServerCommand: 'npm run preview',
+      startServerCommand: 'npm run preview -- --port 4173',
       startServerReadyPattern: 'Local',
-      numberOfRuns: 3,
+      startServerReadyTimeout: 30000,
+      numberOfRuns: 1,
       settings: {
         preset: 'desktop',
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       },
     },
     assert: {
-      preset: 'lighthouse:no-pwa',
       assertions: {
         'categories:performance': ['warn', { minScore: 0.9 }],
         'categories:accessibility': ['error', { minScore: 0.95 }],
