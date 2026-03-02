@@ -21,7 +21,7 @@ export function PageWrapper() {
       <Header />
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-6 py-6">
         <Sidebar />
-        <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
+        <main className="min-w-0 flex-1">
           <FocusMode enabled={isLessonRoute}>
             <Outlet />
           </FocusMode>

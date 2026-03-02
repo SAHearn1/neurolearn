@@ -171,10 +171,44 @@ All API access goes through the Supabase client library. The following operation
 
 ## Security
 
-- All database access is mediated through **Row Level Security (RLS)** policies on Supabase
+### Environment Variables & Secrets
+
+| Variable | Scope | Sensitivity | Where stored |
+|----------|-------|-------------|--------------|
+| `VITE_SUPABASE_URL` | Client (browser) | Public | `.env.local`, Vercel env |
+| `VITE_SUPABASE_ANON_KEY` | Client (browser) | Public | `.env.local`, Vercel env |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only | **Secret** | `.env.local`, Vercel env (encrypted) |
+| `SUPABASE_DB_URL` | Server only | **Secret** | `.env.local`, Vercel env (encrypted) |
+| `VITE_APP_URL` | Client (browser) | Public | `.env.local`, Vercel env |
+
+**Rules:**
+- All secrets live in `.env.local` locally and Vercel Environment Variables in production
+- `.env.local` is git-ignored — never committed
+- Only `VITE_*` variables are exposed to the browser bundle (Vite convention)
+- Server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`) must **never** be prefixed with `VITE_`
+- `.env.example` contains placeholder values for documentation — **no real credentials**
+
+### Git Security
+
+- `.gitignore` blocks all `.env.*` files except `.env.example`
+- Private keys (`*.pem`, `*.key`), certificates, and service account JSON files are git-ignored
+- Pre-commit checks should verify no secrets are staged (see `git-secrets` or `gitleaks`)
+
+### Supabase Security
+
+- All database access is mediated through **Row Level Security (RLS)** policies
 - Users can only read/write their own `profiles` and `progress` rows
-- Environment secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) are loaded from `.env.local` and never committed
-- The `anon` key is safe for client use; sensitive operations require server-side Edge Functions with the `service_role` key
+- The `anon` key is safe for client use — it only grants access permitted by RLS policies
+- Sensitive operations (admin, bulk writes) require **Edge Functions** with the `service_role` key
+- The `service_role` key bypasses RLS and must **never** be exposed to the client
+
+### Vercel Deployment Security
+
+- Environment variables are set in the Vercel dashboard under **Settings → Environment Variables**
+- Sensitive values are encrypted at rest by Vercel
+- Preview deployments use separate environment scopes (Preview vs Production)
+- The production URL is `https://neurolearn-one.vercel.app`
+- OAuth callback URLs must be registered in Supabase Auth → URL Configuration
 
 ---
 

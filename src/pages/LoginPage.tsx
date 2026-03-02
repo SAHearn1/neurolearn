@@ -1,32 +1,6 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-import { Alert } from '../components/ui/Alert'
-import { Button } from '../components/ui/Button'
-import { Input } from '../components/ui/Input'
+import { Link } from 'react-router-dom'
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const { authError, authMessage, clearError, clearMessage, isLoading, requestPasswordReset, signIn } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    clearError()
-    clearMessage()
-    const ok = await signIn(email, password)
-    if (ok) {
-      navigate('/dashboard')
-    }
-  }
-
-  async function handlePasswordReset() {
-    clearError()
-    clearMessage()
-    await requestPasswordReset(email)
-  }
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -35,48 +9,34 @@ export function LoginPage() {
           Sign in to continue your learning streak and resume where you left off.
         </p>
 
-        {authError ? (
-          <Alert className="mt-4" variant="error">
-            {authError}
-          </Alert>
-        ) : null}
-        {authMessage ? <Alert className="mt-4">{authMessage}</Alert> : null}
+        <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
+          <label className="block text-sm font-medium text-slate-700">
+            Email
+            <input
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+              name="email"
+              placeholder="you@example.com"
+              type="email"
+            />
+          </label>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          <Input
-            label="Email"
-            name="email"
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            required
-            type="email"
-            value={email}
-          />
+          <label className="block text-sm font-medium text-slate-700">
+            Password
+            <input
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+              name="password"
+              placeholder="••••••••"
+              type="password"
+            />
+          </label>
 
-          <Input
-            label="Password"
-            name="password"
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="••••••••"
-            required
-            type="password"
-            value={password}
-          />
-
-          <Button className="w-full" disabled={isLoading} type="submit">
-            {isLoading ? 'Signing in…' : 'Sign in'}
-          </Button>
+          <button
+            className="w-full rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white transition hover:bg-brand-700"
+            type="submit"
+          >
+            Sign in
+          </button>
         </form>
-
-        <button
-          className="mt-3 text-sm font-semibold text-brand-700 hover:text-brand-800"
-          onClick={() => {
-            void handlePasswordReset()
-          }}
-          type="button"
-        >
-          Forgot password?
-        </button>
 
         <p className="mt-4 text-sm text-slate-600">
           New to NeuroLearn?{' '}
