@@ -1,16 +1,16 @@
 {
   "name": "neurolearn",
   "version": "0.1.0",
-  "description": "NeuroLearn — Multimodal learning app for neurodivergent learners",
+  "description": "NeuroLearn \u2014 Multimodal learning app for neurodivergent learners",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },
