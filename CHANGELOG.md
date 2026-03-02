@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README updated with implementation status section and roadmap progress checkboxes
 
 ### Validation
+- `npm run test -- --run`
 - `npm run lint`
 - `npm run build`
 
