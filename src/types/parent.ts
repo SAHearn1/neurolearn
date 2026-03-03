@@ -20,7 +20,7 @@ export interface ParentStudentLink {
   id: string
   parent_id: string
   student_id: string
-  status: 'pending' | 'active' | 'approved' | 'revoked' | 'rejected'
+  status: 'pending' | 'active' | 'revoked'
   created_at: string
 }
 
