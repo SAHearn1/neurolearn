@@ -1,4 +1,5 @@
 export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading'
+export type UserRole = 'learner' | 'parent' | 'educator' | 'admin'
 
 export interface AccessibilityPreferences {
   text_size: 'small' | 'medium' | 'large'
@@ -12,6 +13,7 @@ export interface UserProfile {
   user_id: string
   display_name: string
   avatar_url: string | null
+  role: UserRole
   learning_styles: LearningStyle[]
   accessibility: AccessibilityPreferences
   streak_days: number

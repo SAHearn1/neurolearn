@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import { Spinner } from './components/ui/Spinner'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
+import { useKeyboardNavigation } from './lib/keyboard-nav'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
@@ -51,6 +52,8 @@ function PageFallback() {
 export function App() {
   // Initialize Supabase auth listener once at app root
   useAuth()
+  // Enable keyboard vs mouse navigation detection
+  useKeyboardNavigation()
 
   return (
     <Suspense fallback={<PageFallback />}>
@@ -104,7 +107,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['educator', 'admin']}>
               <EducatorDashboardPage />
             </ProtectedRoute>
           }
@@ -112,7 +115,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['parent', 'admin']}>
               <ParentDashboardPage />
             </ProtectedRoute>
           }
@@ -120,7 +123,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboardPage />
             </ProtectedRoute>
           }
