@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "db:types": "npx supabase gen types typescript --local > src/types/database.ts"
   },
   "dependencies": {
     "@playwright/test": "^1.58.2",

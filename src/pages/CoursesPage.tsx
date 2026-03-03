@@ -1,7 +1,43 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert } from '../components/ui/Alert'
+import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
 import { useCourses } from '../hooks/useCourses'
+import { useEnrollment } from '../hooks/useEnrollment'
+
+function EnrollButton({ courseId }: { courseId: string }) {
+  const { isEnrolled, loading, enroll } = useEnrollment(courseId)
+  const [enrolling, setEnrolling] = useState(false)
+
+  if (loading) return null
+
+  if (isEnrolled) {
+    return (
+      <Link className="mt-4 inline-block text-sm font-semibold text-brand-700" to={`/courses/${courseId}`}>
+        Continue course &rarr;
+      </Link>
+    )
+  }
+
+  return (
+    <Button
+      variant="secondary"
+      className="mt-4"
+      disabled={enrolling}
+      onClick={async () => {
+        setEnrolling(true)
+        try {
+          await enroll()
+        } finally {
+          setEnrolling(false)
+        }
+      }}
+    >
+      {enrolling ? 'Enrolling…' : 'Enroll'}
+    </Button>
+  )
+}
 
 export function CoursesPage() {
   const { courses, loading, error } = useCourses()
@@ -40,12 +76,7 @@ export function CoursesPage() {
             {course.description && (
               <p className="mt-1 text-sm text-slate-500 line-clamp-2">{course.description}</p>
             )}
-            <Link
-              className="mt-4 inline-block text-sm font-semibold text-brand-700"
-              to={`/courses/${course.id}`}
-            >
-              Open course →
-            </Link>
+            <EnrollButton courseId={course.id} />
           </article>
         ))}
       </section>

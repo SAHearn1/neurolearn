@@ -10,6 +10,7 @@ export function SignUpPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState<'learner' | 'educator' | 'parent'>('learner')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -36,7 +37,7 @@ export function SignUpPage() {
     }
 
     try {
-      await signUp(email, password, fullName)
+      await signUp(email, password, fullName, role)
       navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
@@ -107,6 +108,19 @@ export function SignUpPage() {
             <span className="mt-1 block text-xs text-slate-500">
               At least 8 characters with uppercase, lowercase, and a number
             </span>
+          </label>
+
+          <label className="block text-sm font-medium text-slate-700">
+            I am a…
+            <select
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'learner' | 'educator' | 'parent')}
+            >
+              <option value="learner">Student / Learner</option>
+              <option value="educator">Educator</option>
+              <option value="parent">Parent / Guardian</option>
+            </select>
           </label>
 
           <div className="flex items-start gap-2">
