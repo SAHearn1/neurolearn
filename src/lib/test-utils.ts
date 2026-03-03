@@ -56,6 +56,7 @@ export function buildProfile(overrides?: Partial<UserProfile>): UserProfile {
     user_id: `user-${id}`,
     display_name: `Test User ${id}`,
     avatar_url: null,
+    role: 'learner',
     learning_styles: ['visual'],
     accessibility: buildAccessibility(),
     streak_days: 0,

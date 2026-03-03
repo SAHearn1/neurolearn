@@ -1,12 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { useCognitiveState } from '../hooks/useCognitiveState'
 import { useEpistemicProfile } from '../hooks/useEpistemicProfile'
 import { useAgent } from '../hooks/useAgent'
+import { useAuthStore } from '../store/authStore'
+import { useProgressStore } from '../store/progressStore'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getAgentDefinitionsForState } from '../lib/raca/layer2-agent-router/state-agent-map'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
+import { restoreSessionLocal } from '../lib/raca/layer0-runtime/persistence'
 import { CognitiveStateIndicator } from '../components/raca/CognitiveStateIndicator'
 import { StateTransitionBar } from '../components/raca/StateTransitionBar'
 import { ReflectionPrompt } from '../components/raca/ReflectionPrompt'
@@ -30,17 +33,50 @@ export function SessionPage() {
   const cognitive = useCognitiveState()
   const epistemic = useEpistemicProfile()
   const agent = useAgent()
+  const user = useAuthStore((s) => s.user)
+  const updateLessonProgress = useProgressStore((s) => s.updateLessonProgress)
   const dispatch = useRuntimeStore((s) => s.dispatch)
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)
+  const [showRecovery, setShowRecovery] = useState(false)
 
-  // Start session on mount
+  // Check for interrupted session on mount
   useEffect(() => {
     if (!session.isActive && courseId && lessonId) {
-      session.start({ lesson_id: lessonId, course_id: courseId })
+      const saved = restoreSessionLocal()
+      if (saved && saved.lesson_id === lessonId && saved.status === 'active') {
+        setShowRecovery(true)
+      } else {
+        session.start({ lesson_id: lessonId, course_id: courseId })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId])
+
+  if (showRecovery) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
+        <Alert variant="info">You have an interrupted session for this lesson. Would you like to resume?</Alert>
+        <div className="flex gap-3">
+          <Button onClick={() => {
+            const saved = restoreSessionLocal()
+            if (saved) {
+              dispatch({ type: 'SESSION_RESTORED', state: saved })
+            }
+            setShowRecovery(false)
+          }}>
+            Resume session
+          </Button>
+          <Button variant="secondary" onClick={() => {
+            session.start({ lesson_id: lessonId!, course_id: courseId! })
+            setShowRecovery(false)
+          }}>
+            Start fresh
+          </Button>
+        </div>
+      </main>
+    )
+  }
 
   if (!racaFlags.runtime) {
     return (
@@ -77,9 +113,19 @@ export function SessionPage() {
       },
     })
     epistemic.processMessage(content, [])
+    // Auto-persist to localStorage after every artifact save
+    session.save()
   }
 
   const handleEndSession = async () => {
+    if (user?.id && lessonId && courseId) {
+      await updateLessonProgress({
+        user_id: user.id,
+        lesson_id: lessonId,
+        course_id: courseId,
+        status: 'completed',
+      })
+    }
     await session.end(false)
     navigate(`/courses/${courseId}/lessons/${lessonId}`)
   }

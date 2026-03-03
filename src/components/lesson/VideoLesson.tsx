@@ -1,7 +1,15 @@
 interface VideoLessonProps {
   src: string
+  captionSrc?: string
+  captionLabel?: string
 }
 
-export function VideoLesson({ src }: VideoLessonProps) {
-  return <video className="w-full rounded-lg" controls src={src} />
+export function VideoLesson({ src, captionSrc, captionLabel = 'English' }: VideoLessonProps) {
+  return (
+    <video className="w-full rounded-lg" controls src={src} crossOrigin="anonymous">
+      {captionSrc && (
+        <track kind="captions" src={captionSrc} srcLang="en" label={captionLabel} default />
+      )}
+    </video>
+  )
 }
