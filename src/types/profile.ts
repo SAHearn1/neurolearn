@@ -1,5 +1,6 @@
-export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading'
 export type UserRole = 'learner' | 'parent' | 'educator' | 'admin'
+
+export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading'
 
 export interface AccessibilityPreferences {
   text_size: 'small' | 'medium' | 'large'

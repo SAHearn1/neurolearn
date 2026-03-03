@@ -23,9 +23,10 @@ export function PasswordResetPage() {
 
     setLoading(true)
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
-      })
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        { redirectTo: `${window.location.origin}/update-password` },
+      )
       if (resetError) throw resetError
       setSubmitted(true)
     } catch (err) {

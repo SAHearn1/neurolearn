@@ -111,6 +111,37 @@ Current implementation includes:
 - [x] Accessibility audit and fixes
 - [ ] v1.0 release
 
+## 🔒 Supabase Security Guardrails
+
+These rules are **mandatory** for all contributors and must be enforced in code review.
+
+### Service Role Key
+- The **service role key** (`SUPABASE_SERVICE_ROLE_KEY`) bypasses Row Level Security.
+- It must **never** be included in the client bundle (`src/`, `public/`).
+- It is only permitted in Vercel serverless functions or other server-side runtimes.
+- `utils/supabase/server.ts` is a placeholder for future SSR use — never import it from client components.
+
+### Admin Role Assignment
+- Users cannot self-assign `role = 'admin'` via the signup form.
+  Migration `027_signup_role_from_metadata.sql` enforces this at the DB trigger level.
+- Admin promotion must be done manually in the Supabase dashboard or via a
+  server-side function using the service role key.
+
+### Redirect Allowlist
+- All auth redirect URLs (password reset, OAuth callbacks) must be listed in:
+  - `supabase/config.toml` → `additional_redirect_urls` (local dev)
+  - Supabase dashboard → **Authentication → URL Configuration** (production)
+- Never trust user-supplied redirect parameters without validation.
+
+### Developer Checklist (pre-merge)
+- [ ] No `SUPABASE_SERVICE_ROLE_KEY` reference in `src/` or `public/`
+- [ ] No `import … from 'utils/supabase/server'` in client components
+- [ ] New auth redirect URLs added to both `config.toml` and Supabase dashboard
+- [ ] New user-facing roles validated in `handle_new_user()` trigger
+- [ ] RLS policies reviewed for any new tables
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).

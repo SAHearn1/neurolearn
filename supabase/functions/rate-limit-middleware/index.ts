@@ -4,11 +4,7 @@
 // Returns 429 when rate limited, { allowed: true } when allowed.
 // Uses in-memory tracking (resets on cold start — acceptable for MVP).
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import { corsHeadersFor, preflight } from '../_shared/response.ts'
 
 // Simple in-memory rate limiter
 const requests = new Map<string, { count: number; resetAt: number }>()
@@ -27,7 +23,7 @@ function isRateLimited(ip: string, limit: number, windowMs: number): boolean {
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return preflight(req)
   }
 
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
@@ -39,7 +35,7 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
       status: 429,
       headers: {
-        ...corsHeaders,
+        ...corsHeadersFor(req),
         'Content-Type': 'application/json',
         'Retry-After': '60',
       },
@@ -47,6 +43,6 @@ Deno.serve(async (req: Request) => {
   }
 
   return new Response(JSON.stringify({ allowed: true }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeadersFor(req), 'Content-Type': 'application/json' },
   })
 })

@@ -39,10 +39,8 @@ export function SessionPage() {
 
   if (showRecovery) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
-        <Alert variant="info">
-          You have an interrupted session for this lesson. Would you like to resume?
-        </Alert>
+      <main id="main-content" className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
+        <Alert variant="info">You have an interrupted session for this lesson. Would you like to resume?</Alert>
         <div className="flex gap-3">
           <Button
             onClick={() => {

@@ -1,66 +1,50 @@
-// supabase/functions/session-sync/index.ts
-// Edge Function: Sync session state between client and database
-//
-// POST: Upsert session state
-// GET:  Retrieve session state by session_id
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+import { authenticate, requireRole } from '../_shared/authz.ts'
+import { enforceRateLimit, getRateLimitKey } from '../_shared/rate-limit.ts'
+import { handleError, json, preflight, rejectDisallowedOrigin } from '../_shared/response.ts'
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
-  }
+  if (req.method === 'OPTIONS') return preflight(req)
 
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return jsonResponse({ error: 'Missing authorization' }, 401)
-  }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-  const token = authHeader.replace('Bearer ', '')
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(token)
-  if (authError || !user) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
+  const blockedOrigin = rejectDisallowedOrigin(req)
+  if (blockedOrigin) return blockedOrigin
 
   try {
+    const ctx = await authenticate(req)
+    requireRole(ctx, ['learner', 'admin'])
+
+    const limited = enforceRateLimit({
+      key: getRateLimitKey(req, ctx.userId),
+      limit: 60,
+      windowMs: 60_000,
+      req,
+    })
+    if (limited) return limited
+
     if (req.method === 'GET') {
       const url = new URL(req.url)
       const sessionId = url.searchParams.get('session_id')
       if (!sessionId) {
-        return jsonResponse({ error: 'session_id required' }, 400)
+        return json({ error: 'session_id required' }, 400, req)
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await ctx.adminClient
         .from('cognitive_sessions')
         .select('*')
         .eq('id', sessionId)
-        .eq('user_id', user.id)
+        .eq('user_id', ctx.userId)
         .single()
 
-      if (error) return jsonResponse({ error: error.message }, 404)
-      return jsonResponse({ session: data })
+      if (error) return json({ error: error.message }, 404, req)
+      return json({ session: data }, 200, req)
     }
 
     if (req.method === 'POST') {
       const body = await req.json()
 
-      const { error } = await supabase.from('cognitive_sessions').upsert(
+      const { error } = await ctx.adminClient.from('cognitive_sessions').upsert(
         {
           id: body.session_id,
-          user_id: user.id,
+          user_id: ctx.userId,
           lesson_id: body.lesson_id,
           course_id: body.course_id,
           status: body.status,
@@ -72,23 +56,13 @@ Deno.serve(async (req: Request) => {
         { onConflict: 'id' },
       )
 
-      if (error) return jsonResponse({ error: error.message }, 500)
-      return jsonResponse({ success: true })
+      if (error) return json({ error: error.message }, 500, req)
+      return json({ success: true }, 200, req)
     }
 
-    return jsonResponse({ error: 'Method not allowed' }, 405)
+    return json({ error: 'Method not allowed' }, 405, req)
   } catch (err) {
     console.error('session-sync error:', err)
-    return jsonResponse({ error: 'Internal server error' }, 500)
+    return handleError(err, req)
   }
 })
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  })
-}

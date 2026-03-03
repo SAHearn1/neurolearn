@@ -1,12 +1,6 @@
-// supabase/functions/epistemic-analyze/index.ts
-// Edge Function: Analyze epistemic data and update cognitive profile
-//
-// POST: Analyze session artifacts and update learner profile
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+import { authenticate, requireRole } from '../_shared/authz.ts'
+import { enforceRateLimit, getRateLimitKey } from '../_shared/rate-limit.ts'
+import { handleError, json, preflight, rejectDisallowedOrigin } from '../_shared/response.ts'
 
 interface AnalyzeRequest {
   user_id: string
@@ -27,42 +21,31 @@ interface AnalyzeRequest {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
-  }
+  if (req.method === 'OPTIONS') return preflight(req)
 
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return jsonResponse({ error: 'Missing authorization' }, 401)
-  }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-  const token = authHeader.replace('Bearer ', '')
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(token)
-  if (authError || !user) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
+  const blockedOrigin = rejectDisallowedOrigin(req)
+  if (blockedOrigin) return blockedOrigin
 
   try {
+    const ctx = await authenticate(req)
+    requireRole(ctx, ['learner', 'admin'])
+
+    const limited = enforceRateLimit({
+      key: getRateLimitKey(req, ctx.userId),
+      limit: 20,
+      windowMs: 60_000,
+      req,
+    })
+    if (limited) return limited
+
     const body: AnalyzeRequest = await req.json()
 
-    // Fetch existing profile
-    const { data: existing } = await supabase
+    const { data: existing } = await ctx.adminClient
       .from('epistemic_profiles')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', ctx.userId)
       .single()
 
-    // Compute updated profile metrics
     const sessionCount = (existing?.session_count ?? 0) + 1
     const revisionCount = body.artifacts.filter((a) => a.kind === 'revision').length
     const reflections = body.artifacts.filter(
@@ -71,7 +54,6 @@ Deno.serve(async (req: Request) => {
     const defenses = body.artifacts.filter((a) => a.kind === 'defense_response')
     const frames = body.artifacts.filter((a) => a.kind === 'position_frame')
 
-    // Running averages
     const prevCount = existing?.session_count ?? 0
     const runAvg = (prev: number, current: number) =>
       prevCount > 0 ? (prev * prevCount + current) / sessionCount : current
@@ -88,7 +70,7 @@ Deno.serve(async (req: Request) => {
       frames.length > 0 ? frames.reduce((s, a) => s + a.word_count, 0) / frames.length : 0
 
     const profile = {
-      user_id: user.id,
+      user_id: ctx.userId,
       session_count: sessionCount,
       revision_frequency: runAvg(existing?.revision_frequency ?? 0, revisionCount > 0 ? 1 : 0),
       reflection_depth_avg: runAvg(existing?.reflection_depth_avg ?? 0, reflectionDepth),
@@ -111,25 +93,15 @@ Deno.serve(async (req: Request) => {
       updated_at: new Date().toISOString(),
     }
 
-    const { error } = await supabase
+    const { error } = await ctx.adminClient
       .from('epistemic_profiles')
       .upsert(profile, { onConflict: 'user_id' })
 
-    if (error) return jsonResponse({ error: error.message }, 500)
+    if (error) return json({ error: error.message }, 500, req)
 
-    return jsonResponse({ profile })
+    return json({ profile }, 200, req)
   } catch (err) {
     console.error('epistemic-analyze error:', err)
-    return jsonResponse({ error: 'Internal server error' }, 500)
+    return handleError(err, req)
   }
 })
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  })
-}

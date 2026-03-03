@@ -1,15 +1,9 @@
-// supabase/functions/agent-invoke/index.ts
-// Edge Function: Invoke a RACA agent with guardrails
-//
-// Request body: { session_id, agent_id, learner_input, context }
-// Response: { content, reflective_questions, constraint_check, blocked }
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticate, requireRole } from '../_shared/authz.ts'
+import { enforceRateLimit, getRateLimitKey } from '../_shared/rate-limit.ts'
+import { handleError, json, preflight, rejectDisallowedOrigin } from '../_shared/response.ts'
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
 const AI_MODEL = Deno.env.get('RACA_AI_MODEL') ?? 'claude-sonnet-4-6'
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
 interface InvokeRequest {
   session_id: string
@@ -21,70 +15,61 @@ interface InvokeRequest {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    })
-  }
+  if (req.method === 'OPTIONS') return preflight(req)
+
+  const blockedOrigin = rejectDisallowedOrigin(req)
+  if (blockedOrigin) return blockedOrigin
 
   try {
-    // Verify JWT
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return jsonResponse({ error: 'Missing authorization' }, 401)
-    }
+    const ctx = await authenticate(req)
+    requireRole(ctx, ['learner', 'admin'])
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-    const token = authHeader.replace('Bearer ', '')
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token)
-    if (authError || !user) {
-      return jsonResponse({ error: 'Unauthorized' }, 401)
-    }
+    const limited = enforceRateLimit({
+      key: getRateLimitKey(req, ctx.userId),
+      limit: 30,
+      windowMs: 60_000,
+      req,
+    })
+    if (limited) return limited
 
     const body: InvokeRequest = await req.json()
 
-    // Verify session belongs to user
-    const { data: session } = await supabase
+    const { data: session } = await ctx.adminClient
       .from('cognitive_sessions')
       .select('id, user_id, status')
       .eq('id', body.session_id)
-      .eq('user_id', user.id)
+      .eq('user_id', ctx.userId)
       .single()
 
     if (!session || session.status !== 'active') {
-      return jsonResponse({ error: 'Invalid or inactive session' }, 403)
+      return json({ error: 'Invalid or inactive session' }, 403, req)
     }
 
-    // Call AI provider
     const startTime = Date.now()
     const aiResponse = await callAI(body.system_prompt, body.learner_input, body.max_tokens)
     const responseTimeMs = Date.now() - startTime
 
-    // Log interaction
-    await supabase.from('raca_agent_interactions').insert({
+    await ctx.adminClient.from('raca_agent_interactions').insert({
       session_id: body.session_id,
       agent_id: body.agent_id,
-      state: body.state ?? 'UNKNOWN',
+      state: 'UNKNOWN',
       prompt: body.learner_input,
       response: aiResponse,
       blocked: false,
       response_time_ms: responseTimeMs,
     })
 
-    return jsonResponse({
-      content: aiResponse,
-      response_time_ms: responseTimeMs,
-    })
+    return json(
+      {
+        content: aiResponse,
+        response_time_ms: responseTimeMs,
+      },
+      200,
+      req,
+    )
   } catch (err) {
     console.error('agent-invoke error:', err)
-    return jsonResponse({ error: 'Internal server error' }, 500)
+    return handleError(err, req)
   }
 })
 
@@ -111,14 +96,4 @@ async function callAI(system: string, user: string, maxTokens: number): Promise<
 
   const data = await response.json()
   return data.content?.[0]?.text ?? ''
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  })
 }

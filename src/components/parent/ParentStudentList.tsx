@@ -9,8 +9,7 @@ import { Avatar } from '../ui/Avatar'
 import { useParentStudentLinks } from '../../hooks/useParentStudentLinks'
 
 export function ParentStudentList() {
-  const { links, loading, error, linkStudent, updateLinkStatus, unlinkStudent } =
-    useParentStudentLinks()
+  const { links, loading, error, linkStudent, updateLinkStatus } = useParentStudentLinks()
   const [studentId, setStudentId] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -75,14 +74,11 @@ export function ParentStudentList() {
                       Approve
                     </Button>
                   )}
-                  {(link.status === 'active' || link.status === 'approved') && (
+                  {link.status === 'active' && (
                     <Button variant="ghost" onClick={() => updateLinkStatus(link.id, 'revoked')}>
                       Revoke
                     </Button>
                   )}
-                  <Button variant="ghost" onClick={() => unlinkStudent(link.id)}>
-                    Remove
-                  </Button>
                 </div>
               </div>
             </Card>

@@ -9,6 +9,8 @@ import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PasswordResetPage } from './pages/PasswordResetPage'
+import { CheckEmailPage } from './pages/CheckEmailPage'
+import { UpdatePasswordPage } from './pages/UpdatePasswordPage'
 
 const DashboardPage = lazy(() =>
   import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
@@ -59,6 +61,8 @@ export function App() {
         <Route element={<LoginPage />} path="/login" />
         <Route element={<SignUpPage />} path="/signup" />
         <Route element={<PasswordResetPage />} path="/reset-password" />
+        <Route element={<CheckEmailPage />} path="/check-email" />
+        <Route element={<UpdatePasswordPage />} path="/update-password" />
 
         {/* Authenticated routes */}
         <Route

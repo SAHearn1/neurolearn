@@ -37,8 +37,9 @@ export function SignUpPage() {
     }
 
     try {
-      await signUp(email, password, fullName, role)
-      navigate('/dashboard')
+      const session = await signUp(email, password, fullName, role)
+      // session is null when Supabase requires email confirmation
+      navigate(session ? '/dashboard' : '/check-email')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
     }
