@@ -1,9 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { racaFlags } from '../lib/raca/feature-flags'
-import { restoreSessionLocal } from '../lib/raca/layer0-runtime/persistence'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
+import { restoreSessionLocal } from '../lib/raca/layer0-runtime/persistence'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
@@ -19,7 +19,6 @@ const SessionPageCore = lazy(() =>
 
 export function SessionPage() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
-  const navigate = useNavigate()
 
   const session = useRacaSession()
   const dispatch = useRuntimeStore((s) => s.dispatch)
@@ -75,9 +74,6 @@ export function SessionPage() {
       </main>
     )
   }
-
-  // Navigate away if session ends (handled in SessionPageCore's end callback)
-  void navigate
 
   return (
     <Suspense

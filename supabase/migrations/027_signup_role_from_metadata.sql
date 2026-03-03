@@ -35,14 +35,3 @@ BEGIN
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
-
--- Re-attach the trigger in case it was dropped or the function was recreated
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
-COMMENT ON FUNCTION public.handle_new_user() IS
-  'Creates a profiles row for every new auth.users row. '
-  'Accepts learner/parent/educator from signup metadata; '
-  'admin role can only be granted via server-side service-role operations.';

@@ -23,15 +23,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { session, initialized, loading, role } = useAuthStore()
   const navigate = useNavigate()
 
-  const isLoading = !initialized || loading
-
   useEffect(() => {
-    if (isLoading) return
-
+    if (!initialized || loading) return
     if (!session) {
       navigate('/login', { replace: true, state: { from: window.location.pathname } })
-      return
     }
+  }, [session, initialized, loading, navigate])
 
     if (allowedRoles && role && !allowedRoles.includes(role)) {
       navigate('/dashboard', { replace: true })

@@ -16,24 +16,23 @@ import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
+import { useAuthStore } from '../store/authStore'
+import { useProgressStore } from '../store/progressStore'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { StreakBadge } from '../components/dashboard/StreakBadge'
 
-const SEEN_MILESTONES_KEY = 'nl_seen_milestones'
-
+const MILESTONE_KEY = 'neurolearn_seen_milestones'
 function getSeenMilestones(): Set<string> {
   try {
-    const raw = localStorage.getItem(SEEN_MILESTONES_KEY)
-    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+    return new Set(JSON.parse(localStorage.getItem(MILESTONE_KEY) ?? '[]'))
   } catch {
     return new Set()
   }
 }
-
-function markMilestoneSeen(type: string): void {
+function markMilestoneSeen(milestone: string) {
   const seen = getSeenMilestones()
-  seen.add(type)
-  localStorage.setItem(SEEN_MILESTONES_KEY, JSON.stringify([...seen]))
+  seen.add(milestone)
+  localStorage.setItem(MILESTONE_KEY, JSON.stringify([...seen]))
 }
 
 function CourseCardWithProgress({ courseId, title, level }: { courseId: string; title: string; level: string }) {
@@ -55,6 +54,7 @@ export function DashboardPage() {
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
+  const fetchCourseProgress = useProgressStore((s) => s.fetchCourseProgress)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
