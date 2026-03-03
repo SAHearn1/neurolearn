@@ -16,7 +16,13 @@ port = 54323
 
 [auth]
 site_url = "http://localhost:5173"
-additional_redirect_urls = ["https://neurolearn-one.vercel.app"]
+additional_redirect_urls = [
+  "http://localhost:5173/update-password",
+  "http://localhost:5173/login",
+  "https://neurolearn-one.vercel.app",
+  "https://neurolearn-one.vercel.app/update-password",
+  "https://neurolearn-one.vercel.app/login",
+]
 jwt_expiry = 3600
 
 [auth.external.google]

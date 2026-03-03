@@ -1,26 +1,29 @@
 import { type ReactNode, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
-import { useProfile } from '../../hooks/useProfile'
 import { Spinner } from '../ui/Spinner'
-
-type UserRole = 'learner' | 'parent' | 'educator' | 'admin'
+import type { UserRole } from '../../types/profile'
 
 interface ProtectedRouteProps {
   children: ReactNode
+  /**
+   * When set, only users whose role appears in this list may access the route.
+   * Unauthenticated users are redirected to /login.
+   * Authenticated users with the wrong role are redirected to /dashboard.
+   */
   allowedRoles?: UserRole[]
 }
 
 /**
- * Wraps authenticated routes. Redirects unauthenticated users to /login.
- * When allowedRoles is provided, restricts access to matching roles.
+ * Wraps authenticated routes.
+ * - Unauthenticated users → /login
+ * - Wrong role → /dashboard
  */
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { session, initialized, loading } = useAuthStore()
-  const { profile, loading: profileLoading } = useProfile()
+  const { session, initialized, loading, role } = useAuthStore()
   const navigate = useNavigate()
 
-  const isLoading = !initialized || authLoading || (!!requiredRole && roleLoading)
+  const isLoading = !initialized || loading
 
   useEffect(() => {
     if (isLoading) return
@@ -30,15 +33,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       return
     }
 
-  useEffect(() => {
-    if (!initialized || loading || profileLoading) return
-    if (!session) return
-    if (allowedRoles && profile && !allowedRoles.includes(profile.role as UserRole)) {
+    if (allowedRoles && role && !allowedRoles.includes(role)) {
       navigate('/dashboard', { replace: true })
     }
-  }, [session, initialized, loading, profileLoading, profile, allowedRoles, navigate])
+  }, [session, initialized, isLoading, navigate, allowedRoles, role])
 
-  if (!initialized || loading || (session && profileLoading)) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center" aria-label="Loading…">
         <Spinner />
@@ -48,9 +48,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!session) return null
 
-  if (allowedRoles && profile && !allowedRoles.includes(profile.role as UserRole)) {
-    return null
-  }
+  if (allowedRoles && role && !allowedRoles.includes(role)) return null
 
   return <>{children}</>
 }

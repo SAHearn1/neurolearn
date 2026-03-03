@@ -16,22 +16,6 @@ import type { MilestoneType } from '../components/learner/MilestoneCelebration'
 import { useProfile } from '../hooks/useProfile'
 import { useTimeTracking } from '../hooks/useTimeTracking'
 
-interface QuizContent {
-  prompt: string
-  answer: string
-  instructions?: string
-}
-
-function parseQuizContent(raw: string | null): QuizContent | null {
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as QuizContent
-  } catch {
-    // Treat plain text as the prompt with no answer
-    return { prompt: raw, answer: '' }
-  }
-}
-
 export function LessonPage() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
   const { lesson, loading, error } = useLesson(lessonId)

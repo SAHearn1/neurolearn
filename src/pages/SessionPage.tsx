@@ -1,26 +1,11 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
-import { useCognitiveState } from '../hooks/useCognitiveState'
-import { useEpistemicProfile } from '../hooks/useEpistemicProfile'
-import { useAgent } from '../hooks/useAgent'
-import { useAuthStore } from '../store/authStore'
-import { useProgressStore } from '../store/progressStore'
 import { racaFlags } from '../lib/raca/feature-flags'
-import { getAgentDefinitionsForState } from '../lib/raca/layer2-agent-router/state-agent-map'
-import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
 import { restoreSessionLocal } from '../lib/raca/layer0-runtime/persistence'
-import { CognitiveStateIndicator } from '../components/raca/CognitiveStateIndicator'
-import { StateTransitionBar } from '../components/raca/StateTransitionBar'
-import { ReflectionPrompt } from '../components/raca/ReflectionPrompt'
-import { DraftEditor } from '../components/raca/DraftEditor'
-import { AgentPanel } from '../components/raca/AgentPanel'
-import { RevisionView } from '../components/raca/RevisionView'
-import { DefensePanel } from '../components/raca/DefensePanel'
-import { EpistemicDashboard } from '../components/raca/EpistemicDashboard'
-import { RegulationIntervention } from '../components/raca/RegulationIntervention'
-import { AuditTimeline } from '../components/raca/AuditTimeline'
+import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
 import { Alert } from '../components/ui/Alert'
+import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
 
 /**
@@ -37,14 +22,7 @@ export function SessionPage() {
   const navigate = useNavigate()
 
   const session = useRacaSession()
-  const cognitive = useCognitiveState()
-  const epistemic = useEpistemicProfile()
-  const agent = useAgent()
-  const user = useAuthStore((s) => s.user)
-  const updateLessonProgress = useProgressStore((s) => s.updateLessonProgress)
   const dispatch = useRuntimeStore((s) => s.dispatch)
-  const artifacts = useRuntimeStore((s) => s.artifacts)
-  const events = useRuntimeStore((s) => s.events)
   const [showRecovery, setShowRecovery] = useState(false)
 
   // Check for interrupted session on mount
@@ -62,7 +40,7 @@ export function SessionPage() {
 
   if (showRecovery) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
+      <main id="main-content" className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
         <Alert variant="info">You have an interrupted session for this lesson. Would you like to resume?</Alert>
         <div className="flex gap-3">
           <Button onClick={() => {
@@ -98,48 +76,8 @@ export function SessionPage() {
     )
   }
 
-  const handleTransition = (to: CognitiveState) => {
-    const result = cognitive.transition(to)
-    if (!result.success) {
-      // Error is shown via the hint mechanism
-    }
-  }
-
-  const saveArtifact = (kind: ArtifactKind, state: CognitiveState, content: string) => {
-    const wordCount = content.trim().split(/\s+/).filter(Boolean).length
-    const version = artifacts.filter((a) => a.kind === kind).length + 1
-    dispatch({
-      type: 'ARTIFACT_SAVED',
-      artifact: {
-        id: crypto.randomUUID(),
-        session_id: session.sessionId ?? '',
-        kind,
-        state,
-        content,
-        word_count: wordCount,
-        version,
-        created_at: new Date().toISOString(),
-      },
-    })
-    epistemic.processMessage(content, [])
-    // Auto-persist to localStorage after every artifact save
-    session.save()
-  }
-
-  const handleEndSession = async () => {
-    if (user?.id && lessonId && courseId) {
-      await updateLessonProgress({
-        user_id: user.id,
-        lesson_id: lessonId,
-        course_id: courseId,
-        status: 'completed',
-      })
-    }
-    await session.end(false)
-    navigate(`/courses/${courseId}/lessons/${lessonId}`)
-  }
-
-  const availableAgents = getAgentDefinitionsForState(cognitive.currentState)
+  // Navigate away if session ends (handled in SessionPageCore's end callback)
+  void navigate
 
   return (
     <Suspense

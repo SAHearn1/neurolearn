@@ -19,6 +19,23 @@ import { useProfile } from '../hooks/useProfile'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { StreakBadge } from '../components/dashboard/StreakBadge'
 
+const SEEN_MILESTONES_KEY = 'nl_seen_milestones'
+
+function getSeenMilestones(): Set<string> {
+  try {
+    const raw = localStorage.getItem(SEEN_MILESTONES_KEY)
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function markMilestoneSeen(type: string): void {
+  const seen = getSeenMilestones()
+  seen.add(type)
+  localStorage.setItem(SEEN_MILESTONES_KEY, JSON.stringify([...seen]))
+}
+
 function CourseCardWithProgress({ courseId, title, level }: { courseId: string; title: string; level: string }) {
   const { progress } = useCourseProgress(courseId)
   return (
@@ -34,23 +51,13 @@ function CourseCardWithProgress({ courseId, title, level }: { courseId: string; 
 }
 
 export function DashboardPage() {
-  const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading } = useProfile()
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
-  const { courseProgress, fetchCourseProgress } = useProgressStore()
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
-
-  // Fetch progress for all visible courses
-  useEffect(() => {
-    if (!user?.id || !courses.length) return
-    courses.slice(0, 4).forEach((course) => {
-      fetchCourseProgress(user.id, course.id)
-    })
-  }, [user?.id, courses, fetchCourseProgress])
 
   // Check for newly earned milestones once profile loads
   useEffect(() => {
