@@ -49,7 +49,7 @@ export function EducatorDashboardPage() {
   ]
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 p-6">
+    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 p-6">
       <header className="space-y-3">
         <Badge>Educator Dashboard</Badge>
         <h1 className="text-3xl font-bold text-slate-900">
@@ -60,12 +60,14 @@ export function EducatorDashboardPage() {
         </p>
       </header>
 
-      <nav className="flex flex-wrap gap-2 border-b border-slate-200 pb-2" role="tablist">
+      <nav aria-label="Educator dashboard tabs" className="flex flex-wrap gap-2 border-b border-slate-200 pb-2" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
+            id={`edu-tab-${tab.key}`}
             role="tab"
             aria-selected={activeTab === tab.key}
+            aria-controls={`edu-panel-${tab.key}`}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
               activeTab === tab.key
                 ? 'bg-brand-600 text-white'
@@ -78,7 +80,12 @@ export function EducatorDashboardPage() {
         ))}
       </nav>
 
-      {activeTab === 'overview' && (
+      <div
+        id="edu-panel-overview"
+        role="tabpanel"
+        aria-labelledby="edu-tab-overview"
+        hidden={activeTab !== 'overview'}
+      >
         <section className="grid gap-4 md:grid-cols-3">
           <Card>
             <p className="text-sm font-medium text-slate-500">Active Classes</p>
@@ -97,13 +104,23 @@ export function EducatorDashboardPage() {
             </p>
           </Card>
         </section>
-      )}
+      </div>
 
-      {activeTab === 'classes' && <ClassList />}
-      {activeTab === 'progress' && <StudentProgressTable />}
-      {activeTab === 'assignments' && <CourseAssignment />}
-      {activeTab === 'content' && <ContentManager />}
-      {activeTab === 'analytics' && <EducatorAnalytics />}
+      <div id="edu-panel-classes" role="tabpanel" aria-labelledby="edu-tab-classes" hidden={activeTab !== 'classes'}>
+        <ClassList />
+      </div>
+      <div id="edu-panel-progress" role="tabpanel" aria-labelledby="edu-tab-progress" hidden={activeTab !== 'progress'}>
+        <StudentProgressTable />
+      </div>
+      <div id="edu-panel-assignments" role="tabpanel" aria-labelledby="edu-tab-assignments" hidden={activeTab !== 'assignments'}>
+        <CourseAssignment />
+      </div>
+      <div id="edu-panel-content" role="tabpanel" aria-labelledby="edu-tab-content" hidden={activeTab !== 'content'}>
+        <ContentManager />
+      </div>
+      <div id="edu-panel-analytics" role="tabpanel" aria-labelledby="edu-tab-analytics" hidden={activeTab !== 'analytics'}>
+        <EducatorAnalytics />
+      </div>
     </main>
   )
 }

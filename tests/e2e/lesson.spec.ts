@@ -3,32 +3,73 @@ import { test, expect } from '@playwright/test'
 // Skip all E2E tests unless explicitly enabled (they require a running Supabase)
 test.skip(() => !process.env.PLAYWRIGHT_RUN, 'Requires PLAYWRIGHT_RUN=true')
 
-test.describe('Lesson flows', () => {
-  test.beforeEach(async ({ page }) => {
-    // Would use a test user fixture in real implementation
-    await page.goto('/login')
+test.describe('Lesson flows — unauthenticated', () => {
+  test('unauthenticated access to /courses redirects to login', async ({ page }) => {
+    await page.goto('/courses')
+    await expect(page).toHaveURL(/login/)
   })
 
-  test('courses page loads with course list', async ({ page }) => {
+  test('unauthenticated access to /dashboard redirects to login', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/login/)
+  })
+
+  test('reset-password page is publicly accessible', async ({ page }) => {
+    await page.goto('/reset-password')
+    await expect(page.getByRole('heading', { name: /reset your password/i })).toBeVisible()
+    await expect(page.getByLabel(/email/i)).toBeVisible()
+    await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible()
+  })
+
+  test('reset-password form validates email format', async ({ page }) => {
+    await page.goto('/reset-password')
+    await page.getByLabel(/email/i).fill('not-valid')
+    await page.getByRole('button', { name: /send reset link/i }).click()
+    // Zod validation should surface an inline error
+    await expect(page.getByText(/valid email|invalid email/i)).toBeVisible()
+  })
+})
+
+// Tests below require authenticated learner credentials
+test.describe('Lesson flows — authenticated learner', () => {
+  test.skip(
+    () => !process.env.E2E_LEARNER_EMAIL,
+    'Set E2E_LEARNER_EMAIL and E2E_LEARNER_PASSWORD to run these tests',
+  )
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login')
+    await page.getByLabel(/email/i).fill(process.env.E2E_LEARNER_EMAIL!)
+    await page.getByLabel(/password/i).fill(process.env.E2E_LEARNER_PASSWORD!)
+    await page.getByRole('button', { name: /sign in/i }).click()
+    await expect(page).toHaveURL(/dashboard/)
+  })
+
+  test('courses page loads with h1 and course list', async ({ page }) => {
     await page.goto('/courses')
     await expect(page.getByRole('main')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
-  test('lesson page has accessible navigation', async ({ page }) => {
+  test('courses page has accessible main landmark', async ({ page }) => {
     await page.goto('/courses')
-    // Navigate to first course if visible
-    const firstCourse = page.getByRole('link', { name: /course/i }).first()
-    if (await firstCourse.isVisible()) {
-      await firstCourse.click()
-      await expect(page.getByRole('main')).toBeVisible()
+    const main = page.getByRole('main')
+    await expect(main).toBeVisible()
+    await expect(main).toHaveAttribute('id', 'main-content')
+  })
+
+  test('course detail page has back navigation link', async ({ page }) => {
+    await page.goto('/courses')
+    const firstLink = page.getByRole('link', { name: /view course|continue|start/i }).first()
+    if (await firstLink.isVisible()) {
+      await firstLink.click()
+      await expect(page.getByRole('link', { name: /back|courses/i })).toBeVisible()
     }
   })
 
-  test('lesson page renders content area', async ({ page }) => {
-    await page.goto('/courses')
-    await expect(page.getByRole('main')).toBeVisible()
-    // Verify page has heading
-    const heading = page.getByRole('heading').first()
-    await expect(heading).toBeVisible()
+  test('dashboard shows welcome heading and quick links', async ({ page }) => {
+    await page.goto('/dashboard')
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /browse courses/i })).toBeVisible()
   })
 })

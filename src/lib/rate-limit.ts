@@ -14,6 +14,18 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): bo
   return true // Allowed
 }
 
+export function cleanupRateLimitBuckets(windowMs: number): void {
+  const now = Date.now()
+  for (const [key, timestamps] of buckets) {
+    const recent = timestamps.filter((ts) => now - ts < windowMs)
+    if (recent.length === 0) {
+      buckets.delete(key)
+    } else {
+      buckets.set(key, recent)
+    }
+  }
+}
+
 export function resetRateLimit(key: string): void {
   buckets.delete(key)
 }

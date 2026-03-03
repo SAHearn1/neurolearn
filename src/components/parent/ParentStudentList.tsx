@@ -70,7 +70,7 @@ export function ParentStudentList() {
                       Approve
                     </Button>
                   )}
-                  {link.status === 'active' && (
+                  {(link.status === 'active' || link.status === 'approved') && (
                     <Button variant="ghost" onClick={() => updateLinkStatus(link.id, 'revoked')}>
                       Revoke
                     </Button>

@@ -45,16 +45,21 @@ export function useCourse(courseId: string | undefined) {
     }
 
     setLoading(true)
-    supabase
-      .from('courses')
-      .select('*')
-      .eq('id', courseId)
-      .single()
-      .then(({ data, error: err }) => {
+    void (async () => {
+      try {
+        const { data, error: err } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('id', courseId)
+          .single()
         if (err) setError(err.message)
         else setCourse(data as Course)
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Failed to load course')
+      } finally {
         setLoading(false)
-      })
+      }
+    })()
   }, [courseId])
 
   return { course, loading, error }

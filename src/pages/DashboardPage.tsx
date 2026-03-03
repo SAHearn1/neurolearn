@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../components/ui/Avatar'
 import { Alert } from '../components/ui/Alert'
@@ -6,6 +7,11 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Spinner } from '../components/ui/Spinner'
+import {
+  MilestoneCelebration,
+  checkMilestone,
+  type MilestoneType,
+} from '../components/learner/MilestoneCelebration'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useCourseProgress } from '../hooks/useProgress'
@@ -28,12 +34,37 @@ function CourseCardWithProgress({ courseId, title, level }: { courseId: string; 
 }
 
 export function DashboardPage() {
+  const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading } = useProfile()
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
+  const { courseProgress, fetchCourseProgress } = useProgressStore()
+  const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
+
+  // Fetch progress for all visible courses
+  useEffect(() => {
+    if (!user?.id || !courses.length) return
+    courses.slice(0, 4).forEach((course) => {
+      fetchCourseProgress(user.id, course.id)
+    })
+  }, [user?.id, courses, fetchCourseProgress])
+
+  // Check for newly earned milestones once profile loads
+  useEffect(() => {
+    if (!profile) return
+    const milestone = checkMilestone(
+      profile.lessons_completed ?? 0,
+      profile.streak_days ?? 0,
+      false,
+    )
+    if (milestone && !getSeenMilestones().has(milestone)) {
+      markMilestoneSeen(milestone)
+      setPendingMilestone(milestone)
+    }
+  }, [profile])
 
   if (profileLoading || coursesLoading) {
     return (
@@ -125,6 +156,13 @@ export function DashboardPage() {
           <Button variant="secondary">Update settings</Button>
         </Link>
       </nav>
+
+      {pendingMilestone && (
+        <MilestoneCelebration
+          milestone={pendingMilestone}
+          onDismiss={() => setPendingMilestone(null)}
+        />
+      )}
     </main>
   )
 }

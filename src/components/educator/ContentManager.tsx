@@ -30,6 +30,11 @@ export function ContentManager() {
   const [lessonDesc, setLessonDesc] = useState('')
   const [lessonContent, setLessonContent] = useState('')
 
+  // Lesson edit state
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+
   const fetchCourses = useCallback(async () => {
     setLoading(true)
     try {
@@ -139,6 +144,47 @@ export function ContentManager() {
       setError(e instanceof Error ? e.message : 'Failed to create lesson')
     }
   }, [selectedCourseId, lessonTitle, lessonDesc, lessonContent, lessons.length, fetchLessons])
+
+  const saveEditLesson = useCallback(async () => {
+    if (!editingLessonId || !editTitle.trim() || !selectedCourseId) return
+    setError(null)
+    try {
+      const { error: err } = await supabase
+        .from('lessons')
+        .update({
+          title: editTitle.trim(),
+          content: editContent.trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingLessonId)
+
+      if (err) throw err
+      setEditingLessonId(null)
+      setEditTitle('')
+      setEditContent('')
+      await fetchLessons(selectedCourseId)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to update lesson')
+    }
+  }, [editingLessonId, editTitle, editContent, selectedCourseId, fetchLessons])
+
+  const publishLesson = useCallback(
+    async (lessonId: string, status: 'published' | 'draft' | 'archived') => {
+      setError(null)
+      try {
+        const { error: err } = await supabase
+          .from('lessons')
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq('id', lessonId)
+
+        if (err) throw err
+        if (selectedCourseId) await fetchLessons(selectedCourseId)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to update lesson status')
+      }
+    },
+    [selectedCourseId, fetchLessons],
+  )
 
   return (
     <section className="space-y-4">
@@ -261,18 +307,74 @@ export function ContentManager() {
 
               {lessons.map((lesson) => (
                 <Card key={lesson.id}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-slate-400">#{lesson.sort_order}</span>
-                        <h3 className="font-semibold text-slate-900">{lesson.title}</h3>
-                        <Badge>{lesson.status}</Badge>
-                        <Badge>{lesson.type}</Badge>
+                  {editingLessonId === lesson.id ? (
+                    <div className="space-y-3">
+                      <Input
+                        label="Title"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                      />
+                      <label className="block text-sm font-medium text-slate-700">
+                        Content
+                        <textarea
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+                          rows={4}
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                        />
+                      </label>
+                      <div className="flex gap-2">
+                        <Button onClick={saveEditLesson} disabled={!editTitle.trim()}>Save</Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingLessonId(null)
+                            setEditTitle('')
+                            setEditContent('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
                       </div>
-                      {lesson.description && <p className="text-sm text-slate-500">{lesson.description}</p>}
-                      <p className="text-xs text-slate-400">{lesson.duration_minutes} min</p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-slate-400">#{lesson.sort_order}</span>
+                          <h3 className="font-semibold text-slate-900">{lesson.title}</h3>
+                          <Badge>{lesson.status}</Badge>
+                          <Badge>{lesson.type}</Badge>
+                        </div>
+                        {lesson.description && (
+                          <p className="text-sm text-slate-500">{lesson.description}</p>
+                        )}
+                        <p className="text-xs text-slate-400">{lesson.duration_minutes} min</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingLessonId(lesson.id)
+                            setEditTitle(lesson.title)
+                            setEditContent(lesson.content ?? '')
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        {lesson.status === 'draft' && (
+                          <Button variant="secondary" onClick={() => publishLesson(lesson.id, 'published')}>
+                            Publish
+                          </Button>
+                        )}
+                        {lesson.status === 'published' && (
+                          <Button variant="ghost" onClick={() => publishLesson(lesson.id, 'draft')}>
+                            Unpublish
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               ))}
             </>
