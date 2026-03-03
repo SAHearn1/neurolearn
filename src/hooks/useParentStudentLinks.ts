@@ -69,23 +69,10 @@ export function useParentStudentLinks() {
   )
 
   const updateLinkStatus = useCallback(
-    async (linkId: string, status: 'active' | 'approved' | 'revoked' | 'rejected') => {
+    async (linkId: string, status: 'active' | 'revoked') => {
       const { error: err } = await supabase
         .from('parent_student_links')
         .update({ status })
-        .eq('id', linkId)
-
-      if (err) throw err
-      await fetchLinks()
-    },
-    [fetchLinks],
-  )
-
-  const unlinkStudent = useCallback(
-    async (linkId: string) => {
-      const { error: err } = await supabase
-        .from('parent_student_links')
-        .delete()
         .eq('id', linkId)
 
       if (err) throw err
@@ -102,7 +89,6 @@ export function useParentStudentLinks() {
     error,
     linkStudent,
     updateLinkStatus,
-    unlinkStudent,
     refetch: fetchLinks,
   }
 }

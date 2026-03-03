@@ -75,10 +75,10 @@ export function ParentMessages() {
     setError(null)
     try {
       const { data, error: err } = await supabase
-        .from('notifications')
-        .select('*')
+        .from('messages')
+        .select('id, sender_id, recipient_id, body, created_at')
         .or(
-          `and(user_id.eq.${user.id},type.eq.info),and(user_id.eq.${selectedEducatorId},type.eq.info)`,
+          `and(sender_id.eq.${user.id},recipient_id.eq.${selectedEducatorId}),and(sender_id.eq.${selectedEducatorId},recipient_id.eq.${user.id})`,
         )
         .order('created_at', { ascending: true })
         .limit(50)
@@ -86,13 +86,13 @@ export function ParentMessages() {
       if (err) throw err
 
       setMessages(
-        (data ?? []).map((n) => ({
-          id: n.id,
-          sender_id: n.user_id,
-          receiver_id: n.user_id === user.id ? selectedEducatorId : user.id,
-          content: n.body ?? '',
-          created_at: n.created_at,
-          sender_name: n.user_id === user.id ? 'You' : 'Educator',
+        (data ?? []).map((message) => ({
+          id: message.id,
+          sender_id: message.sender_id,
+          receiver_id: message.recipient_id,
+          content: message.body,
+          created_at: message.created_at,
+          sender_name: message.sender_id === user.id ? 'You' : 'Educator',
         })),
       )
     } catch (e) {
@@ -106,7 +106,7 @@ export function ParentMessages() {
     fetchMessages()
   }, [fetchMessages])
 
-  // Supabase Realtime — subscribe to new notifications for the selected educator thread
+  // Supabase Realtime — subscribe to new messages for the selected educator thread
   useEffect(() => {
     if (!user?.id || !selectedEducatorId) return
 
@@ -122,8 +122,8 @@ export function ParentMessages() {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`,
         },
         () => {
           void fetchMessages()
@@ -143,11 +143,9 @@ export function ParentMessages() {
     if (!user?.id || !selectedEducatorId || !newMessage.trim()) return
     setError(null)
     try {
-      // Use notifications table as a simple messaging mechanism
-      const { error: err } = await supabase.from('notifications').insert({
-        user_id: selectedEducatorId,
-        type: 'info',
-        title: 'Message from parent',
+      const { error: err } = await supabase.from('messages').insert({
+        sender_id: user.id,
+        recipient_id: selectedEducatorId,
         body: newMessage.trim(),
       })
 
