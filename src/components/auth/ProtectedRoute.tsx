@@ -20,15 +20,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { profile, loading: profileLoading } = useProfile()
   const navigate = useNavigate()
 
-  const isLoading = !initialized || authLoading || (!!requiredRole && roleLoading)
-
   useEffect(() => {
-    if (isLoading) return
-
+    if (!initialized || loading) return
     if (!session) {
       navigate('/login', { replace: true, state: { from: window.location.pathname } })
-      return
     }
+  }, [session, initialized, loading, navigate])
 
   useEffect(() => {
     if (!initialized || loading || profileLoading) return
