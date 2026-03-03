@@ -30,31 +30,33 @@ export function buildCognitiveProfile(
   const revisionFrequency = sessionsWithRevision / sessionCount
 
   // Reflection depth: average word count of reflection artifacts
-  const reflections = sessionArtifacts.flat().filter(
-    (a) => a.kind === 'reflection' || a.kind === 'reconnection_reflection',
-  )
-  const reflectionDepthAvg = reflections.length > 0
-    ? reflections.reduce((sum, a) => sum + a.word_count, 0) / reflections.length
-    : 0
+  const reflections = sessionArtifacts
+    .flat()
+    .filter((a) => a.kind === 'reflection' || a.kind === 'reconnection_reflection')
+  const reflectionDepthAvg =
+    reflections.length > 0
+      ? reflections.reduce((sum, a) => sum + a.word_count, 0) / reflections.length
+      : 0
 
   // Defense strength: average word count of defense responses
   const defenses = sessionArtifacts.flat().filter((a) => a.kind === 'defense_response')
-  const defenseStrengthAvg = defenses.length > 0
-    ? defenses.reduce((sum, a) => sum + a.word_count, 0) / defenses.length
-    : 0
+  const defenseStrengthAvg =
+    defenses.length > 0 ? defenses.reduce((sum, a) => sum + a.word_count, 0) / defenses.length : 0
 
   // Framing sophistication: average word count of position frames
   const frames = sessionArtifacts.flat().filter((a) => a.kind === 'position_frame')
-  const framingSophistication = frames.length > 0
-    ? frames.reduce((sum, a) => sum + a.word_count, 0) / frames.length
-    : 0
+  const framingSophistication =
+    frames.length > 0 ? frames.reduce((sum, a) => sum + a.word_count, 0) / frames.length : 0
 
-  // Growth trajectory
-  const growth = traceAverages.overall >= 7
-    ? 'proficient' as const
-    : traceAverages.overall >= 4
-      ? 'developing' as const
-      : 'emerging' as const
+  // Growth trajectory thresholds: proficient >= 7, developing >= 4, else emerging
+  const PROFICIENT_THRESHOLD = 7
+  const DEVELOPING_THRESHOLD = 4
+  const growth =
+    traceAverages.overall >= PROFICIENT_THRESHOLD
+      ? ('proficient' as const)
+      : traceAverages.overall >= DEVELOPING_THRESHOLD
+        ? ('developing' as const)
+        : ('emerging' as const)
 
   return {
     user_id: userId,
@@ -102,11 +104,11 @@ function averageTrace(scores: TraceFluency[]): TraceFluency {
 
   const n = scores.length
   return {
-    think: Math.round(sum.think / n * 10) / 10,
-    reason: Math.round(sum.reason / n * 10) / 10,
-    articulate: Math.round(sum.articulate / n * 10) / 10,
-    check: Math.round(sum.check / n * 10) / 10,
-    extend: Math.round(sum.extend / n * 10) / 10,
-    overall: Math.round(sum.overall / n * 10) / 10,
+    think: Math.round((sum.think / n) * 10) / 10,
+    reason: Math.round((sum.reason / n) * 10) / 10,
+    articulate: Math.round((sum.articulate / n) * 10) / 10,
+    check: Math.round((sum.check / n) * 10) / 10,
+    extend: Math.round((sum.extend / n) * 10) / 10,
+    overall: Math.round((sum.overall / n) * 10) / 10,
   }
 }

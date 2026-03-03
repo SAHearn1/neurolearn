@@ -24,11 +24,5 @@ export interface UserProfile {
 }
 
 // Re-export educator and parent profile types for unified access
-export type {
-  EducatorProfile,
-  EducatorStudentLink,
-} from './educator'
-export type {
-  ParentProfile,
-  ParentStudentLink,
-} from './parent'
+export type { EducatorProfile, EducatorStudentLink } from './educator'
+export type { ParentProfile, ParentStudentLink } from './parent'

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -31,10 +31,7 @@ const REMINDER_MESSAGES: Record<ReminderType, string[]> = {
     'Your brain processes information better with regular breaks. Take 5 minutes.',
     'Great study session! Rest your eyes and stretch for a moment.',
   ],
-  hydration: [
-    'Remember to drink some water!',
-    'Stay hydrated — grab a glass of water.',
-  ],
+  hydration: ['Remember to drink some water!', 'Stay hydrated — grab a glass of water.'],
   stretch: [
     'Quick stretch break — roll your shoulders and stretch your neck.',
     'Stand up and move around for a minute. Your body will thank you!',
@@ -50,7 +47,7 @@ function getRandomMessage(type: ReminderType): string {
 }
 
 export function SmartReminders({ config = DEFAULT_CONFIG }: { config?: Partial<ReminderConfig> }) {
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config }
+  const mergedConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
   const [activeReminder, setActiveReminder] = useState<ActiveReminder | null>(null)
   const [sessionStartTime] = useState(Date.now())
   const [isPaused, setIsPaused] = useState(false)
@@ -79,7 +76,10 @@ export function SmartReminders({ config = DEFAULT_CONFIG }: { config?: Partial<R
 
       if (minutesSinceStart > 0 && minutesSinceStart % mergedConfig.studyDurationMinutes === 0) {
         showReminder('break')
-      } else if (minutesSinceStart > 0 && minutesSinceStart % mergedConfig.hydrationIntervalMinutes === 0) {
+      } else if (
+        minutesSinceStart > 0 &&
+        minutesSinceStart % mergedConfig.hydrationIntervalMinutes === 0
+      ) {
         showReminder('hydration')
       }
     }, 60_000) // Check every minute
@@ -106,9 +106,16 @@ export function SmartReminders({ config = DEFAULT_CONFIG }: { config?: Partial<R
           {activeReminder.message}
         </Alert>
         <div className="mt-3 flex gap-2">
-          <Button variant="secondary" onClick={dismiss}>Dismiss</Button>
+          <Button variant="secondary" onClick={dismiss}>
+            Dismiss
+          </Button>
           {activeReminder.type === 'break' && (
-            <Button onClick={() => { setIsPaused(true); dismiss() }}>
+            <Button
+              onClick={() => {
+                setIsPaused(true)
+                dismiss()
+              }}
+            >
               Start Break
             </Button>
           )}

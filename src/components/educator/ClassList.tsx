@@ -7,14 +7,7 @@ import { Spinner } from '../ui/Spinner'
 import { useClassManagement } from '../../hooks/useClassManagement'
 
 export function ClassList() {
-  const {
-    classes,
-    loading,
-    error,
-    createClass,
-    updateClass,
-    deleteClass,
-  } = useClassManagement()
+  const { classes, loading, error, createClass, updateClass, deleteClass } = useClassManagement()
 
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
@@ -37,24 +30,30 @@ export function ClassList() {
     }
   }, [newName, newDesc, createClass])
 
-  const handleUpdate = useCallback(async (id: string) => {
-    setActionError(null)
-    try {
-      await updateClass(id, { name: editName.trim(), description: editDesc.trim() })
-      setEditingId(null)
-    } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Failed to update class')
-    }
-  }, [editName, editDesc, updateClass])
+  const handleUpdate = useCallback(
+    async (id: string) => {
+      setActionError(null)
+      try {
+        await updateClass(id, { name: editName.trim(), description: editDesc.trim() })
+        setEditingId(null)
+      } catch (e) {
+        setActionError(e instanceof Error ? e.message : 'Failed to update class')
+      }
+    },
+    [editName, editDesc, updateClass],
+  )
 
-  const handleDelete = useCallback(async (id: string) => {
-    setActionError(null)
-    try {
-      await deleteClass(id)
-    } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Failed to delete class')
-    }
-  }, [deleteClass])
+  const handleDelete = useCallback(
+    async (id: string) => {
+      setActionError(null)
+      try {
+        await deleteClass(id)
+      } catch (e) {
+        setActionError(e instanceof Error ? e.message : 'Failed to delete class')
+      }
+    },
+    [deleteClass],
+  )
 
   if (loading) return <Spinner />
   if (error) return <Alert variant="error">{error}</Alert>
@@ -73,9 +72,19 @@ export function ClassList() {
       {showCreate && (
         <Card>
           <div className="space-y-3">
-            <Input label="Class Name" value={newName} onChange={(e) => setNewName(e.target.value)} />
-            <Input label="Description" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
-            <Button onClick={handleCreate} disabled={!newName.trim()}>Create Class</Button>
+            <Input
+              label="Class Name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <Input
+              label="Description"
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+            />
+            <Button onClick={handleCreate} disabled={!newName.trim()}>
+              Create Class
+            </Button>
           </div>
         </Card>
       )}
@@ -88,11 +97,23 @@ export function ClassList() {
             <Card key={cls.id}>
               {editingId === cls.id ? (
                 <div className="space-y-3">
-                  <Input label="Class Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
-                  <Input label="Description" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
+                  <Input
+                    label="Class Name"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                  />
+                  <Input
+                    label="Description"
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                  />
                   <div className="flex gap-2">
-                    <Button onClick={() => handleUpdate(cls.id)} disabled={!editName.trim()}>Save</Button>
-                    <Button variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
+                    <Button onClick={() => handleUpdate(cls.id)} disabled={!editName.trim()}>
+                      Save
+                    </Button>
+                    <Button variant="secondary" onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -115,7 +136,9 @@ export function ClassList() {
                     >
                       Edit
                     </Button>
-                    <Button variant="ghost" onClick={() => handleDelete(cls.id)}>Delete</Button>
+                    <Button variant="ghost" onClick={() => handleDelete(cls.id)}>
+                      Delete
+                    </Button>
                   </div>
                 </div>
               )}

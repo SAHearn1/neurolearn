@@ -8,6 +8,7 @@ const AI_MODEL = Deno.env.get('RACA_AI_MODEL') ?? 'claude-sonnet-4-6'
 interface InvokeRequest {
   session_id: string
   agent_id: string
+  state: string
   learner_input: string
   system_prompt: string
   max_tokens: number

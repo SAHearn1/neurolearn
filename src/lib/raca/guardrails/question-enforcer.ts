@@ -51,9 +51,10 @@ export function enforceQuestionsFirst(
  * Check that the AI asks the learner to reason BEFORE confirming or explaining.
  * Pattern: question → learner thinks → AI responds to learner's reasoning.
  */
-export function enforceReasoningBeforeConfirmation(
-  response: string,
-): { passed: boolean; violation: string | null } {
+export function enforceReasoningBeforeConfirmation(response: string): {
+  passed: boolean
+  violation: string | null
+} {
   // If response starts with confirmation/explanation without a question
   const startsWithExplanation = /^(?:Yes|No|Correct|Right|Exactly|That's right)/i.test(
     response.trim(),

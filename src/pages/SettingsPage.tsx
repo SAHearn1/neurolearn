@@ -14,18 +14,26 @@ export function SettingsPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6"
+    >
       <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
 
       {saved && <Alert variant="success">Preferences saved.</Alert>}
 
-      <form className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" onSubmit={handleSubmit}>
+      <form
+        className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        onSubmit={handleSubmit}
+      >
         <label className="block text-sm font-medium text-slate-700">
           Preferred text size
           <select
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             value={accessibility.text_size}
-            onChange={(e) => updateAccessibility({ text_size: e.target.value as 'small' | 'medium' | 'large' })}
+            onChange={(e) =>
+              updateAccessibility({ text_size: e.target.value as 'small' | 'medium' | 'large' })
+            }
           >
             <option value="small">Small</option>
             <option value="medium">Medium</option>
@@ -65,7 +73,9 @@ export function SettingsPage() {
 
         <div className="flex gap-2 pt-2">
           <Button type="submit">Save preferences</Button>
-          <Button variant="secondary" type="button" onClick={reset}>Reset to defaults</Button>
+          <Button variant="secondary" type="button" onClick={reset}>
+            Reset to defaults
+          </Button>
         </div>
       </form>
     </main>

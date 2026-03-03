@@ -19,7 +19,7 @@ Harassment, discrimination, or exclusionary language of any kind is not tolerate
 
 ## Neurodiversity and Accessibility Guidelines
 
-NeuroLearn is built *for* neurodivergent learners. All contributions must:
+NeuroLearn is built _for_ neurodivergent learners. All contributions must:
 
 - ✅ Follow **WCAG 2.1 AA** accessibility standards
 - ✅ Include proper **ARIA labels** and semantic HTML
@@ -49,6 +49,7 @@ When in doubt, test with a screen reader (e.g., NVDA, VoiceOver) and keyboard-on
 ### Submitting Code
 
 1. **Fork** the repository and create a feature branch:
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
@@ -58,6 +59,7 @@ When in doubt, test with a screen reader (e.g., NVDA, VoiceOver) and keyboard-on
 3. **Write or update tests** for your changes
 
 4. **Lint and test** before committing:
+
    ```bash
    npm run lint
    npm run typecheck
@@ -65,6 +67,7 @@ When in doubt, test with a screen reader (e.g., NVDA, VoiceOver) and keyboard-on
    ```
 
 5. **Commit** with a meaningful message:
+
    ```
    feat: add audio lesson playback controls
    fix: correct focus ring colour in dark mode
@@ -79,16 +82,16 @@ When in doubt, test with a screen reader (e.g., NVDA, VoiceOver) and keyboard-on
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefix | When to use |
-|--------|------------|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `docs:` | Documentation changes |
-| `style:` | Formatting, no logic change |
+| Prefix      | When to use                      |
+| ----------- | -------------------------------- |
+| `feat:`     | New feature                      |
+| `fix:`      | Bug fix                          |
+| `docs:`     | Documentation changes            |
+| `style:`    | Formatting, no logic change      |
 | `refactor:` | Code restructure, no feature/fix |
-| `test:` | Adding or updating tests |
-| `chore:` | Tooling, config, dependencies |
-| `a11y:` | Accessibility improvement |
+| `test:`     | Adding or updating tests         |
+| `chore:`    | Tooling, config, dependencies    |
+| `a11y:`     | Accessibility improvement        |
 
 ---
 

@@ -125,7 +125,9 @@ export function ParentProgressReports() {
                 {r.lessonsCompleted} lessons · {r.streakDays} day streak
               </p>
             </div>
-            <Button variant="secondary" onClick={() => exportReport(r)}>Export CSV</Button>
+            <Button variant="secondary" onClick={() => exportReport(r)}>
+              Export CSV
+            </Button>
           </div>
           {r.courses.length > 0 && (
             <div className="mt-3 space-y-2">

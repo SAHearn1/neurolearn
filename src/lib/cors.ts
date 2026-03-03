@@ -15,10 +15,7 @@ export function createCorsHeaders(origin?: string): Record<string, string> {
     'https://neurolearn-one.vercel.app',
   ]
 
-  const effectiveOrigin =
-    origin && allowedOrigins.includes(origin)
-      ? origin
-      : allowedOrigins[0]
+  const effectiveOrigin = origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
 
   return {
     ...CORS_HEADERS,

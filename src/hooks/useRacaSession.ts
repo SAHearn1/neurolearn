@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
 import { startSession, endSession } from '../lib/raca/layer0-runtime/session-manager'
-import { saveSessionLocal, saveSessionRemote, clearSessionLocal } from '../lib/raca/layer0-runtime/persistence'
+import {
+  saveSessionLocal,
+  saveSessionRemote,
+  clearSessionLocal,
+} from '../lib/raca/layer0-runtime/persistence'
 import { flushAuditBuffer, stopAuditFlush } from '../lib/raca/layer0-runtime/audit-trail'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { useAuthStore } from '../store/authStore'
@@ -25,18 +29,15 @@ export function useRacaSession() {
     [user?.id],
   )
 
-  const end = useCallback(
-    async (abandoned = false) => {
-      endSession(abandoned ? 'abandoned' : 'completed')
-      await flushAuditBuffer()
-      stopAuditFlush()
-      if (racaFlags.auditPersistence) {
-        await saveSessionRemote()
-      }
-      clearSessionLocal()
-    },
-    [],
-  )
+  const end = useCallback(async (abandoned = false) => {
+    endSession(abandoned ? 'abandoned' : 'completed')
+    await flushAuditBuffer()
+    stopAuditFlush()
+    if (racaFlags.auditPersistence) {
+      await saveSessionRemote()
+    }
+    clearSessionLocal()
+  }, [])
 
   const save = useCallback(async () => {
     saveSessionLocal()

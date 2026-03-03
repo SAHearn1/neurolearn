@@ -4,47 +4,51 @@ This log tracks completed repository issues/workstreams and what is next.
 
 ## Issue Summary (as of 2026-03-03)
 
-| Category | Total | Closed | Open | % Complete |
-|----------|-------|--------|------|------------|
-| Config/Setup | 10 | 10 | 0 | 100% |
-| Database/Migrations | 12 | 12 | 0 | 100% |
-| Auth | 5 | 5 | 0 | 100% |
-| UI Components | 8 | 8 | 0 | 100% |
-| Layout Components | 5 | 5 | 0 | 100% |
-| Pages (Learner) | 11 | 11 | 0 | 100% |
-| Hooks/Stores | 3 | 3 | 0 | 100% |
-| CI/CD | 7 | 7 | 0 | 100% |
-| Security/Compliance | 11 | 11 | 0 | 100% |
-| Accessibility | 10 | 10 | 0 | 100% |
-| Testing | 5 | 5 | 0 | 100% |
-| Documentation | 8 | 8 | 0 | 100% |
-| Learner Features | 4 | 4 | 0 | 100% |
-| Educator Features | 10 | 10 | 0 | 100% |
-| Parent Features | 5 | 5 | 0 | 100% |
-| Admin Features | 6 | 6 | 0 | 100% |
-| **Total** | **120** | **120** | **0** | **100%** |
+| Category            | Total   | Closed  | Open  | % Complete |
+| ------------------- | ------- | ------- | ----- | ---------- |
+| Config/Setup        | 10      | 10      | 0     | 100%       |
+| Database/Migrations | 12      | 12      | 0     | 100%       |
+| Auth                | 5       | 5       | 0     | 100%       |
+| UI Components       | 8       | 8       | 0     | 100%       |
+| Layout Components   | 5       | 5       | 0     | 100%       |
+| Pages (Learner)     | 11      | 11      | 0     | 100%       |
+| Hooks/Stores        | 3       | 3       | 0     | 100%       |
+| CI/CD               | 7       | 7       | 0     | 100%       |
+| Security/Compliance | 11      | 11      | 0     | 100%       |
+| Accessibility       | 10      | 10      | 0     | 100%       |
+| Testing             | 5       | 5       | 0     | 100%       |
+| Documentation       | 8       | 8       | 0     | 100%       |
+| Learner Features    | 4       | 4       | 0     | 100%       |
+| Educator Features   | 10      | 10      | 0     | 100%       |
+| Parent Features     | 5       | 5       | 0     | 100%       |
+| Admin Features      | 6       | 6       | 0     | 100%       |
+| **Total**           | **120** | **120** | **0** | **100%**   |
 
 ---
 
 ## Completed Workstreams
 
 ### 1) Project scaffold + tooling
+
 - Core Vite + React + TypeScript setup finalized.
 - Tailwind, PostCSS, and ESLint configuration added.
 - Foundational documentation (README, setup/dev/specs/contributing/changelog) in place.
 
 ### 2) App routing + page scaffolds
+
 - Client-side routing implemented with `react-router-dom` v6.
 - 14 routes: home, login, signup, password-reset, dashboard, courses, course detail, lesson,
   session, profile, settings, educator, parent, admin, 404.
 - Code splitting with React.lazy for all authenticated pages.
 
 ### 3) Reusable UI and layout system
+
 - UI primitives: Button, Card, Input, Badge, Spinner, ProgressBar, Avatar, Tooltip, Modal
   (with focus trap), Alert.
 - Layout components: Header, Sidebar, Footer, PageWrapper, FocusMode.
 
 ### 4) Domain components and state scaffolding
+
 - Lesson components: LessonCard, TextLesson, AudioLesson, VideoLesson, InteractiveLesson,
   QuizBlock, LessonNav.
 - Dashboard components: CourseCard, ProgressWidget, RecentActivity, StreakBadge.
@@ -54,6 +58,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - Hooks (14), Zustand stores (4), shared types (6).
 
 ### 5) Database schema (24 migrations)
+
 - Foundation: profiles, courses, lessons, lesson_progress (001-004).
 - RBAC: user_role enum, parent_student_links, classes, class_enrollments (005).
 - Supporting: notifications, user_settings, audit_log, course_enrollments (006).
@@ -64,6 +69,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - RLS policies enforced on all tables.
 
 ### 6) RACA Cognitive Architecture (5 layers)
+
 - Layer 0: Runtime Authority (session manager, event system, audit trail, persistence).
 - Layer 1: 9-state Cognitive State Machine.
 - Layer 2: Agent Router (state-to-agent mapping, permission enforcement).
@@ -72,6 +78,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - 8 feature flags for progressive rollout; RACA imports lazy-loaded on SessionPage.
 
 ### 7) Auth (all flows complete)
+
 - ProtectedRoute enforces authentication and role-based access (learner/parent/educator/admin).
 - Password reset calls `supabase.auth.resetPasswordForEmail`; all `<main>` landmarks carry
   `id="main-content"` including the PasswordResetPage form state.
@@ -79,6 +86,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - Session management with automatic token refresh.
 
 ### 8) Security hardening
+
 - Vercel security headers: CSP, HSTS, X-Frame-Options, X-Content-Type-Options,
   Referrer-Policy, Permissions-Policy.
 - Zod input validation on all auth forms.
@@ -87,6 +95,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - CORS configuration for Edge Functions.
 
 ### 9) Compliance documentation
+
 - `docs/compliance/coppa-compliance.md` — COPPA age gate & parental consent procedures.
 - `docs/compliance/ferpa-compliance.md` — FERPA data handling guidance.
 - `docs/compliance/gdpr-compliance.md` — GDPR rights and data processing documentation.
@@ -97,12 +106,14 @@ This log tracks completed repository issues/workstreams and what is next.
 - `docs/compliance/screen-reader-testing.md` — NVDA + VoiceOver screen-reader test plan.
 
 ### 10) Accessibility hardening
+
 - Focus trap for modals; keyboard navigation detection; skip link (`#main-content`).
 - All `<main>` elements carry `id="main-content"`.
 - ARIA tab/tabpanel/tablist relationships on all tabbed dashboards.
 - Reduced motion support; OpenDyslexic font toggle.
 
 ### 11) Testing infrastructure
+
 - Vitest + React Testing Library: 30+ tests passing.
 - `jest-axe` automated accessibility tests in `tests/accessibility.test.tsx`.
 - Playwright E2E: `auth.spec.ts`, `smoke.spec.ts`, `educator-portal.spec.ts`,
@@ -111,11 +122,13 @@ This log tracks completed repository issues/workstreams and what is next.
 - Lighthouse CI running in GitHub Actions; `.lighthouserc.cjs` enforces score thresholds.
 
 ### 12) CI/CD
+
 - GitHub Actions: validate (lint + typecheck + test) → build → lighthouse → migrate.
 - `migrate` job runs `supabase db push` on `main` branch push only.
 - Environment management: `.env.example` with all required vars documented.
 
 ### 13) Educator Portal (full MVP)
+
 - EducatorDashboardPage with tabbed interface: Classes, Students, Content, Analytics, Messages.
 - ClassList + ClassManagement (full CRUD via `useClassManagement` hook).
 - StudentProgressTable (per-class progress monitoring from `lesson_progress`).
@@ -125,6 +138,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - EducatorMessages (Supabase Realtime channel for parent↔educator messaging).
 
 ### 14) Parent Portal (full MVP)
+
 - ParentDashboardPage with tabbed interface: Students, Progress, Messages, Notifications.
 - ParentStudentList (link/unlink students via `parent_student_links`).
 - ParentProgressReports (per-student lesson progress cards).
@@ -132,6 +146,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - ParentNotificationPrefs (email/push notification preference persistence).
 
 ### 15) Admin Portal (full MVP)
+
 - AdminDashboardPage with tabbed interface: Users, Content, Analytics, Audit Log.
 - UserManagement (CRUD, role assignment with confirmation dialog + audit log write).
 - ContentModeration (approve/reject lessons; moderation_status column).
@@ -139,6 +154,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - AuditLogViewer (paginated audit_log table view with filter by action type).
 
 ### 16) Learner Features
+
 - SmartReminders: Pomodoro-style timer renders in LessonPage; break/hydration/stretch alerts.
 - MilestoneCelebration: Triggered on DashboardPage when profile stats cross a milestone
   threshold; deduped via localStorage so each milestone shows exactly once.
@@ -147,6 +163,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - AI Adaptive Learning spec: documented in `docs/api-documentation.md`.
 
 ### 17) Documentation
+
 - 4 Architecture Decision Records (framework, RACA, accessibility, security).
 - Database ERD (Mermaid) covering all 24 tables.
 - API documentation for Supabase client, Edge Functions, health check, and adaptive engine.
@@ -155,6 +172,7 @@ This log tracks completed repository issues/workstreams and what is next.
 - ARIA strategy and alt text/transcript requirements.
 
 ### 18) Observability
+
 - Sentry initialised in `main.tsx` when `VITE_SENTRY_DSN` env var is set; DSN must be
   provisioned in Vercel environment settings for production error tracking.
 - `src/lib/sentry.ts` wired into the app.
@@ -163,6 +181,7 @@ This log tracks completed repository issues/workstreams and what is next.
 ---
 
 ## Validation Baseline (2026-03-03)
+
 - `npm run build` — 0 TypeScript errors, code-split into 15+ chunks
 - `npm run test -- --run` — 30/30 tests passing
 - `npm run lint` — 0 warnings

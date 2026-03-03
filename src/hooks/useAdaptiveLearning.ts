@@ -96,21 +96,28 @@ export function useAdaptiveLearning(courseId: string | undefined) {
   )
 
   const updateAdaptiveState = useCallback(
-    async (updates: Partial<Pick<AdaptiveLearningState,
-      'current_difficulty' | 'mastery_score' | 'recommended_lesson_id' |
-      'learning_velocity' | 'strengths' | 'weaknesses'
-    >>) => {
+    async (
+      updates: Partial<
+        Pick<
+          AdaptiveLearningState,
+          | 'current_difficulty'
+          | 'mastery_score'
+          | 'recommended_lesson_id'
+          | 'learning_velocity'
+          | 'strengths'
+          | 'weaknesses'
+        >
+      >,
+    ) => {
       if (!user?.id || !courseId) return
 
-      const { error: err } = await supabase
-        .from('adaptive_learning_state')
-        .upsert({
-          user_id: user.id,
-          course_id: courseId,
-          ...updates,
-          last_assessment_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+      const { error: err } = await supabase.from('adaptive_learning_state').upsert({
+        user_id: user.id,
+        course_id: courseId,
+        ...updates,
+        last_assessment_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
 
       if (err) throw err
       await fetchState()

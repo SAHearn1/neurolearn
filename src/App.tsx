@@ -18,12 +18,8 @@ const DashboardPage = lazy(() =>
 const CoursesPage = lazy(() =>
   import('./pages/CoursesPage').then((m) => ({ default: m.CoursesPage })),
 )
-const CoursePage = lazy(() =>
-  import('./pages/CoursePage').then((m) => ({ default: m.CoursePage })),
-)
-const LessonPage = lazy(() =>
-  import('./pages/LessonPage').then((m) => ({ default: m.LessonPage })),
-)
+const CoursePage = lazy(() => import('./pages/CoursePage').then((m) => ({ default: m.CoursePage })))
+const LessonPage = lazy(() => import('./pages/LessonPage').then((m) => ({ default: m.LessonPage })))
 const SessionPage = lazy(() =>
   import('./pages/SessionPage').then((m) => ({ default: m.SessionPage })),
 )

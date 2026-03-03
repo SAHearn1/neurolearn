@@ -17,6 +17,10 @@ const pass = (reason: string): PreconditionResult => ({ met: true, reason })
 const fail = (reason: string): PreconditionResult => ({ met: false, reason })
 
 const preconditionMap: Partial<Record<CognitiveState, PreconditionFn>> = {
+  ROOT: () => pass('ROOT has no preconditions'),
+
+  REGULATE: () => pass('REGULATE is always accessible'),
+
   POSITION: (state) => {
     if (state.regulation.level < 60) {
       return fail(`Regulation level ${state.regulation.level} is below 60`)
@@ -67,9 +71,7 @@ const preconditionMap: Partial<Record<CognitiveState, PreconditionFn>> = {
   },
 
   ARCHIVE: (state) => {
-    const hasReconnection = state.artifacts.some(
-      (a) => a.kind === 'reconnection_reflection',
-    )
+    const hasReconnection = state.artifacts.some((a) => a.kind === 'reconnection_reflection')
     if (!hasReconnection) {
       return fail('Reconnection reflection required before ARCHIVE')
     }

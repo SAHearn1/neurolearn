@@ -4,8 +4,12 @@ import { describe, expect, it, beforeEach, vi } from 'vitest'
 const storage: Record<string, string> = {}
 vi.stubGlobal('localStorage', {
   getItem: (key: string) => storage[key] ?? null,
-  setItem: (key: string, value: string) => { storage[key] = value },
-  removeItem: (key: string) => { delete storage[key] },
+  setItem: (key: string, value: string) => {
+    storage[key] = value
+  },
+  removeItem: (key: string) => {
+    delete storage[key]
+  },
 })
 
 // Import after mock is set up

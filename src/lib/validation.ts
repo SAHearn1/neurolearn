@@ -48,9 +48,7 @@ export const lessonIdSchema = z.string().uuid('Invalid lesson ID')
 export const profileUpdateSchema = z.object({
   display_name: displayNameSchema.optional(),
   avatar_url: z.string().url('Invalid URL').optional().or(z.literal('')),
-  learning_styles: z
-    .array(z.enum(['visual', 'auditory', 'reading', 'kinesthetic']))
-    .optional(),
+  learning_styles: z.array(z.enum(['visual', 'auditory', 'reading', 'kinesthetic'])).optional(),
 })
 
 export const settingsSchema = z.object({
@@ -93,9 +91,10 @@ export function sanitizeInput(input: string): string {
 
 // --- Helper ---
 
-export function getValidationErrors(
-  result: { success: boolean; error?: z.ZodError },
-): Record<string, string> {
+export function getValidationErrors(result: {
+  success: boolean
+  error?: z.ZodError
+}): Record<string, string> {
   if (result.success || !result.error) return {}
   const errors: Record<string, string> = {}
   for (const issue of result.error.issues) {

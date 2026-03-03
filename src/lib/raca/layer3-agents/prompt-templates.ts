@@ -21,15 +21,13 @@ const TOKEN_LIMITS: Record<AgentId, number> = {
   defense: 400,
 }
 
-export function buildPromptBundle(
-  agentId: AgentId,
-  context: AgentContext,
-): PromptBundle {
+export function buildPromptBundle(agentId: AgentId, context: AgentContext): PromptBundle {
   const system = getAgentSystemPrompt(agentId, context)
 
-  const sessionContext = context.session_history.length > 0
-    ? `\n\nRecent session activity:\n${context.session_history.slice(-5).join('\n')}`
-    : ''
+  const sessionContext =
+    context.session_history.length > 0
+      ? `\n\nRecent session activity:\n${context.session_history.slice(-5).join('\n')}`
+      : ''
 
   const accessibilityNote = context.accessibility.reduce_motion
     ? '\n\nNote: Keep responses calm and measured. Avoid excessive formatting.'

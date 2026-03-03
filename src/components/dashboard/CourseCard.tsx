@@ -14,7 +14,10 @@ export function CourseCard({ completedLessons, id, title, totalLessons }: Course
     <Card>
       <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
       <ProgressWidget complete={completedLessons} total={totalLessons} />
-      <Link className="mt-3 inline-block text-sm font-semibold text-brand-700" to={`/courses/${id}`}>
+      <Link
+        className="mt-3 inline-block text-sm font-semibold text-brand-700"
+        to={`/courses/${id}`}
+      >
         Continue course →
       </Link>
     </Card>

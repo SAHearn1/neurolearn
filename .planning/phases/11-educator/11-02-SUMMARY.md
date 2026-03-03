@@ -11,10 +11,12 @@
 4. **CourseAssignment** — Already implemented with assign/unassign courses to students
 
 ## Enhancements Made
+
 - Migration `021_classes_archived.sql`: Added `archived boolean DEFAULT false` to classes table with index
 - `useClassManagement.ts`: Added `archiveClass(classId)` method alongside existing `deleteClass`
 
 ## CI Gate
+
 - typecheck: PASS (0 errors)
 - lint: PASS (0 warnings)
 - test: PASS (24/24)

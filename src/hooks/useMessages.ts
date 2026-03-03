@@ -88,20 +88,15 @@ export function useMessages(_recipientId?: string) {
     [user?.id],
   )
 
-  const markAsRead = useCallback(
-    async (messageId: string) => {
-      const { error: err } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', messageId)
+  const markAsRead = useCallback(async (messageId: string) => {
+    const { error: err } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', messageId)
 
-      if (err) throw err
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, read: true } : m)),
-      )
-    },
-    [],
-  )
+    if (err) throw err
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, read: true } : m)))
+  }, [])
 
   return {
     messages,

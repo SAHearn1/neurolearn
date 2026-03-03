@@ -20,12 +20,14 @@ export function useParentStudentLinks() {
     try {
       const { data, error: err } = await supabase
         .from('parent_student_links')
-        .select(`
+        .select(
+          `
           id, parent_id, student_id, status, created_at,
           student:profiles!parent_student_links_student_id_fkey (
             user_id, display_name, avatar_url, streak_days, lessons_completed
           )
-        `)
+        `,
+        )
         .eq('parent_id', user.id)
         .order('created_at', { ascending: false })
 

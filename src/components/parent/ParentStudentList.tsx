@@ -44,7 +44,11 @@ export function ParentStudentList() {
             Link
           </Button>
         </div>
-        {actionError && <Alert variant="error" className="mt-2">{actionError}</Alert>}
+        {actionError && (
+          <Alert variant="error" className="mt-2">
+            {actionError}
+          </Alert>
+        )}
       </Card>
 
       {links.length === 0 ? (

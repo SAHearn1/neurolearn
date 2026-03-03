@@ -69,7 +69,10 @@ export function recordEvent(
   payload: Record<string, unknown> = {},
 ): void {
   const { dispatch, session_id, current_state } = useRuntimeStore.getState()
-  if (!session_id) return
+  if (!session_id) {
+    console.warn('[RACA SessionManager] Event dropped — no active session', { kind, source })
+    return
+  }
 
   const event = createEvent(session_id, kind, source, current_state, current_state, payload)
   dispatch({ type: 'EVENT_RECORDED', event })

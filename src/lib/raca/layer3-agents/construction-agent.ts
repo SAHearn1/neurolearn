@@ -10,7 +10,10 @@ export const constructionAgent: AgentContract = {
   buildSystemPrompt: (ctx: AgentContext) => {
     const learnerDraft = ctx.artifacts.find((a) => a.kind === 'draft')
     const learnerWords = learnerDraft ? countWords(learnerDraft.content) : 0
-    const maxAiWords = Math.max(learnerWords, 50) // AI should not exceed learner's word count
+    // AI word limit: use learner's word count as ceiling, with a minimum floor of 50
+    // to allow meaningful structural guidance even for very short drafts.
+    // The floor prevents the agent from being muted when the learner has written little.
+    const maxAiWords = Math.max(learnerWords, 50)
 
     return `You are the Construction Agent in a RootWork learning session.
 

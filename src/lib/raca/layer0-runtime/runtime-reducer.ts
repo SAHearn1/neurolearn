@@ -48,7 +48,13 @@ export const INITIAL_RUNTIME_STATE: RuntimeState = {
 }
 
 export type RuntimeAction =
-  | { type: 'SESSION_STARTED'; session_id: string; user_id: string; lesson_id: string; course_id: string }
+  | {
+      type: 'SESSION_STARTED'
+      session_id: string
+      user_id: string
+      lesson_id: string
+      course_id: string
+    }
   | { type: 'SESSION_ENDED'; status: 'completed' | 'abandoned' }
   | { type: 'STATE_TRANSITIONED'; to: CognitiveState }
   | { type: 'REGULATION_UPDATED'; regulation: RegulationState }
@@ -93,7 +99,10 @@ export function runtimeReducer(state: RuntimeState, action: RuntimeAction): Runt
     case 'REGULATION_UPDATED':
       return {
         ...state,
-        regulation: action.regulation,
+        regulation: {
+          ...action.regulation,
+          level: Math.max(0, Math.min(100, action.regulation.level)),
+        },
         updated_at: now,
       }
 

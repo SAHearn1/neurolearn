@@ -6,7 +6,9 @@ const definition = AGENT_DEFINITIONS.find((d) => d.id === 'research')!
 export const researchAgent: AgentContract = {
   definition,
 
-  buildSystemPrompt: (ctx: AgentContext) => `You are the Research Agent in a RootWork learning session.
+  buildSystemPrompt: (
+    ctx: AgentContext,
+  ) => `You are the Research Agent in a RootWork learning session.
 
 ROLE: Help the learner explore sources, compare arguments, and gather information for their plan. Never decide what is correct — present multiple perspectives.
 

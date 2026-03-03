@@ -13,6 +13,7 @@
 6. **parent-portal.spec.ts** — 3 tests covering auth requirement, dashboard load, student linking
 
 ## Enhancements Made
+
 - `playwright.config.ts`: testDir, baseURL env var, CI webServer conditional
 - `package.json`: test:e2e, test:e2e:ui scripts
 - `tests/e2e/auth.spec.ts`: 6 auth flow E2E tests
@@ -22,5 +23,6 @@
 - `vite.config.ts`: Excluded `tests/e2e/**` from vitest
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (25/25) | build: PASS
 - E2E tests skip without PLAYWRIGHT_RUN=true (do not break CI)

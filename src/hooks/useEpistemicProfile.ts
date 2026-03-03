@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
 import { scoreTRACE } from '../lib/raca/layer4-epistemic/fluency-tracker'
-import { determineAdaptationLevel, getAdaptationConfig } from '../lib/raca/layer4-epistemic/adaptation-engine'
+import {
+  determineAdaptationLevel,
+  getAdaptationConfig,
+} from '../lib/raca/layer4-epistemic/adaptation-engine'
 import {
   detectDysregulationSignals,
   computeRegulationDelta,
@@ -24,16 +27,10 @@ export function useEpistemicProfile() {
     [regulation, trace],
   )
 
-  const adaptationConfig = useMemo(
-    () => getAdaptationConfig(adaptationLevel),
-    [adaptationLevel],
-  )
+  const adaptationConfig = useMemo(() => getAdaptationConfig(adaptationLevel), [adaptationLevel])
 
   const processMessage = useCallback(
-    (
-      message: string,
-      recentMessages: Array<{ text: string; timestamp: string }>,
-    ) => {
+    (message: string, recentMessages: Array<{ text: string; timestamp: string }>) => {
       if (!racaFlags.epistemicMonitoring) return
 
       const signals = detectDysregulationSignals(message, recentMessages)

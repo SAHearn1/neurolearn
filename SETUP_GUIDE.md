@@ -6,11 +6,11 @@ Step-by-step instructions for setting up a local development environment.
 
 ## Prerequisites
 
-| Tool | Minimum Version | Install |
-|------|----------------|---------|
-| Node.js | 18.x LTS | [nodejs.org](https://nodejs.org) |
-| npm | 9.x | Included with Node.js |
-| Git | 2.x | [git-scm.com](https://git-scm.com) |
+| Tool    | Minimum Version | Install                            |
+| ------- | --------------- | ---------------------------------- |
+| Node.js | 18.x LTS        | [nodejs.org](https://nodejs.org)   |
+| npm     | 9.x             | Included with Node.js              |
+| Git     | 2.x             | [git-scm.com](https://git-scm.com) |
 
 You will also need a free [Supabase](https://supabase.com) account.
 
@@ -93,14 +93,14 @@ npm run typecheck   # Check TypeScript types
 
 ## Environment Variable Reference
 
-| Variable | Required | Scope | Description |
-|----------|----------|-------|-------------|
-| `VITE_SUPABASE_URL` | ✅ | Client | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | ✅ | Client | Supabase anon (public) key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Edge Fns | Server | Bypasses RLS — **never expose to client** |
-| `SUPABASE_DB_URL` | Edge Fns | Server | Direct PostgreSQL connection string |
-| `VITE_APP_URL` | ✅ | Client | App base URL (`http://localhost:5173` locally) |
-| `VITE_APP_ENV` | Optional | Client | `development` / `production` |
+| Variable                    | Required | Scope  | Description                                    |
+| --------------------------- | -------- | ------ | ---------------------------------------------- |
+| `VITE_SUPABASE_URL`         | ✅       | Client | Supabase project URL                           |
+| `VITE_SUPABASE_ANON_KEY`    | ✅       | Client | Supabase anon (public) key                     |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge Fns | Server | Bypasses RLS — **never expose to client**      |
+| `SUPABASE_DB_URL`           | Edge Fns | Server | Direct PostgreSQL connection string            |
+| `VITE_APP_URL`              | ✅       | Client | App base URL (`http://localhost:5173` locally) |
+| `VITE_APP_ENV`              | Optional | Client | `development` / `production`                   |
 
 > **Security:** Only `VITE_*` variables are bundled into the browser. Server-only secrets must never be prefixed with `VITE_`.
 
@@ -118,13 +118,13 @@ Pushes to `main` trigger automatic production deployments via the connected GitH
 
 Set these in **Vercel Dashboard → Settings → Environment Variables**:
 
-| Variable | Environments | Sensitive |
-|----------|-------------|-----------|
-| `VITE_SUPABASE_URL` | Production, Preview | No |
-| `VITE_SUPABASE_ANON_KEY` | Production, Preview | No |
-| `SUPABASE_SERVICE_ROLE_KEY` | Production | **Yes** (encrypted) |
-| `SUPABASE_DB_URL` | Production | **Yes** (encrypted) |
-| `VITE_APP_URL` | Production | No |
+| Variable                    | Environments        | Sensitive           |
+| --------------------------- | ------------------- | ------------------- |
+| `VITE_SUPABASE_URL`         | Production, Preview | No                  |
+| `VITE_SUPABASE_ANON_KEY`    | Production, Preview | No                  |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production          | **Yes** (encrypted) |
+| `SUPABASE_DB_URL`           | Production          | **Yes** (encrypted) |
+| `VITE_APP_URL`              | Production          | No                  |
 
 Or set via CLI:
 

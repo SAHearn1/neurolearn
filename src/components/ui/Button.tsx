@@ -14,7 +14,13 @@ const variantClasses: Record<ButtonVariant, string> = {
   ghost: 'bg-transparent text-brand-700 hover:bg-brand-50 focus-visible:ring-brand-500',
 }
 
-export function Button({ children, className = '', type = 'button', variant = 'primary', ...props }: ButtonProps) {
+export function Button({
+  children,
+  className = '',
+  type = 'button',
+  variant = 'primary',
+  ...props
+}: ButtonProps) {
   return (
     <button
       className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring ${variantClasses[variant]} ${className}`.trim()}

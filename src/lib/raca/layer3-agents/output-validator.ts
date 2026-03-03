@@ -39,11 +39,11 @@ export function buildAgentResponse(
 ): AgentResponse {
   const check = validateAgentOutput(agentId, rawContent, context)
 
-  // Extract questions from the response
-  const lines = rawContent.split('\n')
-  const reflectiveQuestions = lines
-    .filter((l) => l.trim().endsWith('?'))
-    .map((l) => l.trim())
+  // Extract questions by splitting on sentence boundaries, then filtering for question marks
+  const reflectiveQuestions = rawContent
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => s.trim().endsWith('?'))
+    .map((s) => s.trim())
 
   return {
     content: rawContent,

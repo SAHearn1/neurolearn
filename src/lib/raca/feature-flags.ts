@@ -6,8 +6,14 @@
  * the app behaves as if RACA doesn't exist.
  */
 
-const readFlag = (key: string): boolean =>
-  import.meta.env[key] === 'true'
+const readFlag = (key: string): boolean => {
+  // In development, allow localStorage overrides for easy testing
+  if (import.meta.env.DEV) {
+    const override = localStorage.getItem(`raca.override.${key}`)
+    if (override !== null) return override === 'true'
+  }
+  return import.meta.env[key] === 'true'
+}
 
 export const racaFlags = {
   /** Layer 0: Session runtime, events, audit trail */

@@ -3,6 +3,7 @@
 ## Overview
 
 NeuroLearn uses **Supabase** as its backend. All data access flows through:
+
 1. **Supabase Client SDK** — Direct table queries from the browser (protected by RLS)
 2. **Supabase Edge Functions** — Server-side logic for AI agent invocation and analysis
 
@@ -12,13 +13,13 @@ All requests require a valid Supabase JWT. The client SDK handles token manageme
 
 ### Auth Endpoints (Supabase Auth)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/v1/signup` | Register new user |
-| POST | `/auth/v1/token?grant_type=password` | Sign in with email/password |
-| POST | `/auth/v1/logout` | Sign out |
-| POST | `/auth/v1/recover` | Send password reset email |
-| POST | `/auth/v1/token?grant_type=refresh_token` | Refresh session token |
+| Method | Endpoint                                  | Description                 |
+| ------ | ----------------------------------------- | --------------------------- |
+| POST   | `/auth/v1/signup`                         | Register new user           |
+| POST   | `/auth/v1/token?grant_type=password`      | Sign in with email/password |
+| POST   | `/auth/v1/logout`                         | Sign out                    |
+| POST   | `/auth/v1/recover`                        | Send password reset email   |
+| POST   | `/auth/v1/token?grant_type=refresh_token` | Refresh session token       |
 
 ### Client SDK Usage
 
@@ -30,13 +31,14 @@ const { data, error } = await supabase.auth.signInWithPassword({ email, password
 
 // Sign up
 const { data, error } = await supabase.auth.signUp({
-  email, password,
-  options: { data: { display_name: 'Ada' } }
+  email,
+  password,
+  options: { data: { display_name: 'Ada' } },
 })
 
 // Password reset
 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-  redirectTo: `${window.location.origin}/login`
+  redirectTo: `${window.location.origin}/login`,
 })
 ```
 
@@ -55,11 +57,7 @@ const { data } = await supabase
   .order('created_at', { ascending: false })
 
 // Get single course
-const { data } = await supabase
-  .from('courses')
-  .select('*')
-  .eq('id', courseId)
-  .single()
+const { data } = await supabase.from('courses').select('*').eq('id', courseId).single()
 ```
 
 ### Lessons
@@ -86,15 +84,13 @@ const { data } = await supabase
   .maybeSingle()
 
 // Update progress
-const { error } = await supabase
-  .from('lesson_progress')
-  .upsert({
-    user_id: userId,
-    lesson_id: lessonId,
-    course_id: courseId,
-    status: 'completed',
-    time_spent_seconds: 300,
-  })
+const { error } = await supabase.from('lesson_progress').upsert({
+  user_id: userId,
+  lesson_id: lessonId,
+  course_id: courseId,
+  status: 'completed',
+  time_spent_seconds: 300,
+})
 ```
 
 ## Edge Functions
@@ -104,6 +100,7 @@ const { error } = await supabase
 Invoke a RACA AI agent within a cognitive session.
 
 **Request:**
+
 ```json
 {
   "session_id": "uuid",
@@ -114,6 +111,7 @@ Invoke a RACA AI agent within a cognitive session.
 ```
 
 **Response:**
+
 ```json
 {
   "response": "Agent's response text",
@@ -128,6 +126,7 @@ Invoke a RACA AI agent within a cognitive session.
 Sync local session state to Supabase.
 
 **Request (POST):**
+
 ```json
 {
   "session_id": "uuid",
@@ -145,6 +144,7 @@ Retrieve session state from server.
 Analyze session artifacts for epistemic growth and TRACE fluency scoring.
 
 **Request:**
+
 ```json
 {
   "user_id": "uuid",
@@ -154,6 +154,7 @@ Analyze session artifacts for epistemic growth and TRACE fluency scoring.
 ```
 
 **Response:**
+
 ```json
 {
   "trace": { "think": 7, "reason": 6, "articulate": 8, "check": 5, "extend": 4 },
@@ -177,6 +178,7 @@ Analyze session artifacts for epistemic growth and TRACE fluency scoring.
 ## Rate Limiting
 
 Rate limiting is handled at the Supabase project level:
+
 - **Auth endpoints:** 30 requests/minute per IP
 - **Database queries:** Governed by Supabase plan limits
 - **Edge Functions:** 500 invocations/day (free tier) or plan-based
@@ -184,5 +186,6 @@ Rate limiting is handled at the Supabase project level:
 ## CORS
 
 Edge Functions include CORS headers for:
+
 - `http://localhost:5173` (development)
 - `https://neurolearn-one.vercel.app` (production)

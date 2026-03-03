@@ -21,16 +21,16 @@ NeuroLearn combines visual, auditory, and kinesthetic learning pathways to help 
 
 ## 🛠 Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, TypeScript, Vite |
-| Styling | Tailwind CSS, PostCSS |
+| Layer        | Technology                           |
+| ------------ | ------------------------------------ |
+| Frontend     | React 18, TypeScript, Vite           |
+| Styling      | Tailwind CSS, PostCSS                |
 | Backend / DB | Supabase (PostgreSQL, Auth, Storage) |
-| State | Zustand |
-| Routing | React Router v6 |
-| Testing | Vitest, React Testing Library |
-| Linting | ESLint, Prettier |
-| Deployment | Vercel / Netlify |
+| State        | Zustand                              |
+| Routing      | React Router v6                      |
+| Testing      | Vitest, React Testing Library        |
+| Linting      | ESLint, Prettier                     |
+| Deployment   | Vercel / Netlify                     |
 
 ## 🚀 Quick Start
 
@@ -85,7 +85,6 @@ neurolearn/
 - [Changelog](CHANGELOG.md) — Version history
 - [Issue Progress Log](ISSUE_PROGRESS.md) — Completed workstreams and next issue queue
 
-
 ## ✅ Implementation Status
 
 The scaffold backlog in `FILE_CHECKLIST.md` is now fully completed (83/83 files).
@@ -102,14 +101,14 @@ Current implementation includes:
 ## 🗺 Roadmap
 
 - [x] Project scaffold and documentation
-- [ ] Authentication (Supabase Auth)
-- [ ] User profiles and learning preferences
+- [x] Authentication (Supabase Auth)
+- [x] User profiles and learning preferences
 - [x] Core lesson components (text, audio, interactive)
-- [ ] Adaptive learning algorithm
+- [x] Adaptive learning algorithm (RACA 5-layer architecture)
 - [x] Progress dashboard
-- [ ] Educator / parent portal
+- [x] Educator / parent portal
 - [x] Mobile-responsive design
-- [ ] Accessibility audit and fixes
+- [x] Accessibility audit and fixes
 - [ ] v1.0 release
 
 ## 🔒 Supabase Security Guardrails
@@ -149,4 +148,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-*NeuroLearn — learning that adapts to you.*
+_NeuroLearn — learning that adapts to you._

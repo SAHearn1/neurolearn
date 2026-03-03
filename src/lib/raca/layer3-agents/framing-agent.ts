@@ -7,7 +7,9 @@ const definition = AGENT_DEFINITIONS.find((d) => d.id === 'framing')!
 export const framingAgent: AgentContract = {
   definition,
 
-  buildSystemPrompt: (ctx: AgentContext) => `You are the Framing Agent in a RootWork learning session.
+  buildSystemPrompt: (
+    ctx: AgentContext,
+  ) => `You are the Framing Agent in a RootWork learning session.
 
 ROLE: Help the learner clarify their question, explore alternative framings, and deepen their initial understanding through reflective questions.
 

@@ -33,17 +33,18 @@ NeuroLearn's adaptive learning engine uses AI (Claude/Gemini) to provide persona
 
 Adjusts lesson difficulty based on performance signals:
 
-| Signal | Weight | Source |
-|--------|--------|--------|
-| Lesson completion rate | 30% | lesson_progress |
-| Time-to-complete vs expected | 20% | lesson_progress.time_spent_seconds |
-| Quiz/assessment scores | 25% | lesson_progress.score |
-| Revision frequency (RACA) | 15% | epistemic_profiles |
-| Streak consistency | 10% | profiles.streak_days |
+| Signal                       | Weight | Source                             |
+| ---------------------------- | ------ | ---------------------------------- |
+| Lesson completion rate       | 30%    | lesson_progress                    |
+| Time-to-complete vs expected | 20%    | lesson_progress.time_spent_seconds |
+| Quiz/assessment scores       | 25%    | lesson_progress.score              |
+| Revision frequency (RACA)    | 15%    | epistemic_profiles                 |
+| Streak consistency           | 10%    | profiles.streak_days               |
 
 **Difficulty levels**: easy → medium → hard → adaptive
 
 **Rules**:
+
 - Promote after 3 consecutive scores >= 80%
 - Demote after 2 consecutive scores < 50%
 - "Adaptive" mode: AI selects difficulty per-question
@@ -67,6 +68,7 @@ trend = current_velocity - previous_velocity
 ```
 
 Used to:
+
 - Adjust reminder frequency (slower velocity → more encouragement)
 - Calibrate break suggestions (high velocity → more break prompts)
 - Inform educator dashboards
@@ -75,13 +77,13 @@ Used to:
 
 Adapts presentation based on accessibility preferences and learning patterns:
 
-| Pattern Detected | Accommodation |
-|-----------------|---------------|
-| Slow reading speed | Increase text size, reduce paragraph length |
-| Frequent re-reads | Add summaries, highlight key terms |
-| Low quiz scores after video | Offer text alternative |
-| High RACA revision frequency | More scaffolded prompts |
-| Dysregulation signals | Pause content, offer regulation exercise |
+| Pattern Detected             | Accommodation                               |
+| ---------------------------- | ------------------------------------------- |
+| Slow reading speed           | Increase text size, reduce paragraph length |
+| Frequent re-reads            | Add summaries, highlight key terms          |
+| Low quiz scores after video  | Offer text alternative                      |
+| High RACA revision frequency | More scaffolded prompts                     |
+| Dysregulation signals        | Pause content, offer regulation exercise    |
 
 ## AI Integration Points
 
@@ -93,6 +95,7 @@ Adapts presentation based on accessibility preferences and learning patterns:
 **AI Provider**: Configurable via `RACA_AI_PROVIDER` / `RACA_AI_MODEL`
 
 **Prompt template**:
+
 ```
 You are an adaptive learning assistant for a neurodivergent learner.
 Given their performance data, recommend the optimal next lesson and
@@ -114,6 +117,7 @@ Current accommodations: {accommodation_prefs}
 ## Database Tables
 
 Uses existing `adaptive_learning_state` table (migration 007):
+
 - `current_difficulty`, `mastery_score`, `recommended_lesson_id`
 - `learning_velocity`, `strengths[]`, `weaknesses[]`
 

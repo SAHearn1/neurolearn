@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://neurolearn-one.vercel.app/sitemap.xml

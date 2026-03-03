@@ -11,10 +11,12 @@
 4. **Env vars** — Added VITE_SENTRY_DSN, VITE_SENTRY_ENVIRONMENT, VITE_VERCEL_ANALYTICS_ID to .env.example
 
 ## Enhancements Made
+
 - `src/main.tsx`: Sentry.init + ErrorBoundary wrapping App
 - `src/lib/logger.ts`: Error-level logs forwarded to Sentry
 - `src/lib/analytics.ts`: Real Vercel Analytics + typed custom events
 - `.env.example`: Observability env vars added
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (30/30) | build: PASS

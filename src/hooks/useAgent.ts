@@ -24,7 +24,8 @@ export function useAgent() {
 
       try {
         const store = useRuntimeStore.getState()
-        const { dispatch: _, ...runtimeState } = store
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { dispatch, ...runtimeState } = store
 
         // Route check
         const route = routeAgentRequest(agentId, runtimeState)
@@ -43,7 +44,8 @@ export function useAgent() {
           state: runtimeState.current_state,
           regulation_level: runtimeState.regulation.level,
           artifacts: runtimeState.artifacts,
-          epistemic: runtimeState.epistemic_snapshots[runtimeState.epistemic_snapshots.length - 1] ?? null,
+          epistemic:
+            runtimeState.epistemic_snapshots[runtimeState.epistemic_snapshots.length - 1] ?? null,
           learner_input: learnerInput,
           session_history: runtimeState.events
             .filter((e) => e.kind === 'agent_responded' || e.kind === 'reflection_submitted')

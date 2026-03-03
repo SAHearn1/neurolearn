@@ -37,7 +37,11 @@ export function useProfile() {
   }, [fetchProfile])
 
   const updateProfile = useCallback(
-    async (updates: Partial<Pick<UserProfile, 'display_name' | 'avatar_url' | 'learning_styles' | 'accessibility'>>) => {
+    async (
+      updates: Partial<
+        Pick<UserProfile, 'display_name' | 'avatar_url' | 'learning_styles' | 'accessibility'>
+      >,
+    ) => {
       if (!user?.id) return
       const { error: err } = await supabase
         .from('profiles')

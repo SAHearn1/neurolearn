@@ -203,21 +203,21 @@ erDiagram
 
 ## Table Summary
 
-| Table | Migration | RLS | Purpose |
-|-------|-----------|-----|---------|
-| profiles | 001, 005 | User-scoped | User identity and preferences |
-| courses | 002 | Published readable | Course catalog |
-| lessons | 003 | Published readable | Lesson content |
-| lesson_progress | 004 | User-scoped | Progress tracking |
-| parent_student_links | 005 | Parent/student scoped | Family linking |
-| classes | 005 | Educator-scoped | Class management |
-| class_enrollments | 005 | Educator/student scoped | Class membership |
-| notifications | 006 | User-scoped | Notification inbox |
-| user_settings | 006 | User-scoped | Server-side preferences |
-| audit_log | 006 | Admin-only | Immutable audit trail |
-| course_enrollments | 006 | User-scoped | Course enrollment |
-| adaptive_learning_state | 007 | User + educator scoped | AI personalization |
-| cognitive_sessions | 010 | User-scoped | RACA sessions |
-| raca_audit_events | 013 | Session-scoped | RACA event log |
-| raca_agent_interactions | 015 | Session-scoped | Agent call records |
-| epistemic_profiles | 014 | User-scoped | Longitudinal cognitive profile |
+| Table                   | Migration | RLS                     | Purpose                        |
+| ----------------------- | --------- | ----------------------- | ------------------------------ |
+| profiles                | 001, 005  | User-scoped             | User identity and preferences  |
+| courses                 | 002       | Published readable      | Course catalog                 |
+| lessons                 | 003       | Published readable      | Lesson content                 |
+| lesson_progress         | 004       | User-scoped             | Progress tracking              |
+| parent_student_links    | 005       | Parent/student scoped   | Family linking                 |
+| classes                 | 005       | Educator-scoped         | Class management               |
+| class_enrollments       | 005       | Educator/student scoped | Class membership               |
+| notifications           | 006       | User-scoped             | Notification inbox             |
+| user_settings           | 006       | User-scoped             | Server-side preferences        |
+| audit_log               | 006       | Admin-only              | Immutable audit trail          |
+| course_enrollments      | 006       | User-scoped             | Course enrollment              |
+| adaptive_learning_state | 007       | User + educator scoped  | AI personalization             |
+| cognitive_sessions      | 010       | User-scoped             | RACA sessions                  |
+| raca_audit_events       | 013       | Session-scoped          | RACA event log                 |
+| raca_agent_interactions | 015       | Session-scoped          | Agent call records             |
+| epistemic_profiles      | 014       | User-scoped             | Longitudinal cognitive profile |

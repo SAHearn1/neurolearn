@@ -12,9 +12,7 @@ export function RevisionView({ originalDraft, onSaveRevision }: Props) {
       {originalDraft && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <p className="mb-2 text-xs font-semibold text-slate-500">Your original draft:</p>
-          <div className="whitespace-pre-wrap text-sm text-slate-700">
-            {originalDraft.content}
-          </div>
+          <div className="whitespace-pre-wrap text-sm text-slate-700">{originalDraft.content}</div>
           <p className="mt-2 text-xs text-slate-400">{originalDraft.word_count} words</p>
         </div>
       )}

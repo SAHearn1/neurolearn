@@ -16,17 +16,16 @@ export function DefensePanel({ agentQuestions, onSubmitDefense }: Props) {
       {agentQuestions && (
         <div className="rounded-lg border border-red-100 bg-red-50 p-4">
           <p className="mb-2 text-xs font-semibold text-red-700">Defense questions:</p>
-          <div className="whitespace-pre-wrap text-sm text-red-800">
-            {agentQuestions.content}
-          </div>
+          <div className="whitespace-pre-wrap text-sm text-red-800">{agentQuestions.content}</div>
         </div>
       )}
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700">
+        <label htmlFor="defense-response" className="block text-sm font-medium text-slate-700">
           Defend your work — explain your reasoning and provide evidence
         </label>
         <textarea
+          id="defense-response"
           className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           rows={6}
           value={response}
@@ -36,7 +35,10 @@ export function DefensePanel({ agentQuestions, onSubmitDefense }: Props) {
         <div className="flex items-center justify-between">
           <span className="text-xs text-slate-500">{wordCount} words</span>
           <Button
-            onClick={() => { onSubmitDefense(response); setResponse('') }}
+            onClick={() => {
+              onSubmitDefense(response)
+              setResponse('')
+            }}
             disabled={wordCount < 15}
           >
             Submit defense

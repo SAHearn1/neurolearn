@@ -84,9 +84,7 @@ export function SessionPageCore() {
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
               RACA Session
             </p>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Lesson: {lessonId}
-            </h1>
+            <h1 className="text-2xl font-bold text-slate-900">Lesson: {lessonId}</h1>
           </div>
           <Button variant="ghost" onClick={handleEndSession}>
             End session
@@ -104,13 +102,11 @@ export function SessionPageCore() {
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <h2 className="mb-2 font-semibold text-amber-900">Ground yourself</h2>
               <p className="text-sm text-amber-800">
-                Before we begin, take a moment to connect with what you already know about this topic.
-                Think about what interests you and what questions you might have.
+                Before we begin, take a moment to connect with what you already know about this
+                topic. Think about what interests you and what questions you might have.
               </p>
               <div className="mt-3">
-                <Button onClick={() => handleTransition('REGULATE')}>
-                  I am ready to begin
-                </Button>
+                <Button onClick={() => handleTransition('REGULATE')}>I am ready to begin</Button>
               </div>
             </div>
           )}
@@ -119,8 +115,8 @@ export function SessionPageCore() {
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
               <h2 className="mb-2 font-semibold text-blue-900">Regulation check</h2>
               <p className="mb-3 text-sm text-blue-800">
-                On a scale of 1-10, how ready do you feel to learn right now?
-                It is okay if the answer is low — we can adjust.
+                On a scale of 1-10, how ready do you feel to learn right now? It is okay if the
+                answer is low — we can adjust.
               </p>
               <ReflectionPrompt
                 prompt="How are you feeling right now? What is on your mind as you start this session?"
@@ -201,7 +197,8 @@ export function SessionPageCore() {
             <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
               <h2 className="mb-2 text-xl font-bold text-green-900">Session complete</h2>
               <p className="mb-4 text-sm text-green-800">
-                You produced {artifacts.length} artifacts across {cognitive.stateHistory.length} states.
+                You produced {artifacts.length} artifacts across {cognitive.stateHistory.length}{' '}
+                states.
               </p>
               <Button onClick={handleEndSession}>Finish and return to lesson</Button>
             </div>

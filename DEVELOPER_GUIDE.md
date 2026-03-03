@@ -29,16 +29,16 @@ npm run dev
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite development server |
-| `npm run build` | Production build to `dist/` |
-| `npm run preview` | Preview production build locally |
-| `npm run test` | Run Vitest unit tests |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Run Prettier |
-| `npm run typecheck` | Run TypeScript compiler check |
+| Command                 | Description                      |
+| ----------------------- | -------------------------------- |
+| `npm run dev`           | Start Vite development server    |
+| `npm run build`         | Production build to `dist/`      |
+| `npm run preview`       | Preview production build locally |
+| `npm run test`          | Run Vitest unit tests            |
+| `npm run test:coverage` | Run tests with coverage report   |
+| `npm run lint`          | Run ESLint                       |
+| `npm run format`        | Run Prettier                     |
+| `npm run typecheck`     | Run TypeScript compiler check    |
 
 ---
 
@@ -88,6 +88,26 @@ src/
 - One component per file
 - CSS via **Tailwind utility classes**; avoid inline styles
 - Accessibility: all interactive elements must have accessible labels (`aria-label`, `aria-describedby`, visible focus rings)
+
+---
+
+## Linting
+
+ESLint is configured with TypeScript, React Hooks, and accessibility (jsx-a11y) plugins:
+
+```bash
+npm run lint       # Run ESLint on all files
+```
+
+**Plugins active:**
+
+- `@typescript-eslint` — TypeScript-aware rules (strict mode, no explicit `any`)
+- `eslint-plugin-react-hooks` — enforces Rules of Hooks and exhaustive deps
+- `eslint-plugin-jsx-a11y` — accessibility checks (alt text, ARIA roles, labels)
+
+**Configuration:** `eslint.config.js` (flat config format). TypeScript files (`*.ts`, `*.tsx`) are linted with the TypeScript parser. JavaScript config files are linted separately.
+
+**Pre-commit:** Husky + lint-staged runs lint + typecheck on staged files before every commit.
 
 ---
 

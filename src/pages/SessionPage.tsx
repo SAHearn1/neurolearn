@@ -42,19 +42,24 @@ export function SessionPage() {
       <main id="main-content" className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
         <Alert variant="info">You have an interrupted session for this lesson. Would you like to resume?</Alert>
         <div className="flex gap-3">
-          <Button onClick={() => {
-            const saved = restoreSessionLocal()
-            if (saved) {
-              dispatch({ type: 'SESSION_RESTORED', state: saved })
-            }
-            setShowRecovery(false)
-          }}>
+          <Button
+            onClick={() => {
+              const saved = restoreSessionLocal()
+              if (saved) {
+                dispatch({ type: 'SESSION_RESTORED', state: saved })
+              }
+              setShowRecovery(false)
+            }}
+          >
             Resume session
           </Button>
-          <Button variant="secondary" onClick={() => {
-            session.start({ lesson_id: lessonId!, course_id: courseId! })
-            setShowRecovery(false)
-          }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              session.start({ lesson_id: lessonId!, course_id: courseId! })
+              setShowRecovery(false)
+            }}
+          >
             Start fresh
           </Button>
         </div>
@@ -64,7 +69,10 @@ export function SessionPage() {
 
   if (!racaFlags.runtime) {
     return (
-      <main id="main-content" className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6"
+      >
         <Alert variant="info">
           RACA sessions are not enabled. Enable VITE_RACA_ENABLE_RUNTIME in your environment.
         </Alert>

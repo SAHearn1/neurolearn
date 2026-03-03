@@ -4,16 +4,17 @@
 
 NeuroLearn is tested with the following screen readers to ensure accessibility for blind and low-vision users:
 
-| Screen Reader | OS | Browser | Version |
-|---|---|---|---|
-| NVDA | Windows 10/11 | Firefox | 2024.x+ |
-| VoiceOver | macOS | Safari | Built-in |
-| VoiceOver | iOS | Safari | Built-in |
-| TalkBack | Android | Chrome | Built-in |
+| Screen Reader | OS            | Browser | Version  |
+| ------------- | ------------- | ------- | -------- |
+| NVDA          | Windows 10/11 | Firefox | 2024.x+  |
+| VoiceOver     | macOS         | Safari  | Built-in |
+| VoiceOver     | iOS           | Safari  | Built-in |
+| TalkBack      | Android       | Chrome  | Built-in |
 
 ## Test Environment Setup
 
 ### NVDA (Windows)
+
 1. Download from https://www.nvaccess.org/download/
 2. Install with default settings
 3. Open Firefox (recommended browser pairing)
@@ -21,6 +22,7 @@ NeuroLearn is tested with the following screen readers to ensure accessibility f
 5. Toggle speech viewer: NVDA menu > Tools > Speech Viewer
 
 ### VoiceOver (macOS)
+
 1. System Settings > Accessibility > VoiceOver > Enable
 2. Shortcut: `Cmd+F5` to toggle
 3. Use Safari for best compatibility
@@ -86,12 +88,12 @@ NeuroLearn is tested with the following screen readers to ensure accessibility f
 
 Verify the following landmarks are present on every page:
 
-| Landmark | Element | Purpose |
-|---|---|---|
-| banner | `<header>` | Site header/navigation |
-| main | `<main>` | Primary content area |
-| navigation | `<nav>` | Navigation links |
-| complementary | `<aside>` | Sidebar content (if present) |
+| Landmark      | Element    | Purpose                      |
+| ------------- | ---------- | ---------------------------- |
+| banner        | `<header>` | Site header/navigation       |
+| main          | `<main>`   | Primary content area         |
+| navigation    | `<nav>`    | Navigation links             |
+| complementary | `<aside>`  | Sidebar content (if present) |
 
 ## Known Limitations
 
@@ -110,10 +112,10 @@ Verify the following landmarks are present on every page:
 
 Document test results in the following format:
 
-| Flow | Screen Reader | Result | Notes |
-|---|---|---|---|
-| Login | NVDA/Firefox | Pass/Fail | Details |
+| Flow    | Screen Reader    | Result    | Notes   |
+| ------- | ---------------- | --------- | ------- |
+| Login   | NVDA/Firefox     | Pass/Fail | Details |
 | Sign Up | VoiceOver/Safari | Pass/Fail | Details |
-| ... | ... | ... | ... |
+| ...     | ...              | ...       | ...     |
 
 File issues for any failures with the label `a11y` and severity based on impact.

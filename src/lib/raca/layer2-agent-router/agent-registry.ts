@@ -5,9 +5,7 @@ import type { AgentId, AgentDefinition } from '../types/agents'
  * Agent Registry — static registry of all RACA agents with validation.
  */
 
-const agentMap = new Map<AgentId, AgentDefinition>(
-  AGENT_DEFINITIONS.map((d) => [d.id, d]),
-)
+const agentMap = new Map<AgentId, AgentDefinition>(AGENT_DEFINITIONS.map((d) => [d.id, d]))
 
 export function getAgentDefinition(id: AgentId): AgentDefinition | undefined {
   return agentMap.get(id)

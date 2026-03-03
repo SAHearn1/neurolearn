@@ -7,12 +7,7 @@ export {
   type CognitiveTransition,
 } from './cognitive-states'
 
-export {
-  type EventSource,
-  type EventKind,
-  type RacaEvent,
-  type RacaEventInput,
-} from './events'
+export { type EventSource, type EventKind, type RacaEvent, type RacaEventInput } from './events'
 
 export {
   AGENT_IDS,
@@ -24,11 +19,7 @@ export {
   type AgentResponse,
 } from './agents'
 
-export {
-  type ArtifactKind,
-  type Artifact,
-  type ArtifactInput,
-} from './artifacts'
+export { type ArtifactKind, type Artifact, type ArtifactInput } from './artifacts'
 
 export {
   type TraceFluency,
