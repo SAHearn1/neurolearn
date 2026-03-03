@@ -7,6 +7,7 @@ import { VideoLesson } from '../components/lesson/VideoLesson'
 import { AudioLesson } from '../components/lesson/AudioLesson'
 import { InteractiveLesson } from '../components/lesson/InteractiveLesson'
 import { QuizBlock } from '../components/lesson/QuizBlock'
+import { SmartReminders } from '../components/learner/SmartReminders'
 import { useLesson } from '../hooks/useLessons'
 import { racaFlags } from '../lib/raca/feature-flags'
 
@@ -104,6 +105,8 @@ export function LessonPage() {
           &larr; Back to course
         </Link>
       </div>
+
+      <SmartReminders />
     </main>
   )
 }

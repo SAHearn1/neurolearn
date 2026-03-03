@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../components/ui/Avatar'
 import { Alert } from '../components/ui/Alert'
@@ -7,11 +7,33 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Spinner } from '../components/ui/Spinner'
+import {
+  MilestoneCelebration,
+  checkMilestone,
+  type MilestoneType,
+} from '../components/learner/MilestoneCelebration'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useCourses } from '../hooks/useCourses'
 import { useProfile } from '../hooks/useProfile'
 import { useProgressStore } from '../store/progressStore'
 import { useAuthStore } from '../store/authStore'
+
+const SEEN_MILESTONES_KEY = 'nl_seen_milestones'
+
+function getSeenMilestones(): Set<string> {
+  try {
+    const raw = localStorage.getItem(SEEN_MILESTONES_KEY)
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function markMilestoneSeen(type: string): void {
+  const seen = getSeenMilestones()
+  seen.add(type)
+  localStorage.setItem(SEEN_MILESTONES_KEY, JSON.stringify([...seen]))
+}
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
@@ -20,6 +42,7 @@ export function DashboardPage() {
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
   const { courseProgress, fetchCourseProgress } = useProgressStore()
+  const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
 
@@ -30,6 +53,20 @@ export function DashboardPage() {
       fetchCourseProgress(user.id, course.id)
     })
   }, [user?.id, courses, fetchCourseProgress])
+
+  // Check for newly earned milestones once profile loads
+  useEffect(() => {
+    if (!profile) return
+    const milestone = checkMilestone(
+      profile.lessons_completed ?? 0,
+      profile.streak_days ?? 0,
+      false,
+    )
+    if (milestone && !getSeenMilestones().has(milestone)) {
+      markMilestoneSeen(milestone)
+      setPendingMilestone(milestone)
+    }
+  }, [profile])
 
   if (profileLoading || coursesLoading) {
     return (
@@ -122,6 +159,13 @@ export function DashboardPage() {
           <Button variant="secondary">Update settings</Button>
         </Link>
       </nav>
+
+      {pendingMilestone && (
+        <MilestoneCelebration
+          milestone={pendingMilestone}
+          onDismiss={() => setPendingMilestone(null)}
+        />
+      )}
     </main>
   )
 }
