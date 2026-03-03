@@ -50,7 +50,6 @@ function CourseCardWithProgress({ courseId, title, level }: { courseId: string; 
 }
 
 export function DashboardPage() {
-  const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading } = useProfile()
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
   const firstCourseId = courses[0]?.id
@@ -59,14 +58,6 @@ export function DashboardPage() {
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
-
-  // Fetch progress for all visible courses
-  useEffect(() => {
-    if (!user?.id || !courses.length) return
-    courses.slice(0, 4).forEach((course) => {
-      fetchCourseProgress(user.id, course.id)
-    })
-  }, [user?.id, courses, fetchCourseProgress])
 
   // Check for newly earned milestones once profile loads
   useEffect(() => {
