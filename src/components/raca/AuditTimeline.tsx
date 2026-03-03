@@ -24,7 +24,11 @@ const KIND_COLORS: Record<string, string> = {
 
 function formatTime(iso: string): string {
   try {
-    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return new Date(iso).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
   } catch {
     return iso
   }
@@ -46,14 +50,14 @@ export function AuditTimeline({ events, maxItems = 20 }: Props) {
                 className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${KIND_COLORS[event.kind] ?? 'bg-slate-300'}`}
               />
               <div className="flex-1">
-                <span className="font-medium text-slate-700">
-                  {event.kind.replace(/_/g, ' ')}
-                </span>
-                {event.state_before && event.state_after && event.state_before !== event.state_after && (
-                  <span className="ml-1 text-slate-500">
-                    {event.state_before} &rarr; {event.state_after}
-                  </span>
-                )}
+                <span className="font-medium text-slate-700">{event.kind.replace(/_/g, ' ')}</span>
+                {event.state_before &&
+                  event.state_after &&
+                  event.state_before !== event.state_after && (
+                    <span className="ml-1 text-slate-500">
+                      {event.state_before} &rarr; {event.state_after}
+                    </span>
+                  )}
               </div>
               <span className="flex-shrink-0 text-slate-400">{formatTime(event.timestamp)}</span>
             </div>

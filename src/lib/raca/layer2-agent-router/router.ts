@@ -17,10 +17,7 @@ export interface RouteResult {
   reason: string
 }
 
-export function routeAgentRequest(
-  agentId: AgentId,
-  runtimeState: RuntimeState,
-): RouteResult {
+export function routeAgentRequest(agentId: AgentId, runtimeState: RuntimeState): RouteResult {
   const state = runtimeState.current_state
   const base = { agentId, state }
 

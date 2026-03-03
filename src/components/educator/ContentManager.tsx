@@ -222,9 +222,19 @@ export function ContentManager() {
           {showCourseForm && (
             <Card>
               <div className="space-y-3">
-                <Input label="Course Title" value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} />
-                <Input label="Description" value={courseDesc} onChange={(e) => setCourseDesc(e.target.value)} />
-                <Button onClick={createCourse} disabled={!courseTitle.trim()}>Create Course</Button>
+                <Input
+                  label="Course Title"
+                  value={courseTitle}
+                  onChange={(e) => setCourseTitle(e.target.value)}
+                />
+                <Input
+                  label="Description"
+                  value={courseDesc}
+                  onChange={(e) => setCourseDesc(e.target.value)}
+                />
+                <Button onClick={createCourse} disabled={!courseTitle.trim()}>
+                  Create Course
+                </Button>
               </div>
             </Card>
           )}
@@ -237,17 +247,25 @@ export function ContentManager() {
                     <h3 className="font-semibold text-slate-900">{course.title}</h3>
                     <Badge>{course.status}</Badge>
                   </div>
-                  {course.description && <p className="text-sm text-slate-500">{course.description}</p>}
+                  {course.description && (
+                    <p className="text-sm text-slate-500">{course.description}</p>
+                  )}
                   <p className="text-xs text-slate-400">{course.lesson_count} lessons</p>
                 </div>
                 <div className="flex gap-2">
                   {course.status === 'draft' && (
-                    <Button variant="secondary" onClick={() => updateCourseStatus(course.id, 'published')}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => updateCourseStatus(course.id, 'published')}
+                    >
                       Publish
                     </Button>
                   )}
                   {course.status === 'published' && (
-                    <Button variant="secondary" onClick={() => updateCourseStatus(course.id, 'archived')}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => updateCourseStatus(course.id, 'archived')}
+                    >
                       Archive
                     </Button>
                   )}
@@ -285,8 +303,16 @@ export function ContentManager() {
               {showLessonForm && (
                 <Card>
                   <div className="space-y-3">
-                    <Input label="Lesson Title" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} />
-                    <Input label="Description" value={lessonDesc} onChange={(e) => setLessonDesc(e.target.value)} />
+                    <Input
+                      label="Lesson Title"
+                      value={lessonTitle}
+                      onChange={(e) => setLessonTitle(e.target.value)}
+                    />
+                    <Input
+                      label="Description"
+                      value={lessonDesc}
+                      onChange={(e) => setLessonDesc(e.target.value)}
+                    />
                     <label className="block text-sm font-medium text-slate-700">
                       Content
                       <textarea
@@ -296,7 +322,9 @@ export function ContentManager() {
                         onChange={(e) => setLessonContent(e.target.value)}
                       />
                     </label>
-                    <Button onClick={createLesson} disabled={!lessonTitle.trim()}>Create Lesson</Button>
+                    <Button onClick={createLesson} disabled={!lessonTitle.trim()}>
+                      Create Lesson
+                    </Button>
                   </div>
                 </Card>
               )}
@@ -324,7 +352,9 @@ export function ContentManager() {
                         />
                       </label>
                       <div className="flex gap-2">
-                        <Button onClick={saveEditLesson} disabled={!editTitle.trim()}>Save</Button>
+                        <Button onClick={saveEditLesson} disabled={!editTitle.trim()}>
+                          Save
+                        </Button>
                         <Button
                           variant="ghost"
                           onClick={() => {
@@ -341,7 +371,9 @@ export function ContentManager() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-slate-400">#{lesson.sort_order}</span>
+                          <span className="text-xs font-medium text-slate-400">
+                            #{lesson.sort_order}
+                          </span>
                           <h3 className="font-semibold text-slate-900">{lesson.title}</h3>
                           <Badge>{lesson.status}</Badge>
                           <Badge>{lesson.type}</Badge>
@@ -363,7 +395,10 @@ export function ContentManager() {
                           Edit
                         </Button>
                         {lesson.status === 'draft' && (
-                          <Button variant="secondary" onClick={() => publishLesson(lesson.id, 'published')}>
+                          <Button
+                            variant="secondary"
+                            onClick={() => publishLesson(lesson.id, 'published')}
+                          >
                             Publish
                           </Button>
                         )}

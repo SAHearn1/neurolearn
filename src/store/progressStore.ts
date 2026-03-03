@@ -50,7 +50,8 @@ export const useProgressStore = create<ProgressState>((set) => ({
             total_lessons: total,
             completed_lessons: completed,
             percent_complete: Math.round((completed / total) * 100),
-            status: completed === total ? 'completed' : completed > 0 ? 'in_progress' : 'not_started',
+            status:
+              completed === total ? 'completed' : completed > 0 ? 'in_progress' : 'not_started',
           },
         },
       }))

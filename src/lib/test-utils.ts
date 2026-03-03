@@ -79,9 +79,7 @@ export function buildAccessibility(
   }
 }
 
-export function buildProgress(
-  overrides?: Partial<LessonProgress>,
-): LessonProgress {
+export function buildProgress(overrides?: Partial<LessonProgress>): LessonProgress {
   const id = nextId()
   return {
     id,
@@ -114,8 +112,7 @@ export function createMockSupabaseClient() {
     limit: () => queryBuilder,
     single: () => Promise.resolve(mockResponse),
     maybeSingle: () => Promise.resolve(mockResponse),
-    then: (resolve: (value: typeof mockResponse) => void) =>
-      resolve(mockResponse),
+    then: (resolve: (value: typeof mockResponse) => void) => resolve(mockResponse),
   }
 
   return {
@@ -124,8 +121,7 @@ export function createMockSupabaseClient() {
       signInWithPassword: () => Promise.resolve(mockResponse),
       signUp: () => Promise.resolve(mockResponse),
       signOut: () => Promise.resolve({ error: null }),
-      getSession: () =>
-        Promise.resolve({ data: { session: null }, error: null }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
       resetPasswordForEmail: () => Promise.resolve(mockResponse),
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => {} } },

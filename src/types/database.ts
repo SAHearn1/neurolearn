@@ -22,7 +22,10 @@ export interface Database {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Insert: Omit<
+          Database['public']['Tables']['profiles']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
       }
       courses: {
@@ -37,7 +40,10 @@ export interface Database {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['courses']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Insert: Omit<
+          Database['public']['Tables']['courses']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >
         Update: Partial<Database['public']['Tables']['courses']['Insert']>
       }
       lessons: {
@@ -54,7 +60,10 @@ export interface Database {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['lessons']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Insert: Omit<
+          Database['public']['Tables']['lessons']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >
         Update: Partial<Database['public']['Tables']['lessons']['Insert']>
       }
       lesson_progress: {
@@ -70,7 +79,10 @@ export interface Database {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['lesson_progress']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Insert: Omit<
+          Database['public']['Tables']['lesson_progress']['Row'],
+          'id' | 'created_at' | 'updated_at'
+        >
         Update: Partial<Database['public']['Tables']['lesson_progress']['Insert']>
       }
       cognitive_sessions: {
@@ -87,7 +99,10 @@ export interface Database {
           updated_at: string
           completed_at: string | null
         }
-        Insert: Omit<Database['public']['Tables']['cognitive_sessions']['Row'], 'started_at' | 'updated_at'>
+        Insert: Omit<
+          Database['public']['Tables']['cognitive_sessions']['Row'],
+          'started_at' | 'updated_at'
+        >
         Update: Partial<Database['public']['Tables']['cognitive_sessions']['Insert']>
       }
       raca_audit_events: {
@@ -147,7 +162,10 @@ export interface Database {
           response_time_ms: number | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['raca_agent_interactions']['Row'], 'id' | 'created_at'>
+        Insert: Omit<
+          Database['public']['Tables']['raca_agent_interactions']['Row'],
+          'id' | 'created_at'
+        >
         Update: Partial<Database['public']['Tables']['raca_agent_interactions']['Insert']>
       }
     }

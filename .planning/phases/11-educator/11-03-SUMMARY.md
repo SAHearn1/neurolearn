@@ -10,7 +10,9 @@
 3. **ContentManager** — Already fully implemented with course/lesson CRUD, draft→published→archived workflow
 
 ## Enhancements Made
+
 - `src/lib/validation.ts`: Added `lessonCreateSchema` and `LessonCreateInput` type
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (24/24) | build: PASS

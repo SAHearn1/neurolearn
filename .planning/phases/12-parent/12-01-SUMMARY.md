@@ -12,6 +12,7 @@
 5. **profile.ts re-exports** — ParentProfile and ParentStudentLink now also exported from `src/types/profile.ts`
 
 ## Existing Implementations (Already Complete)
+
 - `useParentProfile` hook — fully implemented with fetchProfile, upsertProfile, refetch
 - `useParentStudentLinks` hook — fully implemented with linkStudent, updateLinkStatus, unlinkStudent, activeLinks, pendingLinks
 - Migration 005_roles_relationships.sql — parent_student_links table with RLS
@@ -19,12 +20,14 @@
 - ParentDashboardPage + 4 parent components
 
 ## CI Gate
+
 - typecheck: PASS (0 errors)
 - lint: PASS (0 warnings)
 - test: PASS (24/24)
 - build: PASS (clean)
 
 ## Artifacts
+
 - `supabase/migrations/019_parent_enhancements.sql`
 - `supabase/migrations/020_parent_student_links_status.sql`
 - `src/types/parent.ts` (updated)

@@ -12,6 +12,7 @@ const FLUSH_INTERVAL_MS = 5000
 
 let buffer: RacaEvent[] = []
 let flushTimer: ReturnType<typeof setInterval> | null = null
+let flushing = false
 
 export function appendAuditEvent(event: RacaEvent): void {
   if (!racaFlags.auditPersistence) {
@@ -33,7 +34,8 @@ export function appendAuditEvent(event: RacaEvent): void {
 }
 
 export async function flushAuditBuffer(): Promise<void> {
-  if (buffer.length === 0) return
+  if (buffer.length === 0 || flushing) return
+  flushing = true
 
   const batch = [...buffer]
   buffer = []
@@ -60,6 +62,8 @@ export async function flushAuditBuffer(): Promise<void> {
   } catch (err) {
     console.error('[RACA Audit] Flush error:', err)
     buffer = [...batch, ...buffer]
+  } finally {
+    flushing = false
   }
 }
 

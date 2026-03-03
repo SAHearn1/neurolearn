@@ -8,8 +8,7 @@ export function useSettings() {
 
   return {
     accessibility,
-    updateAccessibility: (prefs: Partial<AccessibilityPreferences>) =>
-      updateAccessibility(prefs),
+    updateAccessibility: (prefs: Partial<AccessibilityPreferences>) => updateAccessibility(prefs),
     resetToDefaults: reset,
   }
 }

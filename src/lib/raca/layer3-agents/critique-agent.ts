@@ -7,7 +7,8 @@ export const critiqueAgent: AgentContract = {
   definition,
 
   buildSystemPrompt: (ctx: AgentContext) => {
-    const revision = ctx.artifacts.find((a) => a.kind === 'revision') ??
+    const revision =
+      ctx.artifacts.find((a) => a.kind === 'revision') ??
       ctx.artifacts.find((a) => a.kind === 'draft')
 
     return `You are the Critique Agent in a RootWork learning session.

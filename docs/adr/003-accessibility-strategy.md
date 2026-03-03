@@ -1,12 +1,15 @@
 # ADR-003: Accessibility Strategy (WCAG 2.1 AA)
 
 ## Status
+
 Accepted (2026-03-02)
 
 ## Context
+
 NeuroLearn's target audience includes neurodivergent learners (ADHD, dyslexia, autism spectrum). The platform must exceed standard accessibility requirements and provide specialized accommodations.
 
 ## Decision
+
 - Target WCAG 2.1 AA compliance minimum
 - Implement neurodivergent-specific features:
   - **Dyslexia-friendly fonts:** OpenDyslexic toggle via CDN
@@ -21,6 +24,7 @@ NeuroLearn's target audience includes neurodivergent learners (ADHD, dyslexia, a
 - ARIA roles and landmarks on all interactive components
 
 ## Implementation
+
 - `src/lib/focus-manager.ts` — Focus trap with previous element restoration
 - `src/lib/keyboard-nav.ts` — Tab/mouse detection, skip link, arrow key navigation
 - `src/lib/reduced-motion.ts` — OS + app preference union
@@ -29,6 +33,7 @@ NeuroLearn's target audience includes neurodivergent learners (ADHD, dyslexia, a
 - `src/store/settingsStore.ts` — Persisted accessibility preferences
 
 ## Consequences
+
 - OpenDyslexic font loaded from CDN (external dependency)
 - CSS custom property `--font-family-base` used for font switching
 - All animations must check `prefers-reduced-motion` or `useReducedMotion()`

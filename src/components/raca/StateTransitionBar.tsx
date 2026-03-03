@@ -25,20 +25,12 @@ export function StateTransitionBar({
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {forwardStates.map((s) => (
-            <Button
-              key={s}
-              onClick={() => onTransition(s)}
-              disabled={disabled}
-              variant="primary"
-            >
+            <Button key={s} onClick={() => onTransition(s)} disabled={disabled} variant="primary">
               Move to {STATE_METADATA[s].label}
             </Button>
           ))}
           {canRegulate && (
-            <Button
-              onClick={() => onTransition('REGULATE')}
-              variant="secondary"
-            >
+            <Button onClick={() => onTransition('REGULATE')} variant="secondary">
               Back to Regulate
             </Button>
           )}
@@ -47,9 +39,7 @@ export function StateTransitionBar({
           Currently: {STATE_METADATA[currentState].label}
         </span>
       </div>
-      {hint && (
-        <p className="mt-2 text-sm text-amber-600">{hint}</p>
-      )}
+      {hint && <p className="mt-2 text-sm text-amber-600">{hint}</p>}
     </div>
   )
 }

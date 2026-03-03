@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **Gap Analysis Fixes (2026-03-02):**
   - React.lazy code splitting for all authenticated pages (13 chunks)
   - Zod v4 input validation schemas (signIn, signUp, passwordReset, profile, settings)
@@ -61,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supabase schema (4 foundation + 7 RACA + 3 supporting = 14 migrations)
 
 ### Changed
+
 - LoginPage and SignUpPage wired to Supabase auth with Zod validation
 - Modal component upgraded with focus trap and ARIA attributes
 - App.tsx refactored for React.lazy code splitting
@@ -68,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - index.css extended with sr-only, skip-link, keyboard-nav, and reduced-motion CSS
 
 ### Validation
+
 - `npm run build` — 0 TypeScript errors, 13-chunk code-split build
 - `npm run test -- --run` — 24/24 tests passing
 - `npm run lint` — 0 warnings
@@ -77,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] — 2026-03-02
 
 ### Added
+
 - Initial repository created with basic README
 - GitHub Actions CI workflow for test/lint/build gates
 - Initial accessibility hardening for modal and navigation

@@ -34,16 +34,20 @@ export function enforcePreconditions(
     state: targetState,
     precondition: result,
     canProceed: result.met,
-    hint: result.met ? '' : HINTS[targetState] ?? result.reason,
+    hint: result.met ? '' : (HINTS[targetState] ?? result.reason),
   }
 }
 
 export function getBlockedStatesWithHints(runtimeState: RuntimeState): EnforcementResult[] {
   const states: CognitiveState[] = [
-    'POSITION', 'PLAN', 'APPLY', 'REVISE', 'DEFEND', 'RECONNECT', 'ARCHIVE',
+    'POSITION',
+    'PLAN',
+    'APPLY',
+    'REVISE',
+    'DEFEND',
+    'RECONNECT',
+    'ARCHIVE',
   ]
 
-  return states
-    .map((s) => enforcePreconditions(s, runtimeState))
-    .filter((r) => !r.canProceed)
+  return states.map((s) => enforcePreconditions(s, runtimeState)).filter((r) => !r.canProceed)
 }

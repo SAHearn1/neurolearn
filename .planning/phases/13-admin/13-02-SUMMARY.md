@@ -11,7 +11,9 @@
 4. **Migration 023** — Added `moderation_status` column to lessons table (pending/approved/rejected/flagged)
 
 ## Enhancements Made
+
 - `supabase/migrations/023_lessons_moderation_status.sql`: Added moderation_status column with index
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (24/24) | build: PASS

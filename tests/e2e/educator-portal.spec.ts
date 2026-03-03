@@ -9,7 +9,9 @@ test.describe('Educator portal — unauthenticated', () => {
     await expect(page).toHaveURL(/login/)
   })
 
-  test('login page rendered after /educator redirect has correct form elements', async ({ page }) => {
+  test('login page rendered after /educator redirect has correct form elements', async ({
+    page,
+  }) => {
     await page.goto('/educator')
     await expect(page).toHaveURL(/login/)
     await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible()

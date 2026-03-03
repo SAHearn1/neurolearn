@@ -11,12 +11,14 @@
 4. **Edge function created** — `supabase/functions/rate-limit-middleware/index.ts` with in-memory IP-based rate limiting. Returns 429 with Retry-After header when limited, `{ allowed: true }` when allowed. Auth endpoints: 5 req/min, general: 100 req/min.
 
 ## CI Gate
+
 - typecheck: PASS (0 errors)
 - lint: PASS (0 warnings)
 - test: PASS (24/24)
 - build: PASS (clean)
 
 ## Artifacts
+
 - `src/lib/rate-limit.ts` (rewritten)
 - `src/pages/LoginPage.tsx` (updated)
 - `src/pages/SignUpPage.tsx` (updated)

@@ -47,11 +47,16 @@ export function ProfilePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 p-6"
+    >
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-slate-900">Profile</h1>
         {!editing && (
-          <Button variant="secondary" onClick={startEdit}>Edit</Button>
+          <Button variant="secondary" onClick={startEdit}>
+            Edit
+          </Button>
         )}
       </div>
 
@@ -59,7 +64,11 @@ export function ProfilePage() {
 
       {editing ? (
         <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <Input label="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          <Input
+            label="Display name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
 
           <fieldset>
             <legend className="text-sm font-medium text-slate-700">Learning styles</legend>
@@ -79,8 +88,12 @@ export function ProfilePage() {
           </fieldset>
 
           <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
-            <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+            <Button variant="secondary" onClick={() => setEditing(false)}>
+              Cancel
+            </Button>
           </div>
         </section>
       ) : (

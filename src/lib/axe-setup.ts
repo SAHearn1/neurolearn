@@ -23,11 +23,11 @@ export const axeConfig = {
     // Require all images to have alt text
     'image-alt': { enabled: true },
     // Require all form inputs to have labels
-    'label': { enabled: true },
+    label: { enabled: true },
     // Require sufficient color contrast (4.5:1 for normal text)
     'color-contrast': { enabled: true },
     // Require all interactive elements to be keyboard accessible
-    'keyboard': { enabled: true },
+    keyboard: { enabled: true },
     // Require proper heading hierarchy
     'heading-order': { enabled: true },
     // Require skip navigation links
@@ -35,7 +35,7 @@ export const axeConfig = {
     // Require ARIA attributes to be valid
     'aria-valid-attr': { enabled: true },
     // Require landmark regions
-    'region': { enabled: true },
+    region: { enabled: true },
   },
 }
 
@@ -68,12 +68,26 @@ export async function runAxeCheck(container: Element): Promise<{
     }
 
     return {
-      violations: (results.violations as Array<{ id: string; impact: string; description: string; nodes: Array<{ html: string }> }>).map((v: { id: string; impact: string; description: string; nodes: Array<{ html: string }> }) => ({
-        id: v.id,
-        impact: v.impact ?? 'unknown',
-        description: v.description,
-        nodes: v.nodes.map((n: { html: string }) => ({ html: n.html })),
-      })),
+      violations: (
+        results.violations as Array<{
+          id: string
+          impact: string
+          description: string
+          nodes: Array<{ html: string }>
+        }>
+      ).map(
+        (v: {
+          id: string
+          impact: string
+          description: string
+          nodes: Array<{ html: string }>
+        }) => ({
+          id: v.id,
+          impact: v.impact ?? 'unknown',
+          description: v.description,
+          nodes: v.nodes.map((n: { html: string }) => ({ html: n.html })),
+        }),
+      ),
       passes: results.passes.length,
     }
   } catch {

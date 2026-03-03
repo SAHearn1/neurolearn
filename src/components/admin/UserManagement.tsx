@@ -102,8 +102,8 @@ export function UserManagement() {
   )
 
   const filteredUsers = users.filter((u) => {
-    const matchesSearch = !searchQuery ||
-      u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch =
+      !searchQuery || u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesRole = roleFilter === 'all' || u.role === roleFilter
     return matchesSearch && matchesRole
   })
@@ -163,22 +163,20 @@ export function UserManagement() {
                   <Badge>{u.role}</Badge>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Joined {new Date(u.created_at).toLocaleDateString()} · {u.lessons_completed} lessons
+                  Joined {new Date(u.created_at).toLocaleDateString()} · {u.lessons_completed}{' '}
+                  lessons
                 </p>
               </div>
               <div className="flex items-center gap-1">
                 {u.deleted_at && <Badge>Inactive</Badge>}
-                {!u.deleted_at && roles
-                  .filter((r) => r !== u.role)
-                  .map((r) => (
-                    <Button
-                      key={r}
-                      variant="ghost"
-                      onClick={() => updateRole(u.user_id, r)}
-                    >
-                      Make {r}
-                    </Button>
-                  ))}
+                {!u.deleted_at &&
+                  roles
+                    .filter((r) => r !== u.role)
+                    .map((r) => (
+                      <Button key={r} variant="ghost" onClick={() => updateRole(u.user_id, r)}>
+                        Make {r}
+                      </Button>
+                    ))}
                 {!u.deleted_at && (
                   <Button
                     variant="ghost"

@@ -11,21 +11,16 @@ export function useCognitiveState() {
   const stateHistory = useRuntimeStore((s) => s.state_history)
   const regulation = useRuntimeStore((s) => s.regulation)
 
-  const transition = useCallback(
-    (to: CognitiveState, payload?: Record<string, unknown>) => {
-      return requestTransition(to, 'learner_action', payload)
-    },
-    [],
-  )
+  const transition = useCallback((to: CognitiveState, payload?: Record<string, unknown>) => {
+    return requestTransition(to, 'learner_action', payload)
+  }, [])
 
   const canTransitionTo = useCallback(
     (to: CognitiveState) => isValidTransition(currentState, to),
     [currentState],
   )
 
-  const nextStates = COGNITIVE_STATES.filter((s) =>
-    isValidTransition(currentState, s),
-  )
+  const nextStates = COGNITIVE_STATES.filter((s) => isValidTransition(currentState, s))
 
   const snapshot = useCallback(() => buildCognitiveSnapshot(), [])
 

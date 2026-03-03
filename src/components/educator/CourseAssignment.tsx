@@ -20,7 +20,9 @@ export function CourseAssignment() {
   const { classes } = useClassManagement()
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null)
   const [courses, setCourses] = useState<Course[]>([])
-  const [enrolledStudents, setEnrolledStudents] = useState<{ student_id: string; display_name: string }[]>([])
+  const [enrolledStudents, setEnrolledStudents] = useState<
+    { student_id: string; display_name: string }[]
+  >([])
   const [assignments, setAssignments] = useState<AssignmentRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,57 +39,61 @@ export function CourseAssignment() {
   }, [])
 
   // Fetch enrolled students and their course assignments when class is selected
-  const fetchClassData = useCallback(async (classId: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const { data: enrollments, error: enrollErr } = await supabase
-        .from('class_enrollments')
-        .select('student_id')
-        .eq('class_id', classId)
+  const fetchClassData = useCallback(
+    async (classId: string) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const { data: enrollments, error: enrollErr } = await supabase
+          .from('class_enrollments')
+          .select('student_id')
+          .eq('class_id', classId)
 
-      if (enrollErr) throw enrollErr
+        if (enrollErr) throw enrollErr
 
-      const studentIds = (enrollments ?? []).map((e) => e.student_id)
-      if (!studentIds.length) {
-        setEnrolledStudents([])
-        setAssignments([])
-        return
+        const studentIds = (enrollments ?? []).map((e) => e.student_id)
+        if (!studentIds.length) {
+          setEnrolledStudents([])
+          setAssignments([])
+          return
+        }
+
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name')
+          .in('user_id', studentIds)
+
+        setEnrolledStudents(
+          (profiles ?? []).map((p) => ({
+            student_id: p.user_id,
+            display_name: p.display_name ?? 'Student',
+          })),
+        )
+
+        const { data: courseEnrollments } = await supabase
+          .from('course_enrollments')
+          .select('id, user_id, course_id, enrolled_at')
+          .in('user_id', studentIds)
+
+        const records: AssignmentRecord[] = (courseEnrollments ?? []).map((ce) => ({
+          id: ce.id,
+          user_id: ce.user_id,
+          course_id: ce.course_id,
+          enrolled_at: ce.enrolled_at,
+          course_title: courses.find((c) => c.id === ce.course_id)?.title ?? 'Unknown',
+          student_name:
+            (profiles ?? []).find((p) => p.user_id === ce.user_id)?.display_name ?? 'Student',
+        }))
+
+        setAssignments(records)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load assignments')
+      } finally {
+        setLoading(false)
       }
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('user_id', studentIds)
-
-      setEnrolledStudents(
-        (profiles ?? []).map((p) => ({
-          student_id: p.user_id,
-          display_name: p.display_name ?? 'Student',
-        })),
-      )
-
-      const { data: courseEnrollments } = await supabase
-        .from('course_enrollments')
-        .select('id, user_id, course_id, enrolled_at')
-        .in('user_id', studentIds)
-
-      const records: AssignmentRecord[] = (courseEnrollments ?? []).map((ce) => ({
-        id: ce.id,
-        user_id: ce.user_id,
-        course_id: ce.course_id,
-        enrolled_at: ce.enrolled_at,
-        course_title: courses.find((c) => c.id === ce.course_id)?.title ?? 'Unknown',
-        student_name: (profiles ?? []).find((p) => p.user_id === ce.user_id)?.display_name ?? 'Student',
-      }))
-
-      setAssignments(records)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load assignments')
-    } finally {
-      setLoading(false)
-    }
-  }, [courses])
+    },
+    [courses],
+  )
 
   useEffect(() => {
     if (selectedClassId) fetchClassData(selectedClassId)
@@ -162,7 +168,9 @@ export function CourseAssignment() {
           {!loading && enrolledStudents.length > 0 && (
             <div className="space-y-4">
               {enrolledStudents.map((student) => {
-                const studentAssignments = assignments.filter((a) => a.user_id === student.student_id)
+                const studentAssignments = assignments.filter(
+                  (a) => a.user_id === student.student_id,
+                )
                 const assignedCourseIds = new Set(studentAssignments.map((a) => a.course_id))
                 const unassignedCourses = courses.filter((c) => !assignedCourseIds.has(c.id))
 

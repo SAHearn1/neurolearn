@@ -11,7 +11,8 @@ const STORAGE_KEY = 'neurolearn.raca.session'
 
 /** Save current runtime state to localStorage (immediate) */
 export function saveSessionLocal(): void {
-  const { dispatch: _, ...state } = useRuntimeStore.getState()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { dispatch, ...state } = useRuntimeStore.getState()
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   } catch {
@@ -37,7 +38,8 @@ export function clearSessionLocal(): void {
 
 /** Persist session state to Supabase */
 export async function saveSessionRemote(): Promise<void> {
-  const { dispatch: _, ...state } = useRuntimeStore.getState()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { dispatch, ...state } = useRuntimeStore.getState()
   if (!state.session_id || !state.user_id) return
 
   const { error } = await supabase.from('cognitive_sessions').upsert(
@@ -71,6 +73,13 @@ export async function restoreSessionRemote(sessionId: string): Promise<RuntimeSt
 
   if (error || !data) return null
 
+  // Fetch artifacts for this session
+  const { data: artifactRows } = await supabase
+    .from('raca_artifacts')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true })
+
   return {
     session_id: data.id,
     user_id: data.user_id,
@@ -86,7 +95,16 @@ export async function restoreSessionRemote(sessionId: string): Promise<RuntimeSt
       intervention_count: 0,
       last_check: '',
     },
-    artifacts: [],
+    artifacts: (artifactRows ?? []).map((row) => ({
+      id: row.id,
+      session_id: row.session_id,
+      kind: row.kind,
+      state: row.state,
+      content: row.content,
+      word_count: row.word_count,
+      version: row.version,
+      created_at: row.created_at,
+    })),
     events: [],
     epistemic_snapshots: [],
     started_at: data.started_at,

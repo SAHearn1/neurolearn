@@ -26,7 +26,11 @@ export {
 } from './layer0-runtime/persistence'
 
 // Layer 1 — Cognitive State Machine
-export { requestTransition, getCurrentState, getStateHistory } from './layer1-cognitive-fsm/state-machine'
+export {
+  requestTransition,
+  getCurrentState,
+  getStateHistory,
+} from './layer1-cognitive-fsm/state-machine'
 export type { TransitionResult } from './layer1-cognitive-fsm/state-machine'
 export { checkPrecondition } from './layer1-cognitive-fsm/preconditions'
 export type { PreconditionResult } from './layer1-cognitive-fsm/preconditions'
@@ -41,12 +45,20 @@ export {
   isAgentAllowedInState,
   hasAgentsAvailable,
 } from './layer2-agent-router/state-agent-map'
-export { getAgentDefinition, getAllAgentDefinitions, validateAgentDefinitions } from './layer2-agent-router/agent-registry'
+export {
+  getAgentDefinition,
+  getAllAgentDefinitions,
+  validateAgentDefinitions,
+} from './layer2-agent-router/agent-registry'
 export { routeAgentRequest } from './layer2-agent-router/router'
 export type { RouteResult } from './layer2-agent-router/router'
 
 // Layer 3 — Agents
-export { validateAgentOutput, buildAgentResponse, getAgentSystemPrompt } from './layer3-agents/output-validator'
+export {
+  validateAgentOutput,
+  buildAgentResponse,
+  getAgentSystemPrompt,
+} from './layer3-agents/output-validator'
 export { buildPromptBundle } from './layer3-agents/prompt-templates'
 export type { PromptBundle } from './layer3-agents/prompt-templates'
 export type { AgentContext, AgentContract, AgentConstraintCheck } from './layer3-agents/agent-base'
@@ -75,4 +87,7 @@ export type { AdaptationLevel, AdaptationConfig } from './layer4-epistemic/adapt
 export { checkComplianceGlobal, checkFullCompliance } from './guardrails/raca-compliance'
 export type { ComplianceResult } from './guardrails/raca-compliance'
 export { enforcePreconditions, getBlockedStatesWithHints } from './guardrails/precondition-enforcer'
-export { enforceQuestionsFirst, enforceReasoningBeforeConfirmation } from './guardrails/question-enforcer'
+export {
+  enforceQuestionsFirst,
+  enforceReasoningBeforeConfirmation,
+} from './guardrails/question-enforcer'

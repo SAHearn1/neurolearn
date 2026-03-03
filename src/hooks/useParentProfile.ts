@@ -41,13 +41,11 @@ export function useParentProfile() {
     async (updates: Partial<Omit<ParentProfile, 'user_id' | 'created_at' | 'updated_at'>>) => {
       if (!user?.id) return
 
-      const { error: err } = await supabase
-        .from('parent_profiles')
-        .upsert({
-          user_id: user.id,
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+      const { error: err } = await supabase.from('parent_profiles').upsert({
+        user_id: user.id,
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
 
       if (err) throw err
       await fetchProfile()

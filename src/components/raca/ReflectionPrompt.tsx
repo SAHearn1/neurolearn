@@ -33,7 +33,13 @@ export function ReflectionPrompt({
         <span className={`text-xs ${canSubmit ? 'text-green-600' : 'text-slate-400'}`}>
           {wordCount} words {!canSubmit && `(minimum ${minWords})`}
         </span>
-        <Button onClick={() => { onSubmit(text); setText('') }} disabled={!canSubmit}>
+        <Button
+          onClick={() => {
+            onSubmit(text)
+            setText('')
+          }}
+          disabled={!canSubmit}
+        >
           Submit reflection
         </Button>
       </div>

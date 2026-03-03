@@ -14,6 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '
 interface InvokeRequest {
   session_id: string
   agent_id: string
+  state: string
   learner_input: string
   system_prompt: string
   max_tokens: number
@@ -39,7 +40,10 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token)
     if (authError || !user) {
       return jsonResponse({ error: 'Unauthorized' }, 401)
     }
@@ -67,7 +71,7 @@ Deno.serve(async (req: Request) => {
     await supabase.from('raca_agent_interactions').insert({
       session_id: body.session_id,
       agent_id: body.agent_id,
-      state: 'UNKNOWN', // Client provides actual state
+      state: body.state ?? 'UNKNOWN',
       prompt: body.learner_input,
       response: aiResponse,
       blocked: false,

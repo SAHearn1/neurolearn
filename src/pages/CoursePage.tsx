@@ -9,23 +9,39 @@ import { useLessons } from '../hooks/useLessons'
 import { useEnrollment } from '../hooks/useEnrollment'
 import { useLessonProgress, useCourseProgress } from '../hooks/useProgress'
 
-function LessonCard({ courseId, lessonId, index, title, description }: {
-  courseId: string; lessonId: string; index: number; title: string; description?: string
+function LessonCard({
+  courseId,
+  lessonId,
+  index,
+  title,
+  description,
+}: {
+  courseId: string
+  lessonId: string
+  index: number
+  title: string
+  description?: string
 }) {
   const { progress } = useLessonProgress(lessonId)
-  const statusLabel = progress?.status === 'completed' ? 'Completed' : progress?.status === 'in_progress' ? 'In progress' : null
+  const statusLabel =
+    progress?.status === 'completed'
+      ? 'Completed'
+      : progress?.status === 'in_progress'
+        ? 'In progress'
+        : null
 
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-4" key={lessonId}>
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">Lesson {index + 1}</p>
-        {statusLabel && (
-          <Badge>{statusLabel}</Badge>
-        )}
+        {statusLabel && <Badge>{statusLabel}</Badge>}
       </div>
       <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
       {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
-      <Link className="mt-2 inline-block text-sm font-semibold text-brand-700" to={`/courses/${courseId}/lessons/${lessonId}`}>
+      <Link
+        className="mt-2 inline-block text-sm font-semibold text-brand-700"
+        to={`/courses/${courseId}/lessons/${lessonId}`}
+      >
         {progress?.status === 'completed' ? 'Review lesson' : 'Start lesson'} &rarr;
       </Link>
     </article>
@@ -49,13 +65,14 @@ export function CoursePage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-6 p-6"
+    >
       <header>
         <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Course</p>
         <h1 className="text-3xl font-bold text-slate-900">{course?.title ?? 'Course'}</h1>
-        {course?.description && (
-          <p className="mt-2 text-slate-600">{course.description}</p>
-        )}
+        {course?.description && <p className="mt-2 text-slate-600">{course.description}</p>}
       </header>
 
       {(courseError || lessonsError) && (
@@ -69,7 +86,11 @@ export function CoursePage() {
             disabled={enrolling}
             onClick={async () => {
               setEnrolling(true)
-              try { await enroll() } finally { setEnrolling(false) }
+              try {
+                await enroll()
+              } finally {
+                setEnrolling(false)
+              }
             }}
           >
             {enrolling ? 'Enrolling…' : 'Enroll in this course'}
@@ -79,7 +100,8 @@ export function CoursePage() {
 
       {isEnrolled && courseProgress && (
         <p className="text-sm text-slate-500">
-          Progress: {courseProgress.completed_lessons}/{courseProgress.total_lessons} lessons completed ({courseProgress.percent_complete}%)
+          Progress: {courseProgress.completed_lessons}/{courseProgress.total_lessons} lessons
+          completed ({courseProgress.percent_complete}%)
         </p>
       )}
 

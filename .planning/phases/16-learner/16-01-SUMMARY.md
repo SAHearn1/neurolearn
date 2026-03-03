@@ -10,7 +10,9 @@
 3. **SessionPage integration** — SmartReminders is self-contained with internal timer; session management uses useRacaSession (no separate useSessionManager needed)
 
 ## No Changes Needed
+
 Both components were already fully implemented with:
+
 - ADHD-friendly design (calm, non-flashing reminders)
 - Full reduced-motion support
 - Proper ARIA roles and live regions
@@ -18,6 +20,7 @@ Both components were already fully implemented with:
 - 0 TypeScript errors
 
 ## CI Gate
+
 - typecheck: PASS (0 errors)
 - lint: PASS (0 warnings)
 - test: PASS (24/24)

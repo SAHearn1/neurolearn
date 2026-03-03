@@ -15,9 +15,11 @@
 8. **Age gate** — Added `age_confirmed: z.literal(true)` to signUpSchema, checkbox in SignUpPage with aria-required
 
 ## Enhancements Made
+
 - `src/lib/validation.ts`: Added `age_confirmed` field to signUpSchema
 - `src/pages/SignUpPage.tsx`: Added age confirmation checkbox with accessible label
 - `src/lib/validation.test.ts`: Updated test for age_confirmed, added rejection test
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (25/25) | build: PASS

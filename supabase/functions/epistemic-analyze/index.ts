@@ -44,7 +44,10 @@ Deno.serve(async (req: Request) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(token)
   if (authError || !user) {
     return jsonResponse({ error: 'Unauthorized' }, 401)
   }
@@ -73,17 +76,16 @@ Deno.serve(async (req: Request) => {
     const runAvg = (prev: number, current: number) =>
       prevCount > 0 ? (prev * prevCount + current) / sessionCount : current
 
-    const reflectionDepth = reflections.length > 0
-      ? reflections.reduce((s, a) => s + a.word_count, 0) / reflections.length
-      : 0
+    const reflectionDepth =
+      reflections.length > 0
+        ? reflections.reduce((s, a) => s + a.word_count, 0) / reflections.length
+        : 0
 
-    const defenseStrength = defenses.length > 0
-      ? defenses.reduce((s, a) => s + a.word_count, 0) / defenses.length
-      : 0
+    const defenseStrength =
+      defenses.length > 0 ? defenses.reduce((s, a) => s + a.word_count, 0) / defenses.length : 0
 
-    const framingSoph = frames.length > 0
-      ? frames.reduce((s, a) => s + a.word_count, 0) / frames.length
-      : 0
+    const framingSoph =
+      frames.length > 0 ? frames.reduce((s, a) => s + a.word_count, 0) / frames.length : 0
 
     const profile = {
       user_id: user.id,
@@ -101,8 +103,11 @@ Deno.serve(async (req: Request) => {
         overall: runAvg(existing?.trace_averages?.overall ?? 0, body.trace_scores.overall),
       },
       growth_trajectory:
-        body.trace_scores.overall >= 7 ? 'proficient' :
-        body.trace_scores.overall >= 4 ? 'developing' : 'emerging',
+        body.trace_scores.overall >= 7
+          ? 'proficient'
+          : body.trace_scores.overall >= 4
+            ? 'developing'
+            : 'emerging',
       updated_at: new Date().toISOString(),
     }
 

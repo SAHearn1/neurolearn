@@ -23,10 +23,9 @@ export function PasswordResetPage() {
 
     setLoading(true)
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        { redirectTo: `${window.location.origin}/login` },
-      )
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login`,
+      })
       if (resetError) throw resetError
       setSubmitted(true)
     } catch (err) {
@@ -38,12 +37,15 @@ export function PasswordResetPage() {
 
   if (submitted) {
     return (
-      <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6">
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6"
+      >
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-center">
           <h1 className="text-2xl font-bold text-slate-900">Check your email</h1>
           <p className="mt-3 text-slate-600">
-            If an account exists for <strong>{email}</strong>, you&apos;ll receive a
-            password reset link shortly.
+            If an account exists for <strong>{email}</strong>, you&apos;ll receive a password reset
+            link shortly.
           </p>
           <Link
             className="mt-6 inline-block text-sm font-semibold text-brand-700 hover:text-brand-800"
@@ -57,16 +59,22 @@ export function PasswordResetPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6"
+    >
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900">Reset your password</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Enter the email address associated with your account and we&apos;ll send
-          you a link to reset your password.
+          Enter the email address associated with your account and we&apos;ll send you a link to
+          reset your password.
         </p>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+          <div
+            className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            role="alert"
+          >
             {error}
           </div>
         )}

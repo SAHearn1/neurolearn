@@ -22,7 +22,10 @@ export function trackPageView(path: string): void {
   // Vercel Analytics tracks page views automatically when injected
 }
 
-export function trackEvent(name: string, properties?: Record<string, string | number | boolean>): void {
+export function trackEvent(
+  name: string,
+  properties?: Record<string, string | number | boolean>,
+): void {
   log.debug(`Event: ${name}`, properties)
   // Vercel track() is called automatically via the injected script for page views.
   // Custom events use the window.va interface:
@@ -52,6 +55,5 @@ export const analytics = {
   racaSessionEnded: (sessionId: string, finalState: string, durationSeconds: number) =>
     trackEvent('raca_session_ended', { sessionId, finalState, durationSeconds }),
 
-  pageViewed: (page: string) =>
-    trackEvent('page_viewed', { page }),
+  pageViewed: (page: string) => trackEvent('page_viewed', { page }),
 }

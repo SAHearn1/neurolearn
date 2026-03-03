@@ -117,10 +117,7 @@ export function EducatorAnalytics() {
       a.avgStreakDays,
     ])
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((r) => r.join(',')),
-    ].join('\n')
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -169,7 +166,10 @@ export function EducatorAnalytics() {
                   <p className="text-sm font-medium text-slate-600">Course Completion Rates</p>
                   <div className="mt-1 space-y-1">
                     {a.completionRates.map((cr) => (
-                      <div key={cr.courseTitle} className="flex items-center justify-between text-sm">
+                      <div
+                        key={cr.courseTitle}
+                        className="flex items-center justify-between text-sm"
+                      >
                         <span className="text-slate-700">{cr.courseTitle}</span>
                         <span className="font-semibold text-slate-900">{cr.rate}%</span>
                       </div>

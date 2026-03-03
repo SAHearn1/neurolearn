@@ -5,13 +5,7 @@ import type { CognitiveState } from './cognitive-states'
  * and their constraint contracts.
  */
 
-export const AGENT_IDS = [
-  'framing',
-  'research',
-  'construction',
-  'critique',
-  'defense',
-] as const
+export const AGENT_IDS = ['framing', 'research', 'construction', 'critique', 'defense'] as const
 
 export type AgentId = (typeof AGENT_IDS)[number]
 

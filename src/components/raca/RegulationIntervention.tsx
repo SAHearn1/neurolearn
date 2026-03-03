@@ -16,14 +16,16 @@ export function RegulationIntervention({ regulationLevel, onDismiss }: Props) {
         </div>
         <h2 className="mb-2 text-xl font-bold text-slate-900">Take a moment</h2>
         <p className="mb-6 text-sm text-slate-600">
-          It looks like you might be feeling frustrated or overwhelmed. That is completely
-          okay. Learning hard things takes real effort, and your brain might need a break.
+          It looks like you might be feeling frustrated or overwhelmed. That is completely okay.
+          Learning hard things takes real effort, and your brain might need a break.
         </p>
 
         <div className="mb-6 space-y-3 text-left text-sm text-slate-700">
           {regulationLevel < 30 ? (
             <>
-              <p className="font-semibold text-amber-700">Your regulation is quite low. Let us slow down together.</p>
+              <p className="font-semibold text-amber-700">
+                Your regulation is quite low. Let us slow down together.
+              </p>
               <ul className="ml-4 list-disc space-y-1">
                 <li>Close your eyes and take 5 slow breaths (inhale 4s, hold 4s, exhale 6s)</li>
                 <li>Name 5 things you can see, 4 you can hear, 3 you can touch</li>
@@ -54,9 +56,7 @@ export function RegulationIntervention({ regulationLevel, onDismiss }: Props) {
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs text-slate-400">
-            Regulation level: {regulationLevel}/100
-          </p>
+          <p className="text-xs text-slate-400">Regulation level: {regulationLevel}/100</p>
           <div className="flex items-center justify-center gap-2">
             <Button onClick={onDismiss} variant="primary">
               I am ready to continue

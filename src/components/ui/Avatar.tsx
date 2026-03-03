@@ -16,7 +16,11 @@ export function Avatar({ name, src }: AvatarProps) {
   }
 
   return (
-    <span aria-label={name} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700" role="img">
+    <span
+      aria-label={name}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700"
+      role="img"
+    >
       {initials || 'U'}
     </span>
   )

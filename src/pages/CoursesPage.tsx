@@ -14,7 +14,10 @@ function EnrollButton({ courseId }: { courseId: string }) {
 
   if (isEnrolled) {
     return (
-      <Link className="mt-4 inline-block text-sm font-semibold text-brand-700" to={`/courses/${courseId}`}>
+      <Link
+        className="mt-4 inline-block text-sm font-semibold text-brand-700"
+        to={`/courses/${courseId}`}
+      >
         Continue course &rarr;
       </Link>
     )
@@ -51,7 +54,10 @@ export function CoursesPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 p-6"
+    >
       <header>
         <h1 className="text-3xl font-bold text-slate-900">Courses</h1>
         <p className="mt-2 text-slate-600">Explore neurodivergent-friendly learning tracks.</p>

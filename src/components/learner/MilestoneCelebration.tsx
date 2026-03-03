@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
@@ -71,14 +71,16 @@ interface MilestoneCelebrationProps {
 export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrationProps) {
   const [visible, setVisible] = useState(false)
   const data = MILESTONES[milestone]
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   // Respect reduced motion preference
   const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useEffect(() => {
-    // Animate in
+    // Save current focus and animate in
+    previousFocusRef.current = document.activeElement as HTMLElement
     const timer = setTimeout(() => setVisible(true), 50)
     return () => clearTimeout(timer)
   }, [])
@@ -88,6 +90,42 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
     setTimeout(onDismiss, prefersReducedMotion ? 0 : 300)
   }, [onDismiss, prefersReducedMotion])
 
+  // Focus trap: auto-focus the dialog on mount
+  useEffect(() => {
+    if (visible) {
+      dialogRef.current?.focus()
+    }
+  }, [visible])
+
+  // Trap focus within dialog and handle Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDismiss()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusable?.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previousFocusRef.current?.focus()
+    }
+  }, [handleDismiss])
+
   // Auto-dismiss after 8 seconds
   useEffect(() => {
     const timer = setTimeout(handleDismiss, 8000)
@@ -95,7 +133,9 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
   }, [handleDismiss])
 
   const animationClass = prefersReducedMotion
-    ? visible ? 'opacity-100' : 'opacity-0'
+    ? visible
+      ? 'opacity-100'
+      : 'opacity-0'
     : visible
       ? 'opacity-100 translate-y-0 scale-100'
       : 'opacity-0 translate-y-4 scale-95'
@@ -105,12 +145,17 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"
       role="dialog"
       aria-label={`Milestone: ${data.title}`}
+      aria-modal="true"
     >
       <div
-        className={`transition-all duration-300 ${animationClass}`}
+        ref={dialogRef}
+        tabIndex={-1}
+        className={`outline-none transition-all duration-300 ${animationClass}`}
       >
         <Card className="max-w-sm text-center shadow-xl border-2 border-brand-300 bg-white">
-          <div className="text-5xl mb-3" aria-hidden="true">{data.icon}</div>
+          <div className="text-5xl mb-3" aria-hidden="true">
+            {data.icon}
+          </div>
           <Badge>Milestone</Badge>
           <h2 className="mt-2 text-xl font-bold text-slate-900">{data.title}</h2>
           <p className="mt-1 text-slate-600">{data.description}</p>
@@ -132,12 +177,12 @@ export function checkMilestone(
   courseJustCompleted: boolean,
 ): MilestoneType | null {
   if (courseJustCompleted) return 'course-complete'
-  if (lessonsCompleted === 1) return 'first-lesson'
-  if (lessonsCompleted === 100) return 'lessons-100'
-  if (lessonsCompleted === 50) return 'lessons-50'
-  if (lessonsCompleted === 10) return 'lessons-10'
-  if (streakDays === 30) return 'streak-30'
-  if (streakDays === 7) return 'streak-7'
-  if (streakDays === 3) return 'streak-3'
+  if (lessonsCompleted >= 100) return 'lessons-100'
+  if (lessonsCompleted >= 50) return 'lessons-50'
+  if (lessonsCompleted >= 10) return 'lessons-10'
+  if (lessonsCompleted >= 1) return 'first-lesson'
+  if (streakDays >= 30) return 'streak-30'
+  if (streakDays >= 7) return 'streak-7'
+  if (streakDays >= 3) return 'streak-3'
   return null
 }

@@ -16,11 +16,7 @@ interface AuthState {
 }
 
 async function fetchUserRole(userId: string): Promise<UserRole> {
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('user_id', userId)
-    .single()
+  const { data } = await supabase.from('profiles').select('role').eq('user_id', userId).single()
   return (data?.role as UserRole) ?? 'learner'
 }
 

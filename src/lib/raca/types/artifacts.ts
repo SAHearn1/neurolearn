@@ -21,6 +21,11 @@ export interface Artifact {
   state: CognitiveState
   content: string
   word_count: number
+  /**
+   * Version number for append-only versioning. Currently set to 1 on creation.
+   * Future: auto-increment when a same-kind artifact is saved in the same session,
+   * enabling learner revision history tracking.
+   */
   version: number
   created_at: string
 }

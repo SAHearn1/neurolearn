@@ -75,6 +75,11 @@ export function checkFullCompliance(
   return {
     passed: allViolations.length === 0,
     violations: allViolations,
-    severity: globalResult.severity !== 'none' ? globalResult.severity : allViolations.length > 0 ? 'medium' : 'none',
+    severity:
+      globalResult.severity !== 'none'
+        ? globalResult.severity
+        : allViolations.length > 0
+          ? 'medium'
+          : 'none',
   }
 }

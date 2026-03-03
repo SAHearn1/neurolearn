@@ -28,49 +28,52 @@ export function AuditLogViewer() {
   const [hasMore, setHasMore] = useState(true)
   const [actionFilter, setActionFilter] = useState<string>('')
 
-  const fetchEntries = useCallback(async (pageNum: number) => {
-    setLoading(true)
-    setError(null)
-    try {
-      let query = supabase
-        .from('audit_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)
+  const fetchEntries = useCallback(
+    async (pageNum: number) => {
+      setLoading(true)
+      setError(null)
+      try {
+        let query = supabase
+          .from('audit_log')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)
 
-      if (actionFilter) {
-        query = query.eq('action', actionFilter)
-      }
+        if (actionFilter) {
+          query = query.eq('action', actionFilter)
+        }
 
-      const { data, error: err } = await query
-      if (err) throw err
+        const { data, error: err } = await query
+        if (err) throw err
 
-      const items = (data as AuditEntry[]) ?? []
-      setHasMore(items.length === PAGE_SIZE)
+        const items = (data as AuditEntry[]) ?? []
+        setHasMore(items.length === PAGE_SIZE)
 
-      // Resolve actor names
-      const actorIds = [...new Set(items.filter((e) => e.actor_id).map((e) => e.actor_id!))]
-      if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, display_name')
-          .in('user_id', actorIds)
+        // Resolve actor names
+        const actorIds = [...new Set(items.filter((e) => e.actor_id).map((e) => e.actor_id!))]
+        if (actorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name')
+            .in('user_id', actorIds)
 
-        const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]))
-        for (const entry of items) {
-          if (entry.actor_id) {
-            entry.actor_name = nameMap.get(entry.actor_id) ?? 'Unknown'
+          const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name]))
+          for (const entry of items) {
+            if (entry.actor_id) {
+              entry.actor_name = nameMap.get(entry.actor_id) ?? 'Unknown'
+            }
           }
         }
-      }
 
-      setEntries(items)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load audit log')
-    } finally {
-      setLoading(false)
-    }
-  }, [actionFilter])
+        setEntries(items)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load audit log')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [actionFilter],
+  )
 
   useEffect(() => {
     fetchEntries(page)
@@ -169,11 +172,7 @@ export function AuditLogViewer() {
           Previous
         </Button>
         <span className="text-sm text-slate-500 self-center">Page {page + 1}</span>
-        <Button
-          variant="secondary"
-          onClick={() => setPage((p) => p + 1)}
-          disabled={!hasMore}
-        >
+        <Button variant="secondary" onClick={() => setPage((p) => p + 1)} disabled={!hasMore}>
           Next
         </Button>
       </div>

@@ -39,8 +39,12 @@ export function evaluateTransition(
   source: EventSource,
   runtimeState: RuntimeState,
 ): TransitionGuardResult {
-  // Guard 1: Only learner actions can trigger forward transitions
-  // (backward transitions to REGULATE are allowed from system/timer for dysregulation)
+  // Guard 1: Learner-only forward transitions (ADR-002).
+  // Only 'learner_action' events can trigger forward state transitions.
+  // This is a core pedagogical constraint: AI agents assist within a state
+  // but cannot advance the learner through the cognitive sequence.
+  // Exception: REGULATE transitions are allowed from system/timer sources
+  // to support automatic dysregulation intervention.
   if (source !== 'learner_action' && to !== 'REGULATE') {
     return { allowed: false, reason: `Only learner_action can trigger transition to ${to}` }
   }

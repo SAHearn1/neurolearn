@@ -35,14 +35,25 @@ function markMilestoneSeen(milestone: string) {
   localStorage.setItem(MILESTONE_KEY, JSON.stringify([...seen]))
 }
 
-function CourseCardWithProgress({ courseId, title, level }: { courseId: string; title: string; level: string }) {
+function CourseCardWithProgress({
+  courseId,
+  title,
+  level,
+}: {
+  courseId: string
+  title: string
+  level: string
+}) {
   const { progress } = useCourseProgress(courseId)
   return (
     <Card>
       <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
       <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-700">{level}</p>
       <ProgressBar label="progress" value={progress?.percent_complete ?? 0} />
-      <Link className="mt-4 inline-block text-sm font-semibold text-brand-700" to={`/courses/${courseId}`}>
+      <Link
+        className="mt-4 inline-block text-sm font-semibold text-brand-700"
+        to={`/courses/${courseId}`}
+      >
         Continue course &rarr;
       </Link>
     </Card>
@@ -60,13 +71,17 @@ export function DashboardPage() {
 
   const displayName = profile?.display_name ?? 'learner'
 
-  // Fetch progress for all visible courses
+  // Fetch progress for all visible courses (use stable course IDs to avoid refetching on every render)
+  const courseIds = courses
+    .slice(0, 4)
+    .map((c) => c.id)
+    .join(',')
   useEffect(() => {
-    if (!user?.id || !courses.length) return
-    courses.slice(0, 4).forEach((course) => {
-      fetchCourseProgress(user.id, course.id)
+    if (!user?.id || !courseIds) return
+    courseIds.split(',').forEach((id) => {
+      fetchCourseProgress(user.id, id)
     })
-  }, [user?.id, courses, fetchCourseProgress])
+  }, [user?.id, courseIds, fetchCourseProgress])
 
   // Check for newly earned milestones once profile loads
   useEffect(() => {
@@ -91,7 +106,10 @@ export function DashboardPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 p-6"
+    >
       <header className="space-y-3">
         <div className="flex items-center gap-2">
           <Badge>Dashboard</Badge>
@@ -100,7 +118,9 @@ export function DashboardPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Welcome back, {displayName}</h1>
-            <p className="text-slate-600">Your progress overview and quick links for your next session.</p>
+            <p className="text-slate-600">
+              Your progress overview and quick links for your next session.
+            </p>
           </div>
           <Avatar name={displayName} />
         </div>
@@ -111,7 +131,12 @@ export function DashboardPage() {
       {courses.length > 0 ? (
         <section aria-label="Enrolled courses" className="grid gap-4 md:grid-cols-2">
           {courses.slice(0, 4).map((course) => (
-            <CourseCardWithProgress key={course.id} courseId={course.id} title={course.title} level={course.level} />
+            <CourseCardWithProgress
+              key={course.id}
+              courseId={course.id}
+              title={course.title}
+              level={course.level}
+            />
           ))}
         </section>
       ) : (
@@ -132,14 +157,11 @@ export function DashboardPage() {
         ) : adaptiveState?.recommended_lesson_id ? (
           <Card>
             <p className="text-sm text-slate-600">
-              Based on your performance (mastery:{' '}
-              <strong>{adaptiveState.mastery_score}%</strong>), we recommend continuing at{' '}
-              <strong>{adaptiveState.current_difficulty}</strong> difficulty.
+              Based on your performance (mastery: <strong>{adaptiveState.mastery_score}%</strong>),
+              we recommend continuing at <strong>{adaptiveState.current_difficulty}</strong>{' '}
+              difficulty.
             </p>
-            <Link
-              className="mt-2 inline-block text-sm font-semibold text-brand-700"
-              to="/courses"
-            >
+            <Link className="mt-2 inline-block text-sm font-semibold text-brand-700" to="/courses">
               View recommendations →
             </Link>
           </Card>
@@ -155,7 +177,8 @@ export function DashboardPage() {
           <h2 className="text-xl font-bold text-slate-900 mb-3">Cognitive Profile</h2>
           <Card>
             <p className="text-sm text-slate-600">
-              Your epistemic monitoring dashboard is active. Visit a RACA session to see detailed insights.
+              Your epistemic monitoring dashboard is active. Visit a RACA session to see detailed
+              insights.
             </p>
           </Card>
         </section>

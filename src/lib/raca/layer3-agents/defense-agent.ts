@@ -8,7 +8,8 @@ export const defenseAgent: AgentContract = {
   definition,
 
   buildSystemPrompt: (ctx: AgentContext) => {
-    const revision = ctx.artifacts.find((a) => a.kind === 'revision') ??
+    const revision =
+      ctx.artifacts.find((a) => a.kind === 'revision') ??
       ctx.artifacts.find((a) => a.kind === 'draft')
     const defenseResponse = ctx.artifacts.find((a) => a.kind === 'defense_response')
 
@@ -59,10 +60,10 @@ Ask questions that genuinely probe understanding. Make the learner think, not ju
       }
     }
 
-    // Check ratio: mostly questions, few statements
-    const sentences = response.split(/[.!?]+/).filter((s) => s.trim().length > 5)
-    const questionSentences = response.split('?').length - 1
-    if (sentences.length > 0 && questionSentences < sentences.length * 0.4) {
+    // Check ratio: count sentences ending with ? vs total sentences
+    const allSentences = response.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 5)
+    const questionSentences = allSentences.filter((s) => s.trim().endsWith('?')).length
+    if (allSentences.length > 0 && questionSentences < allSentences.length * 0.4) {
       violations.push('Response should primarily consist of questions')
     }
 

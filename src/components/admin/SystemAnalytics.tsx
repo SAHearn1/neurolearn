@@ -98,7 +98,9 @@ export function SystemAnalytics() {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-900">System Analytics</h2>
-        <Button variant="secondary" onClick={exportCSV}>Export CSV</Button>
+        <Button variant="secondary" onClick={exportCSV}>
+          Export CSV
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

@@ -25,7 +25,11 @@ export function QuizBlock({ answer, prompt }: QuizBlockProps) {
         value={value}
       />
       <Button variant="secondary">Check answer</Button>
-      {value ? <Alert variant={isCorrect ? 'success' : 'warning'}>{isCorrect ? 'Correct!' : 'Try again.'}</Alert> : null}
+      {value ? (
+        <Alert variant={isCorrect ? 'success' : 'warning'}>
+          {isCorrect ? 'Correct!' : 'Try again.'}
+        </Alert>
+      ) : null}
     </section>
   )
 }

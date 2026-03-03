@@ -12,10 +12,7 @@ export function enableDyslexiaFont(): void {
   linkElement.id = 'neurolearn-dyslexia-font'
   document.head.appendChild(linkElement)
 
-  document.documentElement.style.setProperty(
-    '--font-family-base',
-    "'OpenDyslexic', sans-serif",
-  )
+  document.documentElement.style.setProperty('--font-family-base', "'OpenDyslexic', sans-serif")
   document.documentElement.classList.add('dyslexia-font')
 }
 

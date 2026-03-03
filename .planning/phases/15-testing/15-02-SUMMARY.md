@@ -11,6 +11,7 @@
 4. **screen-reader-testing.md** — Created with NVDA/VoiceOver setup, 6 test flows (login, signup, courses, dashboard, modals, skip nav), landmarks table, reporting format
 
 ## Enhancements Made
+
 - `src/test/accessibility.test.tsx`: 5 axe-core accessibility tests
 - `lighthouserc.js`: Raised thresholds (a11y 0.95 error-level), added web vital assertions
 - `.github/workflows/ci.yml`: Added lighthouse job after validate
@@ -18,4 +19,5 @@
 - `package.json`: Added jsdom devDependency
 
 ## CI Gate
+
 - typecheck: PASS | lint: PASS | test: PASS (30/30) | build: PASS

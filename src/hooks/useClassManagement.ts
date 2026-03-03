@@ -66,10 +66,7 @@ export function useClassManagement() {
 
   const deleteClass = useCallback(
     async (classId: string) => {
-      const { error: err } = await supabase
-        .from('classes')
-        .delete()
-        .eq('id', classId)
+      const { error: err } = await supabase.from('classes').delete().eq('id', classId)
 
       if (err) throw err
       await fetchClasses()
@@ -92,42 +89,33 @@ export function useClassManagement() {
     [user?.id, fetchClasses],
   )
 
-  const enrollStudent = useCallback(
-    async (classId: string, studentId: string) => {
-      const { error: err } = await supabase
-        .from('class_enrollments')
-        .insert({ class_id: classId, student_id: studentId })
+  const enrollStudent = useCallback(async (classId: string, studentId: string) => {
+    const { error: err } = await supabase
+      .from('class_enrollments')
+      .insert({ class_id: classId, student_id: studentId })
 
-      if (err) throw err
-    },
-    [],
-  )
+    if (err) throw err
+  }, [])
 
-  const unenrollStudent = useCallback(
-    async (classId: string, studentId: string) => {
-      const { error: err } = await supabase
-        .from('class_enrollments')
-        .delete()
-        .eq('class_id', classId)
-        .eq('student_id', studentId)
+  const unenrollStudent = useCallback(async (classId: string, studentId: string) => {
+    const { error: err } = await supabase
+      .from('class_enrollments')
+      .delete()
+      .eq('class_id', classId)
+      .eq('student_id', studentId)
 
-      if (err) throw err
-    },
-    [],
-  )
+    if (err) throw err
+  }, [])
 
-  const getClassEnrollments = useCallback(
-    async (classId: string): Promise<ClassEnrollment[]> => {
-      const { data, error: err } = await supabase
-        .from('class_enrollments')
-        .select('*')
-        .eq('class_id', classId)
+  const getClassEnrollments = useCallback(async (classId: string): Promise<ClassEnrollment[]> => {
+    const { data, error: err } = await supabase
+      .from('class_enrollments')
+      .select('*')
+      .eq('class_id', classId)
 
-      if (err) throw err
-      return (data as ClassEnrollment[]) ?? []
-    },
-    [],
-  )
+    if (err) throw err
+    return (data as ClassEnrollment[]) ?? []
+  }, [])
 
   return {
     classes,

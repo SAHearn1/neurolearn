@@ -13,18 +13,21 @@
 6. **index.ts updated** — EducatorStudentLink added to barrel exports
 
 ## Existing Implementations (Already Complete)
+
 - `useEducatorProfile` hook — fully implemented with fetchProfile, upsertProfile, refetch
 - `useClassManagement` hook — fully implemented with create/update/delete class, enroll/unenroll student
 - Migration 008_educator_profiles.sql — full table with RLS (5 policies)
 - EducatorDashboardPage + 5 educator components
 
 ## CI Gate
+
 - typecheck: PASS (0 errors)
 - lint: PASS (0 warnings)
 - test: PASS (24/24)
 - build: PASS (clean)
 
 ## Artifacts
+
 - `supabase/migrations/017_educator_enhancements.sql`
 - `supabase/migrations/018_educator_student_links.sql`
 - `src/types/educator.ts` (updated)

@@ -43,16 +43,22 @@ export function Modal({ children, isOpen, onClose, title }: ModalProps) {
   }
 
   return (
+    /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <div
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
       onClick={handleBackdropClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose()
+      }}
       role="dialog"
       aria-labelledby="modal-title"
     >
       <div ref={dialogRef} className="w-full max-w-lg rounded-xl bg-white p-6 shadow-lg">
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id="modal-title" className="text-xl font-semibold text-slate-900">{title}</h2>
+          <h2 id="modal-title" className="text-xl font-semibold text-slate-900">
+            {title}
+          </h2>
           <button
             aria-label="Close modal"
             className="rounded p-1 text-slate-500 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
