@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { Spinner } from './components/ui/Spinner'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
@@ -39,6 +39,33 @@ const AdminDashboardPage = lazy(() =>
   import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })),
 )
 
+/**
+ * Intercepts Supabase auth error fragments (e.g. #error=access_denied&error_code=otp_expired)
+ * that land on any page and redirects to /check-email with the error info in search params.
+ * Must run inside the Router so useNavigate is available.
+ */
+function useAuthHashHandler() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash) return
+
+    const params = new URLSearchParams(hash.slice(1)) // strip leading '#'
+    const error = params.get('error')
+    if (!error) return
+
+    const errorCode = params.get('error_code') ?? 'unknown'
+    const errorDescription = params.get('error_description') ?? 'An authentication error occurred.'
+
+    // Clear the hash so a page refresh doesn't re-trigger this
+    history.replaceState(null, '', location.pathname + location.search)
+
+    const qs = new URLSearchParams({ error_code: errorCode, error_description: errorDescription })
+    navigate(`/check-email?${qs.toString()}`, { replace: true })
+  }, [navigate])
+}
+
 function PageFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -52,6 +79,8 @@ export function App() {
   useAuth()
   // Enable keyboard vs mouse navigation detection
   useKeyboardNavigation()
+  // Intercept Supabase auth error hash fragments (e.g. expired confirmation links)
+  useAuthHashHandler()
 
   return (
     <Suspense fallback={<PageFallback />}>
