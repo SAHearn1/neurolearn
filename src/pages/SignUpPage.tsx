@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import type { AuthError } from '@supabase/supabase-js'
 import { useAuthStore } from '../store/authStore'
 import { signUpSchema, getValidationErrors } from '../lib/validation'
 import { authRateLimit } from '../lib/rate-limit'
@@ -41,7 +42,12 @@ export function SignUpPage() {
       // session is null when Supabase requires email confirmation
       navigate(session ? '/dashboard' : '/check-email')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign up failed')
+      const authErr = err as AuthError
+      if (authErr?.status === 429) {
+        setError('Too many sign-up attempts. Please wait a few minutes before trying again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Sign up failed')
+      }
     }
   }
 

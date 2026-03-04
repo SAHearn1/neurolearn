@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import type { AuthError } from '@supabase/supabase-js'
 import { supabase } from '../../utils/supabase/client'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
@@ -9,6 +10,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   otp_expired: 'Your confirmation link has expired. Links are only valid for a short time.',
   access_denied: 'This confirmation link is no longer valid.',
   invalid_grant: 'This confirmation link has already been used or is invalid.',
+  email_not_confirmed: 'You need to confirm your email address before you can sign in.',
 }
 
 function EmailIcon() {
@@ -57,7 +59,12 @@ export function CheckEmailPage() {
       if (error) throw error
       setResendSuccess(true)
     } catch (err) {
-      setResendError(err instanceof Error ? err.message : 'Failed to resend. Please try again.')
+      const authErr = err as AuthError
+      if (authErr?.status === 429) {
+        setResendError('Too many requests. Please wait a minute before trying again.')
+      } else {
+        setResendError(err instanceof Error ? err.message : 'Failed to resend. Please try again.')
+      }
     } finally {
       setResendLoading(false)
     }
