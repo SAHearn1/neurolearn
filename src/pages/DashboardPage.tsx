@@ -77,7 +77,7 @@ export function DashboardPage() {
     )
     if (milestone && !getSeenMilestones().has(milestone)) {
       markMilestoneSeen(milestone)
-      setPendingMilestone(milestone)
+      Promise.resolve().then(() => setPendingMilestone(milestone))
     }
   }, [profile])
 

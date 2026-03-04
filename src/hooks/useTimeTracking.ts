@@ -5,10 +5,12 @@ import { useEffect, useRef, useCallback } from 'react'
  * Pauses when the tab is hidden (document.hidden).
  */
 export function useTimeTracking() {
-  const startRef = useRef(Date.now())
+  const startRef = useRef<number>(0)
   const elapsedRef = useRef(0)
 
   useEffect(() => {
+    startRef.current = Date.now()
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
         elapsedRef.current += Math.floor((Date.now() - startRef.current) / 1000)

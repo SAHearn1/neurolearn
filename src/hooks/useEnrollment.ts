@@ -57,35 +57,37 @@ export function useEnrollment(courseId: string | undefined) {
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const userId = user?.id
+
   useEffect(() => {
-    if (!user?.id || !courseId) {
-      setLoading(false)
+    if (!userId || !courseId) {
+      Promise.resolve().then(() => setLoading(false))
       return
     }
 
     supabase
       .from('course_enrollments')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('course_id', courseId)
       .maybeSingle()
       .then(({ data }) => {
         setEnrollment(data as Enrollment | null)
         setLoading(false)
       })
-  }, [user?.id, courseId])
+  }, [userId, courseId])
 
   const enroll = useCallback(async () => {
-    if (!user?.id || !courseId) return
+    if (!userId || !courseId) return
     const { data, error } = await supabase
       .from('course_enrollments')
-      .insert({ user_id: user.id, course_id: courseId })
+      .insert({ user_id: userId, course_id: courseId })
       .select()
       .single()
 
     if (error) throw error
     setEnrollment(data as Enrollment)
-  }, [user?.id, courseId])
+  }, [userId, courseId])
 
   const isEnrolled = enrollment !== null
 
