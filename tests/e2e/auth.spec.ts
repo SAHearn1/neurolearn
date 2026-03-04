@@ -36,7 +36,7 @@ test.describe('Authentication flows', () => {
   })
 
   test('password reset page loads', async ({ page }) => {
-    await page.goto('/reset-password')
+    await page.goto('/password-reset')
     await expect(page.getByLabel(/email/i)).toBeVisible()
   })
 
