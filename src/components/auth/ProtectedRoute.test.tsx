@@ -4,14 +4,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { ProtectedRoute } from './ProtectedRoute'
 
-// Mock useProfile
-vi.mock('../../hooks/useProfile', () => ({
-  useProfile: vi.fn().mockReturnValue({
-    profile: { role: 'learner' },
-    loading: false,
-  }),
-}))
-
 // Mock useNavigate
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -42,6 +34,7 @@ describe('ProtectedRoute', () => {
       loading: false,
       session: { access_token: 'token' } as never,
       user: { id: 'u1' } as never,
+      role: 'learner',
     })
     render(
       <MemoryRouter>
@@ -63,5 +56,44 @@ describe('ProtectedRoute', () => {
       </MemoryRouter>,
     )
     expect(mockNavigate).toHaveBeenCalledWith('/login', expect.objectContaining({ replace: true }))
+  })
+
+  it('redirects to /dashboard when role is not allowed', () => {
+    useAuthStore.setState({
+      initialized: true,
+      loading: false,
+      session: { access_token: 'token' } as never,
+      user: { id: 'u1' } as never,
+      role: 'learner',
+    })
+    render(
+      <MemoryRouter>
+        <ProtectedRoute requiredRole="admin">
+          <p>Admin content</p>
+        </ProtectedRoute>
+      </MemoryRouter>,
+    )
+
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    expect(screen.queryByText('Admin content')).not.toBeInTheDocument()
+  })
+
+  it('renders children when role is allowed', () => {
+    useAuthStore.setState({
+      initialized: true,
+      loading: false,
+      session: { access_token: 'token' } as never,
+      user: { id: 'u1' } as never,
+      role: 'admin',
+    })
+    render(
+      <MemoryRouter>
+        <ProtectedRoute requiredRole={['admin', 'educator']}>
+          <p>Privileged content</p>
+        </ProtectedRoute>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('Privileged content')).toBeInTheDocument()
   })
 })

@@ -15,14 +15,14 @@ test.describe('Lesson flows — unauthenticated', () => {
   })
 
   test('reset-password page is publicly accessible', async ({ page }) => {
-    await page.goto('/reset-password')
+    await page.goto('/password-reset')
     await expect(page.getByRole('heading', { name: /reset your password/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible()
   })
 
   test('reset-password form validates email format', async ({ page }) => {
-    await page.goto('/reset-password')
+    await page.goto('/password-reset')
     await page.getByLabel(/email/i).fill('not-valid')
     await page.getByRole('button', { name: /send reset link/i }).click()
     // Zod validation should surface an inline error
