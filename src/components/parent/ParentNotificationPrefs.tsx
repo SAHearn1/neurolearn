@@ -104,7 +104,11 @@ export function ParentNotificationPrefs() {
           <div>
             <p className="text-sm font-medium text-slate-700 mb-2">Notification Channels</p>
             <div className="space-y-2">
-              <label htmlFor="email-toggle" className="flex items-center gap-3">
+              <label
+                htmlFor="email-toggle"
+                aria-label="Email notifications"
+                className="flex items-center gap-3"
+              >
                 <input
                   id="email-toggle"
                   type="checkbox"
@@ -121,7 +125,11 @@ export function ParentNotificationPrefs() {
                   </span>
                 </div>
               </label>
-              <label htmlFor="push-toggle" className="flex items-center gap-3">
+              <label
+                htmlFor="push-toggle"
+                aria-label="Push notifications"
+                className="flex items-center gap-3"
+              >
                 <input
                   id="push-toggle"
                   type="checkbox"
