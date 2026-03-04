@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import type { AuthError } from '@supabase/supabase-js'
 import { supabase } from '../../utils/supabase/client'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
@@ -58,7 +59,12 @@ export function CheckEmailPage() {
       if (error) throw error
       setResendSuccess(true)
     } catch (err) {
-      setResendError(err instanceof Error ? err.message : 'Failed to resend. Please try again.')
+      const authErr = err as AuthError
+      if (authErr?.status === 429) {
+        setResendError('Too many requests. Please wait a minute before trying again.')
+      } else {
+        setResendError(err instanceof Error ? err.message : 'Failed to resend. Please try again.')
+      }
     } finally {
       setResendLoading(false)
     }
