@@ -171,6 +171,7 @@ export function MilestoneCelebration({ milestone, onDismiss }: MilestoneCelebrat
 /**
  * Check if a milestone should be triggered based on current stats.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function checkMilestone(
   lessonsCompleted: number,
   streakDays: number,
