@@ -16,6 +16,7 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
 
   dispatch: (action) =>
     set((state) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { dispatch: _, ...currentState } = state
       const next = runtimeReducer(currentState, action)
       return next
