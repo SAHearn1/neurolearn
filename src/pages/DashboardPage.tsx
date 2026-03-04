@@ -16,8 +16,6 @@ import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
-import { useAuthStore } from '../store/authStore'
-import { useProgressStore } from '../store/progressStore'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { StreakBadge } from '../components/dashboard/StreakBadge'
 
@@ -65,7 +63,6 @@ export function DashboardPage() {
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
   const firstCourseId = courses[0]?.id
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourseId)
-  const fetchCourseProgress = useProgressStore((s) => s.fetchCourseProgress)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
 
   const displayName = profile?.display_name ?? 'learner'
