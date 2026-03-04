@@ -21,12 +21,13 @@ export function useRacaSession() {
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)
 
+  const userId = user?.id
   const start = useCallback(
     (config: SessionConfig) => {
-      if (!user?.id || !racaFlags.runtime) return null
-      return startSession(user.id, config)
+      if (!userId || !racaFlags.runtime) return null
+      return startSession(userId, config)
     },
-    [user?.id],
+    [userId],
   )
 
   const end = useCallback(async (abandoned = false) => {
