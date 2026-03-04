@@ -43,7 +43,12 @@ export function SignUpPage() {
       navigate(session ? '/dashboard' : '/check-email')
     } catch (err) {
       const authErr = err as AuthError
-      if (authErr?.status === 429) {
+      const isRateLimit =
+        authErr?.status === 429 ||
+        authErr?.code === 'over_email_send_rate_limit' ||
+        authErr?.code === 'over_request_rate_limit' ||
+        (err instanceof Error && err.message.toLowerCase().includes('rate limit'))
+      if (isRateLimit) {
         setError('Too many sign-up attempts. Please wait a few minutes before trying again.')
       } else {
         setError(err instanceof Error ? err.message : 'Sign up failed')

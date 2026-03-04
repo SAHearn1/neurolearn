@@ -60,7 +60,12 @@ export function CheckEmailPage() {
       setResendSuccess(true)
     } catch (err) {
       const authErr = err as AuthError
-      if (authErr?.status === 429) {
+      const isRateLimit =
+        authErr?.status === 429 ||
+        authErr?.code === 'over_email_send_rate_limit' ||
+        authErr?.code === 'over_request_rate_limit' ||
+        (err instanceof Error && err.message.toLowerCase().includes('rate limit'))
+      if (isRateLimit) {
         setResendError('Too many requests. Please wait a minute before trying again.')
       } else {
         setResendError(err instanceof Error ? err.message : 'Failed to resend. Please try again.')
