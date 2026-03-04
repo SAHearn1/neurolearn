@@ -34,7 +34,11 @@ export function UpdatePasswordPage() {
 
     const result = passwordSchema.safeParse(password)
     if (!result.success) {
-      setFieldErrors(getValidationErrors({ success: false, error: result.error } as Parameters<typeof getValidationErrors>[0]))
+      setFieldErrors(
+        getValidationErrors({ success: false, error: result.error } as Parameters<
+          typeof getValidationErrors
+        >[0]),
+      )
       return
     }
 
@@ -62,13 +66,18 @@ export function UpdatePasswordPage() {
 
   if (!recoveryReady) {
     return (
-      <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6">
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6"
+      >
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-center">
           <h1 className="text-2xl font-bold text-slate-900">Waiting for reset link…</h1>
           <p className="mt-3 text-slate-600">
-            Please follow the password reset link from your email. If you arrived here
-            directly,{' '}
-            <Link className="font-semibold text-brand-700 hover:text-brand-800" to="/reset-password">
+            Please follow the password reset link from your email. If you arrived here directly,{' '}
+            <Link
+              className="font-semibold text-brand-700 hover:text-brand-800"
+              to="/password-reset"
+            >
               request a new reset link
             </Link>
             .
@@ -79,12 +88,13 @@ export function UpdatePasswordPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center p-6"
+    >
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900">Set a new password</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Choose a strong password for your account.
-        </p>
+        <p className="mt-2 text-sm text-slate-600">Choose a strong password for your account.</p>
 
         {error && (
           <div
