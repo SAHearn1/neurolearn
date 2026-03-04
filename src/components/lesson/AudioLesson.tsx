@@ -3,5 +3,8 @@ interface AudioLessonProps {
 }
 
 export function AudioLesson({ src }: AudioLessonProps) {
-  return <audio className="w-full" controls src={src} />
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <audio className="w-full" controls src={src} />
+  )
 }
