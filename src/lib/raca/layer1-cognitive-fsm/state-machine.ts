@@ -28,6 +28,7 @@ export function requestTransition(
 
   const store = useRuntimeStore.getState()
   const from = store.current_state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { dispatch: _, ...runtimeState } = store
 
   const guard = evaluateTransition(from, to, source, runtimeState)
