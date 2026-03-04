@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import type { AuthError } from '@supabase/supabase-js'
 import { useAuthStore } from '../store/authStore'
 import { signInSchema, getValidationErrors } from '../lib/validation'
 import { authRateLimit } from '../lib/rate-limit'
@@ -32,6 +33,15 @@ export function LoginPage() {
       await signIn(email, password)
       navigate('/dashboard')
     } catch (err) {
+      const authErr = err as AuthError
+      if (authErr?.code === 'email_not_confirmed') {
+        const qs = new URLSearchParams({
+          error_code: 'email_not_confirmed',
+          error_description: 'You need to confirm your email before signing in.',
+        })
+        navigate(`/check-email?${qs.toString()}`)
+        return
+      }
       setError(err instanceof Error ? err.message : 'Sign in failed')
     }
   }

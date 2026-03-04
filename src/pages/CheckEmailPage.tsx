@@ -9,6 +9,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   otp_expired: 'Your confirmation link has expired. Links are only valid for a short time.',
   access_denied: 'This confirmation link is no longer valid.',
   invalid_grant: 'This confirmation link has already been used or is invalid.',
+  email_not_confirmed: 'You need to confirm your email address before you can sign in.',
 }
 
 function EmailIcon() {
