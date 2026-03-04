@@ -23,10 +23,9 @@ export function PasswordResetPage() {
 
     setLoading(true)
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email,
-        { redirectTo: `${window.location.origin}/update-password` },
-      )
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/update-password`,
+      })
       if (resetError) throw resetError
       setSubmitted(true)
     } catch (err) {
@@ -84,6 +83,8 @@ export function PasswordResetPage() {
           <label className="block text-sm font-medium text-slate-700">
             Email
             <input
+              aria-describedby={fieldErrors.email ? 'password-reset-email-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.email)}
               autoComplete="email"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="email"
@@ -93,7 +94,14 @@ export function PasswordResetPage() {
               value={email}
             />
             {fieldErrors.email && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.email}</span>
+              <span
+                id="password-reset-email-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.email}
+              </span>
             )}
           </label>
 
