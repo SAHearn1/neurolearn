@@ -60,6 +60,8 @@ export function LoginPage() {
           <label className="block text-sm font-medium text-slate-700">
             Email
             <input
+              aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.email)}
               autoComplete="email"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="email"
@@ -69,13 +71,22 @@ export function LoginPage() {
               value={email}
             />
             {fieldErrors.email && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.email}</span>
+              <span
+                id="login-email-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.email}
+              </span>
             )}
           </label>
 
           <label className="block text-sm font-medium text-slate-700">
             Password
             <input
+              aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.password)}
               autoComplete="current-password"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="password"
@@ -85,7 +96,14 @@ export function LoginPage() {
               value={password}
             />
             {fieldErrors.password && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.password}</span>
+              <span
+                id="login-password-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.password}
+              </span>
             )}
           </label>
 
@@ -99,7 +117,7 @@ export function LoginPage() {
         </form>
 
         <div className="mt-4 flex items-center justify-between text-sm">
-          <Link className="font-semibold text-brand-700 hover:text-brand-800" to="/reset-password">
+          <Link className="font-semibold text-brand-700 hover:text-brand-800" to="/password-reset">
             Forgot password?
           </Link>
           <span className="text-slate-600">
