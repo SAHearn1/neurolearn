@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Spinner } from './components/ui/Spinner'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
@@ -60,7 +60,8 @@ export function App() {
         <Route element={<HomePage />} path="/" />
         <Route element={<LoginPage />} path="/login" />
         <Route element={<SignUpPage />} path="/signup" />
-        <Route element={<PasswordResetPage />} path="/reset-password" />
+        <Route element={<PasswordResetPage />} path="/password-reset" />
+        <Route element={<Navigate replace to="/password-reset" />} path="/reset-password" />
         <Route element={<CheckEmailPage />} path="/check-email" />
         <Route element={<UpdatePasswordPage />} path="/update-password" />
 
@@ -107,7 +108,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute allowedRoles={['educator', 'admin']}>
+            <ProtectedRoute requiredRole={['educator', 'admin']}>
               <EducatorDashboardPage />
             </ProtectedRoute>
           }
@@ -115,7 +116,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute allowedRoles={['parent', 'admin']}>
+            <ProtectedRoute requiredRole={['parent', 'admin']}>
               <ParentDashboardPage />
             </ProtectedRoute>
           }
@@ -123,7 +124,7 @@ export function App() {
         />
         <Route
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute requiredRole="admin">
               <AdminDashboardPage />
             </ProtectedRoute>
           }

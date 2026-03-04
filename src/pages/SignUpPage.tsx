@@ -69,6 +69,8 @@ export function SignUpPage() {
           <label className="block text-sm font-medium text-slate-700">
             Full name
             <input
+              aria-describedby={fieldErrors.displayName ? 'signup-fullname-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.displayName)}
               autoComplete="name"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="fullName"
@@ -78,13 +80,22 @@ export function SignUpPage() {
               value={fullName}
             />
             {fieldErrors.displayName && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.displayName}</span>
+              <span
+                id="signup-fullname-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.displayName}
+              </span>
             )}
           </label>
 
           <label className="block text-sm font-medium text-slate-700">
             Email
             <input
+              aria-describedby={fieldErrors.email ? 'signup-email-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.email)}
               autoComplete="email"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="email"
@@ -94,13 +105,22 @@ export function SignUpPage() {
               value={email}
             />
             {fieldErrors.email && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.email}</span>
+              <span
+                id="signup-email-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.email}
+              </span>
             )}
           </label>
 
           <label className="block text-sm font-medium text-slate-700">
             Password
             <input
+              aria-describedby={fieldErrors.password ? 'signup-password-error' : undefined}
+              aria-invalid={Boolean(fieldErrors.password)}
               autoComplete="new-password"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
               name="password"
@@ -110,7 +130,14 @@ export function SignUpPage() {
               value={password}
             />
             {fieldErrors.password && (
-              <span className="mt-1 block text-xs text-red-600">{fieldErrors.password}</span>
+              <span
+                id="signup-password-error"
+                className="mt-1 block text-xs text-red-600"
+                role="alert"
+                aria-live="assertive"
+              >
+                {fieldErrors.password}
+              </span>
             )}
             <span className="mt-1 block text-xs text-slate-500">
               At least 8 characters with uppercase, lowercase, and a number
@@ -144,7 +171,9 @@ export function SignUpPage() {
             </label>
           </div>
           {fieldErrors.age_confirmed && (
-            <span className="block text-xs text-red-600">{fieldErrors.age_confirmed}</span>
+            <span className="block text-xs text-red-600" role="alert" aria-live="assertive">
+              {fieldErrors.age_confirmed}
+            </span>
           )}
 
           <button

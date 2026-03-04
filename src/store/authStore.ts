@@ -10,20 +10,22 @@ interface AuthState {
   role: UserRole | null
   loading: boolean
   initialized: boolean
+  pendingEmailConfirmation: boolean
   signIn: (email: string, password: string) => Promise<void>
   /** Returns the active Session when the user is immediately confirmed,
    *  or null when email confirmation is pending. */
-  signUp: (email: string, password: string, displayName: string, role?: string) => Promise<Session | null>
+  signUp: (
+    email: string,
+    password: string,
+    displayName: string,
+    role?: string,
+  ) => Promise<Session | null>
   signOut: () => Promise<void>
   initialize: () => () => void
 }
 
 async function loadRole(userId: string): Promise<UserRole | null> {
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('user_id', userId)
-    .single()
+  const { data } = await supabase.from('profiles').select('role').eq('user_id', userId).single()
   return data ? (data.role as UserRole) : null
 }
 
@@ -33,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   role: null,
   loading: false,
   initialized: false,
+  pendingEmailConfirmation: false,
 
   signIn: async (email, password) => {
     set({ loading: true })
@@ -40,7 +43,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       const role = data.user ? await loadRole(data.user.id) : null
-      set({ user: data.user, session: data.session, role })
+      set({ user: data.user, session: data.session, role, pendingEmailConfirmation: false })
     } finally {
       set({ loading: false })
     }
@@ -55,11 +58,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         options: { data: { display_name: displayName, role } },
       })
       if (error) throw error
-      set({ user: data.user, session: data.session })
+      set({
+        user: data.session ? data.user : null,
+        session: data.session,
+        role: null,
+        pendingEmailConfirmation: !data.session,
+      })
       // When email confirmation is enabled, data.session is null.
       if (data.session && data.user) {
         const userRole = await loadRole(data.user.id)
-        set({ role: userRole })
+        set({ role: userRole, pendingEmailConfirmation: false })
       }
       return data.session
     } finally {
@@ -69,7 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null, role: null })
+    set({ user: null, session: null, role: null, pendingEmailConfirmation: false })
   },
 
   initialize: () => {
@@ -80,11 +88,19 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Role is intentionally NOT re-fetched here to avoid redundant queries
-      // on every token refresh. It is fetched once in initialize() and signIn().
-      set({ user: session?.user ?? null, session })
-      if (!session) set({ role: null })
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentState = useAuthStore.getState()
+      const shouldHydrateRole =
+        !!session?.user && (!currentState.role || currentState.user?.id !== session.user.id)
+
+      const nextRole = shouldHydrateRole ? await loadRole(session.user.id) : currentState.role
+
+      set({
+        user: session?.user ?? null,
+        session,
+        role: session ? nextRole : null,
+        pendingEmailConfirmation: false,
+      })
     })
 
     return () => subscription.unsubscribe()
