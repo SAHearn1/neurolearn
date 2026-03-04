@@ -9,7 +9,7 @@ export function Tooltip({ children, text }: TooltipProps) {
   const id = useId()
 
   return (
-    <span className="group relative inline-flex" tabIndex={0} aria-describedby={id}>
+    <span className="group relative inline-flex" aria-describedby={id}>
       {children}
       <span
         id={id}
