@@ -49,7 +49,7 @@ function getRandomMessage(type: ReminderType): string {
 export function SmartReminders({ config = DEFAULT_CONFIG }: { config?: Partial<ReminderConfig> }) {
   const mergedConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
   const [activeReminder, setActiveReminder] = useState<ActiveReminder | null>(null)
-  const [sessionStartTime] = useState(Date.now())
+  const [sessionStartTime] = useState(() => Date.now())
   const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
