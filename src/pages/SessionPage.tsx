@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { racaFlags } from '../lib/raca/feature-flags'
@@ -23,24 +23,38 @@ export function SessionPage() {
   const session = useRacaSession()
   const dispatch = useRuntimeStore((s) => s.dispatch)
   const [showRecovery, setShowRecovery] = useState(false)
+  // Guard against StrictMode double-invocation and parent/child double-start
+  const sessionInitialized = useRef(false)
 
-  // Check for interrupted session on mount
+  // Session lifecycle owner — SessionPage is the sole place that starts a session.
+  // Read live store state (not stale hook closure) so StrictMode's effect re-run sees
+  // the session that was already started by the first invocation.
   useEffect(() => {
-    if (!session.isActive && courseId && lessonId) {
-      const saved = restoreSessionLocal()
-      if (saved && saved.lesson_id === lessonId && saved.status === 'active') {
-        setShowRecovery(true)
-      } else {
-        session.start({ lesson_id: lessonId, course_id: courseId })
-      }
+    if (sessionInitialized.current) return
+    if (!courseId || !lessonId) return
+    sessionInitialized.current = true
+
+    const liveStatus = useRuntimeStore.getState().status
+    if (liveStatus === 'active') return
+
+    const saved = restoreSessionLocal()
+    if (saved && saved.lesson_id === lessonId && saved.status === 'active') {
+      setShowRecovery(true)
+    } else {
+      session.start({ lesson_id: lessonId, course_id: courseId })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId])
 
   if (showRecovery) {
     return (
-      <main id="main-content" className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6">
-        <Alert variant="info">You have an interrupted session for this lesson. Would you like to resume?</Alert>
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6"
+      >
+        <Alert variant="info">
+          You have an interrupted session for this lesson. Would you like to resume?
+        </Alert>
         <div className="flex gap-3">
           <Button
             onClick={() => {

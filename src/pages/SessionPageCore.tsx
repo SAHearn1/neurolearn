@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { useCognitiveState } from '../hooks/useCognitiveState'
@@ -33,14 +32,6 @@ export function SessionPageCore() {
   const dispatch = useRuntimeStore((s) => s.dispatch)
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)
-
-  // Start session on mount
-  useEffect(() => {
-    if (!session.isActive && courseId && lessonId) {
-      session.start({ lesson_id: lessonId, course_id: courseId })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId, lessonId])
 
   const handleTransition = (to: CognitiveState) => {
     const result = cognitive.transition(to)
