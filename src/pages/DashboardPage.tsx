@@ -14,11 +14,14 @@ import {
   checkMilestone,
   type MilestoneType,
 } from '../components/learner/MilestoneCelebration'
+import { BadgeShelf } from '../components/gamification/BadgeShelf'
+import { XPBar } from '../components/ui/XPBar'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
 import { racaFlags } from '../lib/raca/feature-flags'
+import { getLevelStatus } from '../lib/xp'
 import type { CourseLevel } from '../types/course'
 
 const MILESTONE_KEY = 'neurolearn_seen_milestones'
@@ -169,6 +172,9 @@ export function DashboardPage() {
           <StatPill icon="📚" value={lessonsCompleted} label="lessons completed" />
           <StatPill icon="📖" value={courses.length} label="courses enrolled" />
         </div>
+        <div className="mt-5 rounded-xl bg-white/10 p-4">
+          <XPBar levelStatus={getLevelStatus(lessonsCompleted, streakDays)} />
+        </div>
       </section>
 
       {coursesError && <Alert variant="error">{coursesError}</Alert>}
@@ -214,6 +220,14 @@ export function DashboardPage() {
           </Link>
         </section>
       )}
+
+      {/* Achievements / Badge shelf */}
+      <section
+        aria-label="Achievements"
+        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"
+      >
+        <BadgeShelf lessonsCompleted={lessonsCompleted} streakDays={streakDays} />
+      </section>
 
       {/* Adaptive recommendation */}
       <section aria-label="Recommended next lesson">
