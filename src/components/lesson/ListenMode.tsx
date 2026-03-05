@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Button } from '../ui/Button'
 import { useSettingsStore } from '../../store/settingsStore'
 
@@ -39,6 +39,12 @@ function pickBestVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | u
   return voices[0]
 }
 
+function voiceQuality(v: SpeechSynthesisVoice): 0 | 1 | 2 {
+  if (/natural|neural|enhanced/i.test(v.name)) return 0
+  if (v.name.startsWith('Google') || v.name.startsWith('Microsoft')) return 1
+  return 2
+}
+
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2] as const
 
 export function ListenMode({ content }: ListenModeProps) {
@@ -50,9 +56,21 @@ export function ListenMode({ content }: ListenModeProps) {
   const [playing, setPlaying] = useState(false)
   const [charIndex, setCharIndex] = useState(-1)
 
+  // Ref to the currently active word span for auto-scroll
+  const activeWordRef = useRef<HTMLSpanElement | null>(null)
+
   const plainText = useMemo(() => stripHtml(content), [content])
   const tokens = useMemo(() => tokenise(plainText), [plainText])
-  const enVoices = useMemo(() => voices.filter((v) => v.lang.startsWith('en')), [voices])
+
+  // English voices sorted: neural/natural first, then Google/Microsoft, then others
+  const enVoices = useMemo(
+    () =>
+      voices
+        .filter((v) => v.lang.startsWith('en'))
+        .slice()
+        .sort((a, b) => voiceQuality(a) - voiceQuality(b)),
+    [voices],
+  )
 
   useEffect(() => {
     const load = () => {
@@ -67,6 +85,13 @@ export function ListenMode({ content }: ListenModeProps) {
       window.speechSynthesis.onvoiceschanged = null
     }
   }, [])
+
+  // Auto-scroll active word into view whenever charIndex advances
+  useEffect(() => {
+    if (!reduceMotion && activeWordRef.current) {
+      activeWordRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [charIndex, reduceMotion])
 
   const stop = useCallback(() => {
     window.speechSynthesis.cancel()
@@ -115,14 +140,18 @@ export function ListenMode({ content }: ListenModeProps) {
     )
   }
 
+  const isPaused = !playing && charIndex >= 0
   const progress = charIndex < 0 ? 0 : Math.round((charIndex / plainText.length) * 100)
 
   return (
     <div className="space-y-4">
       {/* Playback controls */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={playing ? pause : play} variant={playing ? 'secondary' : 'primary'}>
-          {playing ? '⏸ Pause' : '▶ Play'}
+        <Button
+          onClick={playing ? pause : isPaused ? pause : play}
+          variant={playing ? 'secondary' : 'primary'}
+        >
+          {playing ? '⏸ Pause' : isPaused ? '▶ Resume' : '▶ Play'}
         </Button>
         <Button variant="secondary" onClick={stop} disabled={charIndex < 0}>
           ⏹ Stop
@@ -146,7 +175,7 @@ export function ListenMode({ content }: ListenModeProps) {
         </div>
       </div>
 
-      {/* Voice selector — English voices only, sorted naturally first */}
+      {/* Voice selector — English voices only, neural voices first */}
       {enVoices.length > 1 && (
         <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
           Voice:
@@ -158,6 +187,7 @@ export function ListenMode({ content }: ListenModeProps) {
             {enVoices.map((v) => (
               <option key={v.name} value={v.name}>
                 {v.name}
+                {/natural|neural|enhanced/i.test(v.name) ? ' ✦' : ''}
               </option>
             ))}
           </select>
@@ -176,27 +206,27 @@ export function ListenMode({ content }: ListenModeProps) {
         />
       </div>
 
-      {/* Karaoke text — words highlight as they're spoken */}
+      {/* Karaoke text — active word auto-scrolls into view */}
       <div
         className="max-h-72 overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700"
         aria-live="off"
         aria-label="Lesson text"
       >
         {tokens.map((tok, i) => {
-          // find next non-whitespace token to determine word end
           const nextWordIdx = tokens.findIndex((t, j) => j > i && t.text.trim().length > 0)
           const nextStart = nextWordIdx >= 0 ? tokens[nextWordIdx].start : plainText.length
           const isWord = tok.text.trim().length > 0
           const isActive = isWord && charIndex >= tok.start && charIndex < nextStart
-          const isPast = isWord && charIndex >= nextStart
+          const isPastWord = isWord && charIndex >= nextStart
 
           return (
             <span
               key={i}
+              ref={isActive ? activeWordRef : null}
               className={
                 isActive
                   ? `rounded bg-brand-200 px-0.5 text-brand-900 ${reduceMotion ? '' : 'transition-colors duration-75'}`
-                  : isPast
+                  : isPastWord
                     ? 'text-slate-400'
                     : ''
               }
