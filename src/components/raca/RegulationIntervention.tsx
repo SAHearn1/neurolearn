@@ -1,68 +1,99 @@
+import { useState } from 'react'
 import { Button } from '../ui/Button'
+import { getActivityForLevel, REGULATION_BANDS } from '../../lib/raca/regulation-content'
 
 interface Props {
   regulationLevel: number
   onDismiss: () => void
 }
 
+const ACTIVITY_TYPE_ICON: Record<string, string> = {
+  breathing: '🌬️',
+  grounding: '🌿',
+  movement: '🤸',
+  cognitive: '💭',
+}
+
+function getBandLabel(level: number): { title: string; subtitle: string; color: string } {
+  if (level < REGULATION_BANDS.CRITICAL.max + 1) {
+    return {
+      title: 'Take a real break',
+      subtitle: 'Your brain needs time to reset. That is okay — learning is hard.',
+      color: 'bg-red-50 border-red-200',
+    }
+  }
+  if (level < REGULATION_BANDS.LOW.max + 1) {
+    return {
+      title: 'Take a moment',
+      subtitle: 'Things are getting challenging. A brief reset will help.',
+      color: 'bg-amber-50 border-amber-200',
+    }
+  }
+  return {
+    title: 'Quick check-in',
+    subtitle: 'A brief pause before continuing.',
+    color: 'bg-blue-50 border-blue-200',
+  }
+}
+
+/**
+ * REQ-18-06 — Regulation Intervention overlay.
+ * Surfaces a co-regulation micro-activity from the content library
+ * appropriate to the learner's current regulation level.
+ * Learner can swap for a different activity type if needed.
+ */
 export function RegulationIntervention({ regulationLevel, onDismiss }: Props) {
+  const [activity, setActivity] = useState(() => getActivityForLevel(regulationLevel))
+
+  const swap = () => {
+    setActivity((current) => getActivityForLevel(regulationLevel, current.title))
+  }
+
+  const { title, subtitle, color } = getBandLabel(regulationLevel)
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-          <span className="text-3xl" role="img" aria-label="breathing">
-            &#x1F32C;
-          </span>
-        </div>
-        <h2 className="mb-2 text-xl font-bold text-slate-900">Take a moment</h2>
-        <p className="mb-6 text-sm text-slate-600">
-          It looks like you might be feeling frustrated or overwhelmed. That is completely okay.
-          Learning hard things takes real effort, and your brain might need a break.
-        </p>
-
-        <div className="mb-6 space-y-3 text-left text-sm text-slate-700">
-          {regulationLevel < 30 ? (
-            <>
-              <p className="font-semibold text-amber-700">
-                Your regulation is quite low. Let us slow down together.
-              </p>
-              <ul className="ml-4 list-disc space-y-1">
-                <li>Close your eyes and take 5 slow breaths (inhale 4s, hold 4s, exhale 6s)</li>
-                <li>Name 5 things you can see, 4 you can hear, 3 you can touch</li>
-                <li>Step away from the screen for 2-3 minutes</li>
-                <li>Consider resuming this session later if needed — your work is saved</li>
-              </ul>
-            </>
-          ) : regulationLevel < 50 ? (
-            <>
-              <p>It seems like things are getting challenging. Try one of these:</p>
-              <ul className="ml-4 list-disc space-y-1">
-                <li>Take 3 slow, deep breaths</li>
-                <li>Stretch your arms above your head</li>
-                <li>Look at something across the room for 20 seconds</li>
-                <li>Get a drink of water</li>
-              </ul>
-            </>
-          ) : (
-            <>
-              <p>A quick check-in before continuing:</p>
-              <ul className="ml-4 list-disc space-y-1">
-                <li>Roll your shoulders a few times</li>
-                <li>Take a deep breath and exhale slowly</li>
-                <li>Remind yourself: it is okay to not know yet</li>
-              </ul>
-            </>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs text-slate-400">Regulation level: {regulationLevel}/100</p>
-          <div className="flex items-center justify-center gap-2">
-            <Button onClick={onDismiss} variant="primary">
-              I am ready to continue
-            </Button>
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+        {/* Header */}
+        <div className="mb-5 text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-2xl">
+            {ACTIVITY_TYPE_ICON[activity.type] ?? '🌱'}
           </div>
+          <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
         </div>
+
+        {/* Activity card */}
+        <div className={`rounded-xl border p-4 ${color}`}>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 capitalize border border-slate-200">
+              {activity.type}
+            </span>
+            <span className="text-xs text-slate-400">
+              ~{Math.ceil(activity.durationSeconds / 60)} min
+            </span>
+          </div>
+          <p className="mb-1 font-semibold text-slate-900">{activity.title}</p>
+          <p className="text-sm text-slate-700 leading-relaxed">{activity.instruction}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-5 space-y-2">
+          <Button onClick={onDismiss} className="w-full">
+            I am ready to continue
+          </Button>
+          <button
+            type="button"
+            onClick={swap}
+            className="w-full rounded-lg py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            Try a different activity →
+          </button>
+        </div>
+
+        <p className="mt-3 text-center text-xs text-slate-400">
+          Regulation level: {regulationLevel}/100
+        </p>
       </div>
     </div>
   )

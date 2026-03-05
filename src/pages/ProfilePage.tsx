@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProfile } from '../hooks/useProfile'
 import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
+import { SessionHistory } from '../components/raca/SessionHistory'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -234,6 +235,15 @@ export function ProfilePage() {
             Complete a deep learning session to begin building your cognitive profile.
           </p>
         )}
+      </section>
+
+      {/* Session History — REQ-18-03 */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-900">Session History</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Your recent deep learning sessions.</p>
+        </div>
+        <SessionHistory />
       </section>
     </main>
   )

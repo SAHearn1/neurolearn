@@ -11,6 +11,7 @@ export interface Lesson {
   content: string | null
   sort_order: number
   duration_minutes: number | null
+  raca_phase?: string | null
   created_at: string
   updated_at: string
 }

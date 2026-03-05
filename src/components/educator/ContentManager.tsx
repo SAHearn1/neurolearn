@@ -11,6 +11,18 @@ import type { Lesson } from '../../types/lesson'
 
 type ContentTab = 'courses' | 'lessons'
 
+const RACA_PHASES = [
+  'ROOT',
+  'REGULATE',
+  'POSITION',
+  'PLAN',
+  'APPLY',
+  'REVISE',
+  'DEFEND',
+  'RECONNECT',
+  'ARCHIVE',
+] as const
+
 export function ContentManager() {
   const [tab, setTab] = useState<ContentTab>('courses')
   const [courses, setCourses] = useState<Course[]>([])
@@ -29,11 +41,13 @@ export function ContentManager() {
   const [lessonTitle, setLessonTitle] = useState('')
   const [lessonDesc, setLessonDesc] = useState('')
   const [lessonContent, setLessonContent] = useState('')
+  const [lessonRacaPhase, setLessonRacaPhase] = useState('')
 
   // Lesson edit state
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
+  const [editRacaPhase, setEditRacaPhase] = useState('')
 
   const fetchCourses = useCallback(async () => {
     setLoading(true)
@@ -132,18 +146,28 @@ export function ContentManager() {
         status: 'draft',
         type: 'text',
         duration_minutes: 15,
+        raca_phase: lessonRacaPhase || null,
       })
 
       if (err) throw err
       setLessonTitle('')
       setLessonDesc('')
       setLessonContent('')
+      setLessonRacaPhase('')
       setShowLessonForm(false)
       await fetchLessons(selectedCourseId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create lesson')
     }
-  }, [selectedCourseId, lessonTitle, lessonDesc, lessonContent, lessons.length, fetchLessons])
+  }, [
+    selectedCourseId,
+    lessonTitle,
+    lessonDesc,
+    lessonContent,
+    lessonRacaPhase,
+    lessons.length,
+    fetchLessons,
+  ])
 
   const saveEditLesson = useCallback(async () => {
     if (!editingLessonId || !editTitle.trim() || !selectedCourseId) return
@@ -154,6 +178,7 @@ export function ContentManager() {
         .update({
           title: editTitle.trim(),
           content: editContent.trim() || null,
+          raca_phase: editRacaPhase || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editingLessonId)
@@ -162,11 +187,12 @@ export function ContentManager() {
       setEditingLessonId(null)
       setEditTitle('')
       setEditContent('')
+      setEditRacaPhase('')
       await fetchLessons(selectedCourseId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update lesson')
     }
-  }, [editingLessonId, editTitle, editContent, selectedCourseId, fetchLessons])
+  }, [editingLessonId, editTitle, editContent, editRacaPhase, selectedCourseId, fetchLessons])
 
   const publishLesson = useCallback(
     async (lessonId: string, status: 'published' | 'draft' | 'archived') => {
@@ -322,6 +348,21 @@ export function ContentManager() {
                         onChange={(e) => setLessonContent(e.target.value)}
                       />
                     </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      RACA Phase
+                      <select
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+                        value={lessonRacaPhase}
+                        onChange={(e) => setLessonRacaPhase(e.target.value)}
+                      >
+                        <option value="">General (any state)</option>
+                        {RACA_PHASES.map((phase) => (
+                          <option key={phase} value={phase}>
+                            {phase}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <Button onClick={createLesson} disabled={!lessonTitle.trim()}>
                       Create Lesson
                     </Button>
@@ -351,6 +392,21 @@ export function ContentManager() {
                           onChange={(e) => setEditContent(e.target.value)}
                         />
                       </label>
+                      <label className="block text-sm font-medium text-slate-700">
+                        RACA Phase
+                        <select
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+                          value={editRacaPhase}
+                          onChange={(e) => setEditRacaPhase(e.target.value)}
+                        >
+                          <option value="">General (any state)</option>
+                          {RACA_PHASES.map((phase) => (
+                            <option key={phase} value={phase}>
+                              {phase}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                       <div className="flex gap-2">
                         <Button onClick={saveEditLesson} disabled={!editTitle.trim()}>
                           Save
@@ -377,6 +433,7 @@ export function ContentManager() {
                           <h3 className="font-semibold text-slate-900">{lesson.title}</h3>
                           <Badge>{lesson.status}</Badge>
                           <Badge>{lesson.type}</Badge>
+                          {lesson.raca_phase && <Badge>{lesson.raca_phase}</Badge>}
                         </div>
                         {lesson.description && (
                           <p className="text-sm text-slate-500">{lesson.description}</p>
@@ -390,6 +447,7 @@ export function ContentManager() {
                             setEditingLessonId(lesson.id)
                             setEditTitle(lesson.title)
                             setEditContent(lesson.content ?? '')
+                            setEditRacaPhase(lesson.raca_phase ?? '')
                           }}
                         >
                           Edit
