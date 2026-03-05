@@ -40,8 +40,9 @@ const AdminDashboardPage = lazy(() =>
 )
 
 /**
- * Intercepts Supabase auth error fragments (e.g. #error=access_denied&error_code=otp_expired)
- * that land on any page and redirects to /check-email with the error info in search params.
+ * Intercepts Supabase auth hash fragments that land on any page.
+ * - Error fragments (#error=...) → /check-email with error details
+ * - Success fragments (#access_token=...&type=signup|magiclink) → /dashboard
  * Must run inside the Router so useNavigate is available.
  */
 function useAuthHashHandler() {
@@ -52,17 +53,27 @@ function useAuthHashHandler() {
     if (!hash) return
 
     const params = new URLSearchParams(hash.slice(1)) // strip leading '#'
-    const error = params.get('error')
-    if (!error) return
-
-    const errorCode = params.get('error_code') ?? 'unknown'
-    const errorDescription = params.get('error_description') ?? 'An authentication error occurred.'
 
     // Clear the hash so a page refresh doesn't re-trigger this
     history.replaceState(null, '', location.pathname + location.search)
 
-    const qs = new URLSearchParams({ error_code: errorCode, error_description: errorDescription })
-    navigate(`/check-email?${qs.toString()}`, { replace: true })
+    const error = params.get('error')
+    if (error) {
+      const errorCode = params.get('error_code') ?? 'unknown'
+      const errorDescription =
+        params.get('error_description') ?? 'An authentication error occurred.'
+      const qs = new URLSearchParams({ error_code: errorCode, error_description: errorDescription })
+      navigate(`/check-email?${qs.toString()}`, { replace: true })
+      return
+    }
+
+    // Successful email confirmation or magic link — SDK exchanges the token
+    // automatically; navigate to dashboard once the hash is consumed.
+    const accessToken = params.get('access_token')
+    const type = params.get('type')
+    if (accessToken && (type === 'signup' || type === 'magiclink')) {
+      navigate('/dashboard', { replace: true })
+    }
   }, [navigate])
 }
 

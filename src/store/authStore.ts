@@ -29,6 +29,27 @@ async function loadRole(userId: string): Promise<UserRole | null> {
   return data ? (data.role as UserRole) : null
 }
 
+// Module-level subscription — created once at import time so React StrictMode's
+// double-invoke of effects does not produce competing Web Lock acquisitions.
+// onAuthStateChange fires INITIAL_SESSION on registration, so no getSession()
+// call is needed. A second call would race for the same Web Lock and produce
+// the "Lock not released" warning in StrictMode.
+supabase.auth.onAuthStateChange(async (_event, session) => {
+  const currentState = useAuthStore.getState()
+  const shouldHydrateRole =
+    !!session?.user && (!currentState.role || currentState.user?.id !== session.user.id)
+
+  const nextRole = shouldHydrateRole ? await loadRole(session.user.id) : currentState.role
+
+  useAuthStore.setState({
+    user: session?.user ?? null,
+    session,
+    role: session ? nextRole : null,
+    initialized: true,
+    pendingEmailConfirmation: false,
+  })
+})
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
@@ -80,29 +101,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, session: null, role: null, pendingEmailConfirmation: false })
   },
 
-  initialize: () => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const role = session?.user ? await loadRole(session.user.id) : null
-      set({ user: session?.user ?? null, session, role, initialized: true })
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentState = useAuthStore.getState()
-      const shouldHydrateRole =
-        !!session?.user && (!currentState.role || currentState.user?.id !== session.user.id)
-
-      const nextRole = shouldHydrateRole ? await loadRole(session.user.id) : currentState.role
-
-      set({
-        user: session?.user ?? null,
-        session,
-        role: session ? nextRole : null,
-        pendingEmailConfirmation: false,
-      })
-    })
-
-    return () => subscription.unsubscribe()
-  },
+  // initialize() is a no-op: the module-level onAuthStateChange subscription
+  // fires INITIAL_SESSION and sets all auth state. No getSession() call here
+  // avoids competing for the Web Lock that causes StrictMode's lock warnings.
+  initialize: () => () => {},
 }))
