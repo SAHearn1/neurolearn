@@ -21,6 +21,7 @@ import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useOnboarding } from '../hooks/useOnboarding'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
+import { useRacaStreak } from '../hooks/useRacaStreak'
 import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getLevelStatus } from '../lib/xp'
@@ -131,6 +132,7 @@ export function DashboardPage() {
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourse?.id)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
   const { showOnboarding, completeOnboarding } = useOnboarding()
+  const { racaStreakDays } = useRacaStreak()
 
   const displayName = profile?.display_name ?? 'learner'
   const streakDays = profile?.streak_days ?? 0
@@ -174,6 +176,9 @@ export function DashboardPage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             {streakDays > 0 && <StatPill icon="🔥" value={streakDays} label="day streak" pulse />}
+            {racaStreakDays > 0 && (
+              <StatPill icon="🧠" value={racaStreakDays} label="deep work streak" />
+            )}
             <StatPill icon="📚" value={lessonsCompleted} label="lessons completed" />
             <StatPill icon="📖" value={courses.length} label="courses enrolled" />
           </div>

@@ -11,8 +11,9 @@ import { StudentProgressTable } from '../components/educator/StudentProgressTabl
 import { CourseAssignment } from '../components/educator/CourseAssignment'
 import { ContentManager } from '../components/educator/ContentManager'
 import { EducatorAnalytics } from '../components/educator/EducatorAnalytics'
+import { StudentLCPDashboard } from '../components/educator/StudentLCPDashboard'
 
-type Tab = 'overview' | 'classes' | 'progress' | 'assignments' | 'content' | 'analytics'
+type Tab = 'overview' | 'classes' | 'progress' | 'assignments' | 'content' | 'analytics' | 'growth'
 
 export function EducatorDashboardPage() {
   const user = useAuthStore((s) => s.user)
@@ -42,6 +43,7 @@ export function EducatorDashboardPage() {
     { key: 'overview', label: 'Overview' },
     { key: 'classes', label: 'Classes' },
     { key: 'progress', label: 'Student Progress' },
+    { key: 'growth', label: 'Cognitive Growth' },
     { key: 'assignments', label: 'Assignments' },
     { key: 'content', label: 'Content' },
     { key: 'analytics', label: 'Analytics' },
@@ -153,6 +155,14 @@ export function EducatorDashboardPage() {
         hidden={activeTab !== 'content'}
       >
         <ContentManager />
+      </div>
+      <div
+        id="edu-panel-growth"
+        role="tabpanel"
+        aria-labelledby="edu-tab-growth"
+        hidden={activeTab !== 'growth'}
+      >
+        <StudentLCPDashboard />
       </div>
       <div
         id="edu-panel-analytics"

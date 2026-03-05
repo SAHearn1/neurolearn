@@ -9,8 +9,9 @@ import { ParentStudentList } from '../components/parent/ParentStudentList'
 import { ParentProgressReports } from '../components/parent/ParentProgressReports'
 import { ParentNotificationPrefs } from '../components/parent/ParentNotificationPrefs'
 import { ParentMessages } from '../components/parent/ParentMessages'
+import { ParentGrowthNarrative } from '../components/parent/ParentGrowthNarrative'
 
-type Tab = 'overview' | 'students' | 'progress' | 'notifications' | 'messages'
+type Tab = 'overview' | 'students' | 'progress' | 'growth' | 'notifications' | 'messages'
 
 export function ParentDashboardPage() {
   const { profile, loading: profileLoading, error: profileError } = useParentProfile()
@@ -37,9 +38,15 @@ export function ParentDashboardPage() {
     { key: 'overview', label: 'Overview' },
     { key: 'students', label: 'My Students' },
     { key: 'progress', label: 'Progress Reports' },
+    { key: 'growth', label: 'Cognitive Growth' },
     { key: 'notifications', label: 'Notifications' },
     { key: 'messages', label: 'Messages' },
   ]
+
+  const activeStudentIds = activeLinks.map((l) => l.link.student_id)
+  const studentNames = Object.fromEntries(
+    activeLinks.map((l) => [l.link.student_id, l.student?.display_name ?? null]),
+  )
 
   return (
     <main
@@ -115,6 +122,14 @@ export function ParentDashboardPage() {
         hidden={activeTab !== 'progress'}
       >
         <ParentProgressReports />
+      </div>
+      <div
+        id="parent-panel-growth"
+        role="tabpanel"
+        aria-labelledby="parent-tab-growth"
+        hidden={activeTab !== 'growth'}
+      >
+        <ParentGrowthNarrative studentIds={activeStudentIds} studentNames={studentNames} />
       </div>
       <div
         id="parent-panel-notifications"
