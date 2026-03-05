@@ -7,6 +7,7 @@ export interface AccessibilityPreferences {
   reduce_motion: boolean
   high_contrast: boolean
   screen_reader_hints: boolean
+  dyslexia_font?: boolean
 }
 
 export interface UserProfile {

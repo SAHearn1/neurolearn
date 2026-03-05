@@ -1,3 +1,5 @@
+import typography from '@tailwindcss/typography'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -7,6 +9,7 @@ export default {
       colors: {
         brand: {
           50: '#eef2ff',
+          100: '#e0e7ff',
           300: '#a5b4fc',
           500: '#6366f1',
           600: '#4f46e5',
@@ -14,7 +17,10 @@ export default {
           800: '#3730a3',
         },
       },
+      fontFamily: {
+        dyslexic: ['OpenDyslexic', 'sans-serif'],
+      },
     },
   },
-  plugins: [],
+  plugins: [typography],
 }

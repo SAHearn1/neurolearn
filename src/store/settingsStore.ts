@@ -13,6 +13,7 @@ const defaults: AccessibilityPreferences = {
   reduce_motion: true,
   high_contrast: false,
   screen_reader_hints: false,
+  dyslexia_font: false,
 }
 
 export const useSettingsStore = create<SettingsState>()(

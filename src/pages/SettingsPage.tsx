@@ -71,6 +71,16 @@ export function SettingsPage() {
           Screen reader hints
         </label>
 
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input
+            className="h-4 w-4"
+            type="checkbox"
+            checked={accessibility.dyslexia_font ?? false}
+            onChange={(e) => updateAccessibility({ dyslexia_font: e.target.checked })}
+          />
+          Dyslexia-friendly font (OpenDyslexic)
+        </label>
+
         <div className="flex gap-2 pt-2">
           <Button type="submit">Save preferences</Button>
           <Button variant="secondary" type="button" onClick={reset}>

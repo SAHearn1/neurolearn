@@ -15,9 +15,19 @@ body {
   color: #111827;
 }
 
-/* Dyslexia font override */
-.dyslexia-font body {
-  font-family: var(--font-family-base);
+/* OpenDyslexic font for dyslexia-friendly reading */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf')
+    format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-dyslexic,
+.font-dyslexic * {
+  font-family: 'OpenDyslexic', sans-serif !important;
 }
 
 /* Screen reader only utility */
