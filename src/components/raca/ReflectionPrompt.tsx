@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
 import { Alert } from '../ui/Alert'
+import { VoiceInputButton } from '../ui/VoiceInputButton'
 
 interface Props {
   prompt: string
@@ -30,9 +31,14 @@ export function ReflectionPrompt({
         placeholder={placeholder}
       />
       <div className="flex items-center justify-between">
-        <span className={`text-xs ${canSubmit ? 'text-green-600' : 'text-slate-400'}`}>
-          {wordCount} words {!canSubmit && `(minimum ${minWords})`}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs ${canSubmit ? 'text-green-600' : 'text-slate-400'}`}>
+            {wordCount} words {!canSubmit && `(minimum ${minWords})`}
+          </span>
+          <VoiceInputButton
+            onTranscript={(t) => setText((prev) => (prev.trim() ? `${prev} ${t}` : t))}
+          />
+        </div>
         <Button
           onClick={() => {
             onSubmit(text)

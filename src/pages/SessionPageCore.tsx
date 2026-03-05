@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { useCognitiveState } from '../hooks/useCognitiveState'
@@ -17,6 +18,8 @@ import { EpistemicDashboard } from '../components/raca/EpistemicDashboard'
 import { RegulationIntervention } from '../components/raca/RegulationIntervention'
 import { AuditTimeline } from '../components/raca/AuditTimeline'
 import { Button } from '../components/ui/Button'
+import { scoreTRACE } from '../lib/raca/layer4-epistemic/fluency-tracker'
+import { traceSessionXPBreakdown } from '../lib/xp'
 import type { CognitiveState } from '../lib/raca/types/cognitive-states'
 import type { ArtifactKind } from '../lib/raca/types/artifacts'
 
@@ -65,6 +68,12 @@ export function SessionPageCore() {
   }
 
   const availableAgents = getAgentDefinitionsForState(cognitive.currentState)
+
+  const sessionXP = useMemo(() => {
+    if (cognitive.currentState !== 'ARCHIVE' || artifacts.length === 0) return null
+    const trace = scoreTRACE(artifacts)
+    return traceSessionXPBreakdown(trace.overall)
+  }, [cognitive.currentState, artifacts])
 
   return (
     <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-6xl gap-6 p-6">
@@ -186,11 +195,39 @@ export function SessionPageCore() {
 
           {cognitive.currentState === 'ARCHIVE' && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
-              <h2 className="mb-2 text-xl font-bold text-green-900">Session complete</h2>
+              <div className="mb-2 text-4xl">🏆</div>
+              <h2 className="mb-1 text-xl font-bold text-green-900">Session complete!</h2>
               <p className="mb-4 text-sm text-green-800">
                 You produced {artifacts.length} artifacts across {cognitive.stateHistory.length}{' '}
                 states.
               </p>
+              {sessionXP && (
+                <div className="mb-5 mx-auto max-w-xs rounded-xl bg-white border border-green-200 px-4 py-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                    XP Earned
+                  </p>
+                  <div className="flex justify-center gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-slate-800">+{sessionXP.base}</p>
+                      <p className="text-xs text-slate-500">Session</p>
+                    </div>
+                    {sessionXP.bonus > 0 && (
+                      <>
+                        <div className="text-slate-300 self-center">+</div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-amber-600">+{sessionXP.bonus}</p>
+                          <p className="text-xs text-slate-500">TRACE bonus</p>
+                        </div>
+                      </>
+                    )}
+                    <div className="text-slate-300 self-center">=</div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-brand-700">+{sessionXP.total} XP</p>
+                      <p className="text-xs text-slate-500">Total</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <Button onClick={handleEndSession}>Finish and return to lesson</Button>
             </div>
           )}

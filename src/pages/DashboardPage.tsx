@@ -18,8 +18,10 @@ import { BadgeShelf } from '../components/gamification/BadgeShelf'
 import { XPBar } from '../components/ui/XPBar'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
+import { useOnboarding } from '../hooks/useOnboarding'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
+import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getLevelStatus } from '../lib/xp'
 import type { CourseLevel } from '../types/course'
@@ -128,6 +130,7 @@ export function DashboardPage() {
   const firstCourse = courses[0]
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourse?.id)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
+  const { showOnboarding, completeOnboarding } = useOnboarding()
 
   const displayName = profile?.display_name ?? 'learner'
   const streakDays = profile?.streak_days ?? 0
@@ -157,131 +160,139 @@ export function DashboardPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto w-full max-w-5xl flex flex-col gap-8 p-6">
-      {/* Greeting hero */}
-      <section aria-label="Welcome" className="rounded-2xl bg-grad-hero p-6 text-white shadow-lg">
-        <p className="text-sm font-medium opacity-80">{greeting},</p>
-        <h1 className="mt-1 text-3xl font-bold">{displayName}</h1>
-        <p className="mt-1 text-base opacity-90">
-          {streakDays > 0
-            ? 'Ready to keep your streak going?'
-            : 'Start your learning journey today!'}
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {streakDays > 0 && <StatPill icon="🔥" value={streakDays} label="day streak" pulse />}
-          <StatPill icon="📚" value={lessonsCompleted} label="lessons completed" />
-          <StatPill icon="📖" value={courses.length} label="courses enrolled" />
-        </div>
-        <div className="mt-5 rounded-xl bg-white/10 p-4">
-          <XPBar levelStatus={getLevelStatus(lessonsCompleted, streakDays)} />
-        </div>
-      </section>
-
-      {coursesError && <Alert variant="error">{coursesError}</Alert>}
-
-      {/* Continue Learning */}
-      {firstCourse && (
-        <section aria-label="Continue learning">
-          <h2 className="mb-3 text-xl font-bold text-slate-900">Continue Learning</h2>
-          <ContinueLearningCard
-            courseId={firstCourse.id}
-            title={firstCourse.title}
-            level={firstCourse.level as CourseLevel}
-          />
-        </section>
-      )}
-
-      {/* Course grid */}
-      {courses.length > 0 ? (
-        <section aria-label="Your courses">
-          <h2 className="mb-3 text-xl font-bold text-slate-900">Your Courses</h2>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {courses.slice(0, 6).map((course) => (
-              <CourseCardWithProgress
-                key={course.id}
-                courseId={course.id}
-                title={course.title}
-                level={course.level as CourseLevel}
-              />
-            ))}
+    <>
+      {showOnboarding && <OnboardingModal onComplete={completeOnboarding} />}
+      <main id="main-content" className="mx-auto w-full max-w-5xl flex flex-col gap-8 p-6">
+        {/* Greeting hero */}
+        <section aria-label="Welcome" className="rounded-2xl bg-grad-hero p-6 text-white shadow-lg">
+          <p className="text-sm font-medium opacity-80">{greeting},</p>
+          <h1 className="mt-1 text-3xl font-bold">{displayName}</h1>
+          <p className="mt-1 text-base opacity-90">
+            {streakDays > 0
+              ? 'Ready to keep your streak going?'
+              : 'Start your learning journey today!'}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {streakDays > 0 && <StatPill icon="🔥" value={streakDays} label="day streak" pulse />}
+            <StatPill icon="📚" value={lessonsCompleted} label="lessons completed" />
+            <StatPill icon="📖" value={courses.length} label="courses enrolled" />
+          </div>
+          <div className="mt-5 rounded-xl bg-white/10 p-4">
+            <XPBar levelStatus={getLevelStatus(lessonsCompleted, streakDays)} />
           </div>
         </section>
-      ) : (
-        <section className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
-          <p className="text-2xl">📚</p>
-          <p className="mt-2 font-semibold text-slate-700">No courses yet</p>
-          <p className="mt-1 text-sm text-slate-500">
-            Browse the catalog to find your first course.
-          </p>
-          <Link to="/courses">
-            <Button className="mt-4" variant="secondary">
-              Browse courses
-            </Button>
-          </Link>
-        </section>
-      )}
 
-      {/* Achievements / Badge shelf */}
-      <section
-        aria-label="Achievements"
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"
-      >
-        <BadgeShelf lessonsCompleted={lessonsCompleted} streakDays={streakDays} />
-      </section>
+        {coursesError && <Alert variant="error">{coursesError}</Alert>}
 
-      {/* Adaptive recommendation */}
-      <section aria-label="Recommended next lesson">
-        <h2 className="mb-3 text-xl font-bold text-slate-900">Recommended for You</h2>
-        {adaptiveLoading ? (
-          <Spinner />
-        ) : adaptiveState?.recommended_lesson_id ? (
-          <Card>
-            <p className="text-sm text-slate-600">
-              Based on your performance (mastery: <strong>{adaptiveState.mastery_score}%</strong>),
-              we recommend continuing at <strong>{adaptiveState.current_difficulty}</strong>{' '}
-              difficulty.
-            </p>
-            <Link className="mt-2 inline-block text-sm font-semibold text-brand-700" to="/courses">
-              View recommendations →
-            </Link>
-          </Card>
-        ) : (
-          <p className="text-sm text-slate-500">
-            Complete a lesson to get personalized recommendations.
-          </p>
+        {/* Continue Learning */}
+        {firstCourse && (
+          <section aria-label="Continue learning">
+            <h2 className="mb-3 text-xl font-bold text-slate-900">Continue Learning</h2>
+            <ContinueLearningCard
+              courseId={firstCourse.id}
+              title={firstCourse.title}
+              level={firstCourse.level as CourseLevel}
+            />
+          </section>
         )}
-      </section>
 
-      {racaFlags.epistemicMonitoring && (
-        <section aria-label="Cognitive profile">
-          <h2 className="mb-3 text-xl font-bold text-slate-900">Cognitive Profile</h2>
-          <Card>
-            <p className="text-sm text-slate-600">
-              Your epistemic monitoring dashboard is active. Visit a RACA session to see detailed
-              insights.
+        {/* Course grid */}
+        {courses.length > 0 ? (
+          <section aria-label="Your courses">
+            <h2 className="mb-3 text-xl font-bold text-slate-900">Your Courses</h2>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {courses.slice(0, 6).map((course) => (
+                <CourseCardWithProgress
+                  key={course.id}
+                  courseId={course.id}
+                  title={course.title}
+                  level={course.level as CourseLevel}
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
+            <p className="text-2xl">📚</p>
+            <p className="mt-2 font-semibold text-slate-700">No courses yet</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Browse the catalog to find your first course.
             </p>
-          </Card>
+            <Link to="/courses">
+              <Button className="mt-4" variant="secondary">
+                Browse courses
+              </Button>
+            </Link>
+          </section>
+        )}
+
+        {/* Achievements / Badge shelf */}
+        <section
+          aria-label="Achievements"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"
+        >
+          <BadgeShelf lessonsCompleted={lessonsCompleted} streakDays={streakDays} />
         </section>
-      )}
 
-      <nav aria-label="Quick links" className="flex flex-wrap gap-3">
-        <Link to="/courses">
-          <Button variant="secondary">Browse courses</Button>
-        </Link>
-        <Link to="/profile">
-          <Button variant="secondary">View profile</Button>
-        </Link>
-        <Link to="/settings">
-          <Button variant="secondary">Update settings</Button>
-        </Link>
-      </nav>
+        {/* Adaptive recommendation */}
+        <section aria-label="Recommended next lesson">
+          <h2 className="mb-3 text-xl font-bold text-slate-900">Recommended for You</h2>
+          {adaptiveLoading ? (
+            <Spinner />
+          ) : adaptiveState?.recommended_lesson_id ? (
+            <Card>
+              <p className="text-sm text-slate-600">
+                Based on your performance (mastery: <strong>{adaptiveState.mastery_score}%</strong>
+                ), we recommend continuing at <strong>
+                  {adaptiveState.current_difficulty}
+                </strong>{' '}
+                difficulty.
+              </p>
+              <Link
+                className="mt-2 inline-block text-sm font-semibold text-brand-700"
+                to="/courses"
+              >
+                View recommendations →
+              </Link>
+            </Card>
+          ) : (
+            <p className="text-sm text-slate-500">
+              Complete a lesson to get personalized recommendations.
+            </p>
+          )}
+        </section>
 
-      {pendingMilestone && (
-        <MilestoneCelebration
-          milestone={pendingMilestone}
-          onDismiss={() => setPendingMilestone(null)}
-        />
-      )}
-    </main>
+        {racaFlags.epistemicMonitoring && (
+          <section aria-label="Cognitive profile">
+            <h2 className="mb-3 text-xl font-bold text-slate-900">Cognitive Profile</h2>
+            <Card>
+              <p className="text-sm text-slate-600">
+                Your epistemic monitoring dashboard is active. Visit a RACA session to see detailed
+                insights.
+              </p>
+            </Card>
+          </section>
+        )}
+
+        <nav aria-label="Quick links" className="flex flex-wrap gap-3">
+          <Link to="/courses">
+            <Button variant="secondary">Browse courses</Button>
+          </Link>
+          <Link to="/profile">
+            <Button variant="secondary">View profile</Button>
+          </Link>
+          <Link to="/settings">
+            <Button variant="secondary">Update settings</Button>
+          </Link>
+        </nav>
+
+        {pendingMilestone && (
+          <MilestoneCelebration
+            milestone={pendingMilestone}
+            onDismiss={() => setPendingMilestone(null)}
+          />
+        )}
+      </main>
+    </>
   )
 }

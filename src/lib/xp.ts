@@ -6,7 +6,32 @@
 
 export const XP_PER_LESSON = 10
 export const XP_PER_STREAK_DAY = 5
-// Future: XP_PER_TRACE_CYCLE, XP_PER_REVISION, XP_PER_DEFENSE
+
+// RACA session XP — REQ-18-01
+export const XP_PER_RACA_SESSION_BASE = 25 // base for completing any RACA session
+export const XP_TRACE_BONUS_PER_POINT = 5 // bonus per TRACE overall point above 5 (max +25)
+
+/**
+ * XP earned for a completed RACA deep-learning session.
+ * Base award + TRACE fluency bonus. Max 50 XP per session.
+ * @param traceOverall - TRACE overall score (0-10)
+ */
+export function traceSessionXP(traceOverall: number): number {
+  const bonus = Math.max(0, Math.round((traceOverall - 5) * XP_TRACE_BONUS_PER_POINT))
+  return XP_PER_RACA_SESSION_BASE + bonus
+}
+
+/**
+ * XP breakdown for a completed RACA session, for display purposes.
+ */
+export function traceSessionXPBreakdown(traceOverall: number): {
+  base: number
+  bonus: number
+  total: number
+} {
+  const bonus = Math.max(0, Math.round((traceOverall - 5) * XP_TRACE_BONUS_PER_POINT))
+  return { base: XP_PER_RACA_SESSION_BASE, bonus, total: XP_PER_RACA_SESSION_BASE + bonus }
+}
 
 export interface LevelInfo {
   level: number
