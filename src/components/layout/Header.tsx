@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Badge } from '../ui/Badge'
+import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
 import { useAuthStore } from '../../store/authStore'
+import { useProfile } from '../../hooks/useProfile'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', to: '/dashboard' },
@@ -13,22 +14,40 @@ const NAV_ITEMS = [
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const user = useAuthStore((s) => s.user)
   const signOut = useAuthStore((s) => s.signOut)
+  const { profile } = useProfile()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const displayName = profile?.display_name ?? user?.email ?? 'User'
 
   return (
-    <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header
+      className={`sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur transition-shadow ${scrolled ? 'shadow-sm' : ''}`}
+    >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link className="inline-flex items-center gap-2" to="/">
-          <Badge>NeuroLearn</Badge>
+          <span className="text-lg font-bold bg-grad-hero bg-clip-text text-transparent">
+            NeuroLearn
+          </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav aria-label="Primary" className="hidden items-center gap-2 text-sm md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-1 text-sm md:flex">
           {NAV_ITEMS.map((item) => (
             <NavLink
               className={({ isActive }) =>
-                `rounded px-2 py-1 ${isActive ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100'}`
+                `px-3 py-1.5 rounded transition-colors ${
+                  isActive
+                    ? 'border-b-2 border-brand-500 font-semibold text-brand-700'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`
               }
               key={item.to}
               to={item.to}
@@ -37,13 +56,16 @@ export function Header() {
             </NavLink>
           ))}
           {user && (
-            <Button
-              variant="ghost"
-              onClick={() => signOut()}
-              className="text-slate-600 hover:text-slate-900"
-            >
-              Sign out
-            </Button>
+            <div className="ml-2 flex items-center gap-3">
+              <Avatar name={displayName} />
+              <Button
+                variant="ghost"
+                onClick={() => signOut()}
+                className="text-slate-600 hover:text-slate-900"
+              >
+                Sign out
+              </Button>
+            </div>
           )}
         </nav>
 
@@ -71,42 +93,40 @@ export function Header() {
         </Button>
       </div>
 
-      {/* Mobile nav dropdown */}
-      {mobileOpen && (
-        <nav
-          aria-label="Mobile navigation"
-          className="border-t border-slate-200 px-6 py-3 md:hidden"
-        >
-          <ul className="space-y-1">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  className={({ isActive }) =>
-                    `block rounded px-3 py-2 text-sm ${isActive ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-100'}`
-                  }
-                  to={item.to}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-            {user && (
-              <li>
-                <button
-                  className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    signOut()
-                  }}
-                >
-                  Sign out
-                </button>
-              </li>
-            )}
-          </ul>
-        </nav>
-      )}
+      {/* Mobile nav — slide down */}
+      <nav
+        aria-label="Mobile navigation"
+        className={`overflow-hidden border-t border-slate-200 transition-all duration-200 md:hidden ${mobileOpen ? 'max-h-96' : 'max-h-0'}`}
+      >
+        <ul className="space-y-1 px-6 py-3">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                className={({ isActive }) =>
+                  `block rounded px-3 py-2 text-sm ${isActive ? 'bg-brand-50 font-semibold text-brand-800' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+                to={item.to}
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+          {user && (
+            <li>
+              <button
+                className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+                onClick={() => {
+                  setMobileOpen(false)
+                  signOut()
+                }}
+              >
+                Sign out
+              </button>
+            </li>
+          )}
+        </ul>
+      </nav>
     </header>
   )
 }
