@@ -9,6 +9,7 @@ import type { Artifact } from '../types/artifacts'
  * A = Articulate: clarity of expression — sentence complexity, vocabulary
  * C = Check:      self-correction — revision behavior, error acknowledgment
  * E = Extend:     connection to broader ideas — transfer, generalization
+ * E2= Ethical:    ethical reasoning markers — fairness, harm, equity, dignity (spec §VIII)
  */
 
 /** Think score thresholds (milliseconds) — how long the learner paused before responding */
@@ -36,15 +37,22 @@ const SCORING_WEIGHTS = {
   EXTEND_BASE: 1,
   REASON_MULTIPLIER: 5,
   REASON_BASE: 2,
+  ETHICAL_MARKER_MULTIPLIER: 2.0,
+  ETHICAL_BASE: 0,
 } as const
 
-/** TRACE composite weights — how each dimension contributes to overall score */
+/**
+ * TRACE composite weights — how each dimension contributes to overall score.
+ * Weights must sum to 1.0.
+ * think=0.12 + reason=0.20 + articulate=0.17 + check=0.17 + extend=0.17 + ethical=0.17 = 1.00
+ */
 const TRACE_WEIGHTS = {
-  think: 0.15,
-  reason: 0.25,
-  articulate: 0.2,
-  check: 0.2,
-  extend: 0.2,
+  think: 0.12,
+  reason: 0.2,
+  articulate: 0.17,
+  check: 0.17,
+  extend: 0.17,
+  ethical: 0.17,
 } as const
 
 const REASONING_MARKERS = [
@@ -79,6 +87,29 @@ const CHECK_MARKERS = [
   /\bon second thought\b/i,
   /\bcorrection\b/i,
   /\bI need to fix\b/i,
+]
+
+/**
+ * Ethical reasoning markers — spec §VIII.
+ * Detect references to fairness, harm, rights, equity, responsibility, dignity.
+ * These are growth signals, not moral judgments.
+ */
+const ETHICAL_MARKERS = [
+  /\bfair(?:ness)?\b/i,
+  /\bunjust|injustice\b/i,
+  /\bharm(?:ful|s)?\b/i,
+  /\bright(?:s)?\b/i,
+  /\bresponsib(?:le|ility)\b/i,
+  /\bequit(?:y|able)\b/i,
+  /\bdignity\b/i,
+  /\bwho (?:benefits|is affected|does this help|does this hurt)\b/i,
+  /\bstakeholder/i,
+  /\bconsequence(?:s)?\b/i,
+  /\bshould we\b/i,
+  /\bis it (?:right|fair|just)\b/i,
+  /\bimpact on (?:others|people|the community)\b/i,
+  /\bmoral(?:ly)?\b/i,
+  /\bethic(?:al|s)?\b/i,
 ]
 
 export function scoreTRACE(artifacts: Artifact[], responseTimeMs?: number): TraceFluency {
@@ -140,14 +171,24 @@ export function scoreTRACE(artifacts: Artifact[], responseTimeMs?: number): Trac
     Math.round(extendHits * SCORING_WEIGHTS.EXTEND_MARKER_MULTIPLIER + SCORING_WEIGHTS.EXTEND_BASE),
   )
 
-  // Overall: weighted composite
+  // Ethical: ethical reasoning markers — spec §VIII
+  const ethicalHits = ETHICAL_MARKERS.filter((m) => m.test(allContent)).length
+  const ethical = Math.min(
+    10,
+    Math.round(
+      ethicalHits * SCORING_WEIGHTS.ETHICAL_MARKER_MULTIPLIER + SCORING_WEIGHTS.ETHICAL_BASE,
+    ),
+  )
+
+  // Overall: weighted composite (weights sum to 1.0)
   const overall = Math.round(
     think * TRACE_WEIGHTS.think +
       reason * TRACE_WEIGHTS.reason +
       articulate * TRACE_WEIGHTS.articulate +
       check * TRACE_WEIGHTS.check +
-      extend * TRACE_WEIGHTS.extend,
+      extend * TRACE_WEIGHTS.extend +
+      ethical * TRACE_WEIGHTS.ethical,
   )
 
-  return { think, reason, articulate, check, extend, overall }
+  return { think, reason, articulate, check, extend, ethical, overall }
 }

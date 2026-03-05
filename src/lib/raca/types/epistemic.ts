@@ -1,12 +1,13 @@
 /**
  * RACA Epistemic Types — cognitive monitoring and adaptation.
  *
- * TRACE fluency indicators:
- * T = Think (pause before responding)
- * R = Reason (explicit reasoning moves)
+ * TRACE fluency indicators (6 dimensions):
+ * T = Think    (pause before responding)
+ * R = Reason   (explicit reasoning moves)
  * A = Articulate (clear expression)
- * C = Check (self-correction)
- * E = Extend (connection to broader ideas)
+ * C = Check    (self-correction)
+ * E = Extend   (connection to broader ideas)
+ * E2= Ethical  (ethical reasoning markers — spec §VIII)
  */
 
 export interface TraceFluency {
@@ -15,6 +16,7 @@ export interface TraceFluency {
   articulate: number // 0-10: clarity of expression
   check: number // 0-10: self-correction frequency
   extend: number // 0-10: connection to broader ideas
+  ethical: number // 0-10: ethical reasoning markers (fairness, harm, equity, dignity)
   overall: number // 0-10: weighted composite
 }
 

@@ -15,6 +15,7 @@ const TRACE_LABELS: Record<keyof Omit<TraceFluency, 'overall'>, string> = {
   articulate: 'Articulate',
   check: 'Check',
   extend: 'Extend',
+  ethical: 'Ethical',
 }
 
 const ADAPTATION_LABELS: Record<AdaptationLevel, { label: string; color: string }> = {

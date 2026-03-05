@@ -1,16 +1,58 @@
 import { useState } from 'react'
 import { useProfile } from '../hooks/useProfile'
+import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Spinner } from '../components/ui/Spinner'
 import { Alert } from '../components/ui/Alert'
 import type { LearningStyle } from '../types/profile'
+import type { TraceFluency } from '../lib/raca/types/epistemic'
 
 const LEARNING_STYLES: LearningStyle[] = ['visual', 'auditory', 'kinesthetic', 'reading']
 
+type TraceDim = keyof Omit<TraceFluency, 'overall'>
+
+const TRACE_DIMS: Array<{ key: TraceDim; label: string; desc: string }> = [
+  { key: 'think', label: 'Think', desc: 'Pause quality before responding' },
+  { key: 'reason', label: 'Reason', desc: 'Explicit reasoning moves' },
+  { key: 'articulate', label: 'Articulate', desc: 'Clarity of expression' },
+  { key: 'check', label: 'Check', desc: 'Self-correction depth' },
+  { key: 'extend', label: 'Extend', desc: 'Connecting to broader ideas' },
+  { key: 'ethical', label: 'Ethical', desc: 'Ethical reasoning markers' },
+]
+
+const TRAJECTORY_META = {
+  emerging: { label: 'Emerging', badge: 'bg-slate-100 text-slate-700' },
+  developing: { label: 'Developing', badge: 'bg-amber-100 text-amber-800' },
+  proficient: { label: 'Proficient', badge: 'bg-emerald-100 text-emerald-800' },
+}
+
+function TraceDimensionBar({ label, desc, score }: { label: string; desc: string; score: number }) {
+  const pct = Math.round((score / 10) * 100)
+  const barColor = score >= 7 ? 'bg-emerald-500' : score >= 4 ? 'bg-amber-400' : 'bg-slate-300'
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <span className="text-xs font-semibold text-slate-700">{label}</span>
+          <span className="ml-2 text-xs text-slate-400">{desc}</span>
+        </div>
+        <span className="text-xs font-bold text-slate-600">{score}/10</span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 export function ProfilePage() {
   const { profile, loading, error, updateProfile } = useProfile()
+  const { cognitiveProfile, loading: lcpLoading } = useCognitiveProfile()
   const [editing, setEditing] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [selectedStyles, setSelectedStyles] = useState<LearningStyle[]>([])
@@ -126,6 +168,73 @@ export function ProfilePage() {
           </dl>
         </section>
       )}
+
+      {/* Learner Cognitive Profile — spec §XII */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Cognitive Growth</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Built from your deep learning sessions — these are growth signals, not grades.
+            </p>
+          </div>
+          {cognitiveProfile && (
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold ${TRAJECTORY_META[cognitiveProfile.growth_trajectory].badge}`}
+            >
+              {TRAJECTORY_META[cognitiveProfile.growth_trajectory].label}
+            </span>
+          )}
+        </div>
+
+        {lcpLoading ? (
+          <Spinner />
+        ) : cognitiveProfile ? (
+          <div className="space-y-4">
+            {/* TRACE dimension bars */}
+            <div className="space-y-3">
+              {TRACE_DIMS.map(({ key, label, desc }) => (
+                <TraceDimensionBar
+                  key={key}
+                  label={label}
+                  desc={desc}
+                  score={cognitiveProfile.trace_averages[key] ?? 0}
+                />
+              ))}
+            </div>
+
+            {/* Session stats */}
+            <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-4 sm:grid-cols-4">
+              <div className="text-center">
+                <p className="text-xl font-bold text-slate-900">{cognitiveProfile.session_count}</p>
+                <p className="text-xs text-slate-500">Sessions</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-slate-900">
+                  {Math.round(cognitiveProfile.revision_frequency * 100)}%
+                </p>
+                <p className="text-xs text-slate-500">Revised work</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-slate-900">
+                  {Math.round(cognitiveProfile.reflection_depth_avg)}
+                </p>
+                <p className="text-xs text-slate-500">Avg reflection words</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-slate-900">
+                  {Math.round(cognitiveProfile.trace_averages.overall * 10) / 10}
+                </p>
+                <p className="text-xs text-slate-500">TRACE score</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 text-center py-4">
+            Complete a deep learning session to begin building your cognitive profile.
+          </p>
+        )}
+      </section>
     </main>
   )
 }

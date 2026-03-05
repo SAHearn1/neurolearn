@@ -79,7 +79,15 @@ function createEmptyProfile(userId: string): CognitiveProfile {
     reflection_depth_avg: 0,
     defense_strength_avg: 0,
     framing_sophistication: 0,
-    trace_averages: { think: 0, reason: 0, articulate: 0, check: 0, extend: 0, overall: 0 },
+    trace_averages: {
+      think: 0,
+      reason: 0,
+      articulate: 0,
+      check: 0,
+      extend: 0,
+      ethical: 0,
+      overall: 0,
+    },
     growth_trajectory: 'emerging',
     updated_at: new Date().toISOString(),
   }
@@ -87,7 +95,7 @@ function createEmptyProfile(userId: string): CognitiveProfile {
 
 function averageTrace(scores: TraceFluency[]): TraceFluency {
   if (scores.length === 0) {
-    return { think: 0, reason: 0, articulate: 0, check: 0, extend: 0, overall: 0 }
+    return { think: 0, reason: 0, articulate: 0, check: 0, extend: 0, ethical: 0, overall: 0 }
   }
 
   const sum = scores.reduce(
@@ -97,9 +105,10 @@ function averageTrace(scores: TraceFluency[]): TraceFluency {
       articulate: acc.articulate + s.articulate,
       check: acc.check + s.check,
       extend: acc.extend + s.extend,
+      ethical: acc.ethical + s.ethical,
       overall: acc.overall + s.overall,
     }),
-    { think: 0, reason: 0, articulate: 0, check: 0, extend: 0, overall: 0 },
+    { think: 0, reason: 0, articulate: 0, check: 0, extend: 0, ethical: 0, overall: 0 },
   )
 
   const n = scores.length
@@ -109,6 +118,7 @@ function averageTrace(scores: TraceFluency[]): TraceFluency {
     articulate: Math.round((sum.articulate / n) * 10) / 10,
     check: Math.round((sum.check / n) * 10) / 10,
     extend: Math.round((sum.extend / n) * 10) / 10,
+    ethical: Math.round((sum.ethical / n) * 10) / 10,
     overall: Math.round((sum.overall / n) * 10) / 10,
   }
 }

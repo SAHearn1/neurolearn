@@ -14,6 +14,20 @@ interface InvokeRequest {
   max_tokens: number
 }
 
+/**
+ * State → minimum required artifact kinds (spec §X/XIV).
+ * AI cannot be invoked unless the learner has already submitted
+ * the prerequisite artifact for their current cognitive state.
+ * Only states that have an AI agent have precondition requirements.
+ */
+const STATE_PRECONDITION_ARTIFACT: Record<string, string[]> = {
+  PLAN: ['reflection', 'position_frame'], // Framing/Research — must have reflected or positioned
+  APPLY: ['plan_outline'], // Construction — must have a plan
+  REVISE: ['draft'], // Critique — draft must precede AI critique (spec §X)
+  DEFEND: ['draft', 'revision'], // Defense — must have a revised draft
+  RECONNECT: ['defense_response'], // Framing (reconnect) — must have defended
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return preflight(req)
 
@@ -34,6 +48,7 @@ Deno.serve(async (req: Request) => {
 
     const body: InvokeRequest = await req.json()
 
+    // Verify session is active and belongs to this user
     const { data: session } = await ctx.adminClient
       .from('cognitive_sessions')
       .select('id, user_id, status')
@@ -45,6 +60,44 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'Invalid or inactive session' }, 403, req)
     }
 
+    // Spec §X/XIV: Enforce server-side artifact preconditions.
+    // AI cannot be invoked if the learner has not produced the required
+    // artifact for their current state. This prevents AI from being used
+    // before the learner has engaged in the cognitive work.
+    const requiredKinds = STATE_PRECONDITION_ARTIFACT[body.state]
+    if (requiredKinds && requiredKinds.length > 0) {
+      const { data: artifacts } = await ctx.adminClient
+        .from('raca_artifacts')
+        .select('kind')
+        .eq('session_id', body.session_id)
+        .in('kind', requiredKinds)
+
+      const foundKinds = new Set((artifacts ?? []).map((a: { kind: string }) => a.kind))
+      const missing = requiredKinds.filter((k) => !foundKinds.has(k))
+
+      if (missing.length === requiredKinds.length) {
+        // None of the required artifacts exist — block the invocation
+        await ctx.adminClient.from('raca_agent_interactions').insert({
+          session_id: body.session_id,
+          agent_id: body.agent_id,
+          state: body.state,
+          prompt: body.learner_input,
+          response: null,
+          blocked: true,
+          block_reason: `Precondition not met: learner must submit ${requiredKinds.join(' or ')} before AI can assist in ${body.state}`,
+          response_time_ms: 0,
+        })
+        return json(
+          {
+            error: `Reflection required before AI assistance. Please submit your ${requiredKinds[0].replace('_', ' ')} first.`,
+            blocked: true,
+          },
+          403,
+          req,
+        )
+      }
+    }
+
     const startTime = Date.now()
     const aiResponse = await callAI(body.system_prompt, body.learner_input, body.max_tokens)
     const responseTimeMs = Date.now() - startTime
@@ -52,7 +105,7 @@ Deno.serve(async (req: Request) => {
     await ctx.adminClient.from('raca_agent_interactions').insert({
       session_id: body.session_id,
       agent_id: body.agent_id,
-      state: 'UNKNOWN',
+      state: body.state, // Fixed: was hardcoded 'UNKNOWN'
       prompt: body.learner_input,
       response: aiResponse,
       blocked: false,

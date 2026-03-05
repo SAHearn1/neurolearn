@@ -16,6 +16,7 @@ interface AnalyzeRequest {
     articulate: number
     check: number
     extend: number
+    ethical: number // spec §VIII — ethical reasoning markers
     overall: number
   }
 }
@@ -82,6 +83,7 @@ Deno.serve(async (req: Request) => {
         articulate: runAvg(existing?.trace_averages?.articulate ?? 0, body.trace_scores.articulate),
         check: runAvg(existing?.trace_averages?.check ?? 0, body.trace_scores.check),
         extend: runAvg(existing?.trace_averages?.extend ?? 0, body.trace_scores.extend),
+        ethical: runAvg(existing?.trace_averages?.ethical ?? 0, body.trace_scores.ethical ?? 0),
         overall: runAvg(existing?.trace_averages?.overall ?? 0, body.trace_scores.overall),
       },
       growth_trajectory:

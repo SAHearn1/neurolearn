@@ -2,6 +2,7 @@ import type { CognitiveState } from '../types/cognitive-states'
 import type { EventSource, RacaEvent } from '../types/events'
 import { useRuntimeStore } from '../layer0-runtime/runtime-store'
 import { appendAuditEvent } from '../layer0-runtime/audit-trail'
+import { emitStateTransitionEvents } from '../learning-events'
 import { evaluateTransition } from './transition-guards'
 import { racaFlags } from '../feature-flags'
 
@@ -67,6 +68,11 @@ export function requestTransition(
   }
   store.dispatch({ type: 'EVENT_RECORDED', event: transitionEvent })
   appendAuditEvent(transitionEvent)
+
+  // Emit LEARNING.* public events — spec §XI
+  if (runtimeState.session_id) {
+    emitStateTransitionEvents(runtimeState.session_id, from, to)
+  }
 
   return { success: true, from, to, reason: 'Transition approved' }
 }
