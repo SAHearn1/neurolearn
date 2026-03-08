@@ -1,10 +1,10 @@
-# CLAUDE.md â€” neurolearn
+# CLAUDE.md — neurolearn
 
 > Agent briefing. Read before touching code.
 > Governance hub: `SAHearn1/rwfw-agent-governance`
 
 ## Repo Identity
-- **Purpose:** Neurolearn â€” adaptive learning platform
+- **Purpose:** Neurolearn — adaptive learning platform
 - **Tier:** 2 (active support)
 - **Stack:** React 19 + Vite + Supabase + Vercel
 
@@ -20,7 +20,7 @@
 ## Critical Rules
 
 - **RLS is the security layer.** Every Supabase table has row-level security. Verify policies before any data access pattern.
-- **React 19 concurrent features** â€” use `use()`, `useTransition()` appropriately. Do not mix React 18 and 19 patterns.
+- **React 19 concurrent features** — use `use()`, `useTransition()` appropriately. Do not mix React 18 and 19 patterns.
 - **VITE_ prefix required** for all client-side env vars.
 - **No `git add .`**
 
@@ -38,3 +38,9 @@ VITE_SUPABASE_ANON_KEY
 
 ## Governance
 Follow `AGENTS.md`. Debug via `docs/AGENT_DEBUG_RUNBOOK.md`.
+
+## Operating Rules
+
+**If you resolve a bug during this session, you MUST append an entry to `docs/INCIDENTS.md` before the session ends. This is non-negotiable. Session is not complete until the entry is committed.**
+
+See Rule 7 in `AGENTS.md` (governance hub: `SAHearn1/rwfw-agent-governance`) for the full incident logging protocol.
