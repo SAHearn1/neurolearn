@@ -222,3 +222,36 @@ All API access goes through the Supabase client library. The following operation
 | First Contentful Paint   | < 1.5 s          |
 | Time to Interactive      | < 3.5 s          |
 | Bundle size (gzip)       | < 200 KB initial |
+
+---
+
+## RACA Production Activation Checklist (REQ-18-09)
+
+Full runbook: `docs/raca-production-activation.md`
+
+### Pre-flight
+
+- [ ] Supabase migrations 035 + 036 applied (`supabase db push`)
+- [ ] `ANTHROPIC_API_KEY` set in Supabase Edge Function secrets
+- [ ] `RACA_AI_MODEL=claude-sonnet-4-6` set in Supabase Edge Function secrets
+- [ ] Edge functions deployed: `agent-invoke`, `epistemic-analyze`
+
+### Vercel: RACA flags (Production + Preview environments)
+
+Enable in this order — each layer must be smoke-tested before activating the next:
+
+1. `VITE_RACA_ENABLE_RUNTIME=true`
+2. `VITE_RACA_ENABLE_COGNITIVE_FSM=true`
+3. `VITE_RACA_ENABLE_GUARDRAILS=true`
+4. `VITE_RACA_ENABLE_AUDIT=true`
+5. `VITE_RACA_ENABLE_AGENT_ROUTER=true`
+6. `VITE_RACA_ENABLE_AGENTS=true`
+7. `VITE_RACA_ENABLE_EPISTEMIC=true`
+8. `VITE_RACA_ENABLE_ADAPTATION=true`
+
+### Verification
+
+- [ ] `SessionPage` loads for a test learner in production
+- [ ] `raca_audit_events` table receives events after session start
+- [ ] `epistemic_profiles` populated after completing a session
+- [ ] `agent-invoke` Edge Function returns a valid response

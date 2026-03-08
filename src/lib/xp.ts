@@ -7,8 +7,26 @@
 export const XP_PER_LESSON = 10
 export const XP_PER_STREAK_DAY = 5
 
-// RACA session XP — REQ-18-01
-export const XP_PER_RACA_SESSION_BASE = 25 // base for completing any RACA session
+// ── RACA session XP — REQ-18-01 ───────────────────────────────────────────
+// XP_PER_TRACE_CYCLE: base award for completing a full RACA session (ROOT → ARCHIVE).
+// Renamed alias retained for backward compatibility.
+export const XP_PER_TRACE_CYCLE = 25
+/** @deprecated use XP_PER_TRACE_CYCLE — TODO: remove in v1.0 */
+export const XP_PER_RACA_SESSION_BASE = XP_PER_TRACE_CYCLE
+
+// Bonus XP for reaching specific depth states (RWLE §XV — epistemic depth rewarded)
+export const XP_REVISE_BONUS = 5 // completing the REVISE state
+export const XP_DEFEND_BONUS = 10 // completing the DEFEND state
+
+// Multiplier applied when TRACE overall score ≥ 7 (RWLE §VIII — fluency is measurable)
+export const XP_DEEP_THINKER_MULTIPLIER = 1.5
+
+// Ethical reasoning bonus: ethical dimension score ≥ 6 adds flat bonus
+export const XP_ETHICAL_BONUS = 2
+
+// Deep Work Streak XP — REQ-18-08
+export const XP_PER_DEEP_STREAK_DAY = 15 // vs. 5 XP for a lesson-only streak day
+
 export const XP_TRACE_BONUS_PER_POINT = 5 // bonus per TRACE overall point above 5 (max +25)
 
 /**
@@ -18,7 +36,7 @@ export const XP_TRACE_BONUS_PER_POINT = 5 // bonus per TRACE overall point above
  */
 export function traceSessionXP(traceOverall: number): number {
   const bonus = Math.max(0, Math.round((traceOverall - 5) * XP_TRACE_BONUS_PER_POINT))
-  return XP_PER_RACA_SESSION_BASE + bonus
+  return XP_PER_TRACE_CYCLE + bonus
 }
 
 /**
@@ -30,7 +48,37 @@ export function traceSessionXPBreakdown(traceOverall: number): {
   total: number
 } {
   const bonus = Math.max(0, Math.round((traceOverall - 5) * XP_TRACE_BONUS_PER_POINT))
-  return { base: XP_PER_RACA_SESSION_BASE, bonus, total: XP_PER_RACA_SESSION_BASE + bonus }
+  return { base: XP_PER_TRACE_CYCLE, bonus, total: XP_PER_TRACE_CYCLE + bonus }
+}
+
+/**
+ * Full XP calculation for a completed RACA session including depth bonuses.
+ * Accounts for REVISE/DEFEND state completion, Deep Thinker multiplier,
+ * and ethical reasoning bonus. (RWLE §XV — epistemic fluency is earned.)
+ */
+export function computeSessionXP(params: {
+  traceOverall: number
+  ethicalScore?: number
+  reachedRevise?: boolean
+  reachedDefend?: boolean
+}): {
+  base: number
+  revise: number
+  defend: number
+  deepThinker: number
+  ethical: number
+  total: number
+} {
+  const { traceOverall, ethicalScore = 0, reachedRevise = false, reachedDefend = false } = params
+  const base = traceSessionXP(traceOverall)
+  const revise = reachedRevise ? XP_REVISE_BONUS : 0
+  const defend = reachedDefend ? XP_DEFEND_BONUS : 0
+  const ethical = ethicalScore >= 6 ? XP_ETHICAL_BONUS : 0
+  const subtotal = base + revise + defend + ethical
+  const deepThinker =
+    traceOverall >= 7 ? Math.round(subtotal * (XP_DEEP_THINKER_MULTIPLIER - 1)) : 0
+  const total = subtotal + deepThinker
+  return { base, revise, defend, deepThinker, ethical, total }
 }
 
 export interface LevelInfo {
