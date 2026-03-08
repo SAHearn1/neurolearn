@@ -1,0 +1,42 @@
+repository_name: neurolearn
+purpose: "NeuroLearn — Multimodal learning app for neurodivergent learners"
+user_facing_surfaces:
+  - "Web app (React 19 SPA)"
+entrypoints:
+  - "src/ (Vite app)"
+ui_layer: "React 19 + Vite + Tailwind CSS"
+api_layer: "Supabase (direct client SDK)"
+auth_layer: "Supabase Auth"
+service_layer: "TODO — requires Phase C deep read of src/"
+data_layer: "Supabase PostgreSQL + @supabase/supabase-js"
+infrastructure_layer: "Vercel"
+external_integrations:
+  - "Supabase (auth + database + storage)"
+  - "Sentry (@sentry/react)"
+  - "Vercel Analytics"
+environment_variables_referenced:
+  - "VITE_SUPABASE_URL"
+  - "VITE_SUPABASE_ANON_KEY"
+  - "TODO — full list requires reading .env.example"
+key_routes:
+  - "TODO — requires Phase C deep read"
+key_services:
+  - "TODO — requires Phase C deep read"
+key_jobs_or_workers: []
+critical_dependencies:
+  - "@supabase/supabase-js ^2.39.0"
+  - "react ^19.2.4"
+  - "@sentry/react ^10.42.0"
+  - "zod ^4.3.6"
+  - "zustand ^5.0.11"
+likely_failure_hotspots:
+  - "Supabase RLS policy mismatches"
+  - "Supabase auth token expiry"
+  - "VITE_SUPABASE_* env vars missing in Vercel"
+local_dev_commands:
+  - "npm run dev"
+build_commands:
+  - "npm run build"
+test_commands:
+  - "npm run test"
+  - "npm run test:e2e"
