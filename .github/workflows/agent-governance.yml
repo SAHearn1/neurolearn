@@ -1,0 +1,19 @@
+name: Agent Governance
+on:
+  pull_request:
+    branches: ['**']
+jobs:
+  validate-governance:
+    runs-on: ubuntu-latest
+    if: contains(github.head_ref, 'agent-operating-system-install') || contains(github.head_ref, 'governance')
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for f in AGENTS.md .github/PULL_REQUEST_TEMPLATE.md repo.intelligence.yml; do
+            [ -f "$f" ] && echo "OK: $f" || { echo "MISSING: $f"; exit 1; }
+          done
+      - run: |
+          for s in "Root Cause" "Verification Evidence" "Regression"; do
+            grep -q "$s" .github/PULL_REQUEST_TEMPLATE.md || { echo "MISSING: $s"; exit 1; }
+          done
+          echo "Governance validation passed."
