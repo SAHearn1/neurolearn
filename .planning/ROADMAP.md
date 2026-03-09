@@ -79,6 +79,22 @@ Requirements are the atomic units plans reference. IDs map to GitHub issues.
 | REQ-17-04 | #94   | Automated DB migrations in CI/CD (Supabase CLI migration step in ci.yml)         |
 | REQ-17-05 | #113  | User journey maps (learner, parent, educator — Mermaid sequence diagrams)        |
 
+## Phase 18 — RACA Depth & Engagement
+
+| ID        | Issue | Requirement                                                                                    |
+| --------- | ----- | ---------------------------------------------------------------------------------------------- |
+| REQ-18-01 | #198  | TRACE-Weighted XP: scale XP reward by session TRACE overall score; surface multiplier in UI    |
+| REQ-18-02 | #199  | Educator LCP Dashboard: per-student TRACE bars, trajectory badges, growth timeline view        |
+| REQ-18-03 | #200  | Session History & Growth Narrative: timeline of past sessions + AI-generated growth summary    |
+| REQ-18-04 | #201  | Voice Input for RACA session responses via Web Speech API                                      |
+| REQ-18-05 | #202  | Learner Onboarding / First-Run Experience: goal selection, learning-style quiz, RACA intro     |
+| REQ-18-06 | #203  | Regulation Intervention Content: library of co-regulation micro-activities for ROOT/REGULATE   |
+| REQ-18-07 | #204  | Parent Growth Narrative View: read-only LCP summary + trajectory badge for parent portal       |
+| REQ-18-08 | #205  | Deep Work Streak Differentiation: track consecutive RACA sessions separate from lesson streak  |
+| REQ-18-09 | #206  | RACA Production Feature Flag Activation: enable all 8 flags for production rollout             |
+| REQ-18-10 | #207  | Educator RACA-Aware Course Builder: RACA phase tags on lessons, prerequisite gating            |
+| REQ-18-11 | #208  | RACA Supabase Schema Migration for Production: raca_artifacts, raca_agent_interactions indexes |
+
 ## Phase Dependency Graph
 
 ```
@@ -97,11 +113,15 @@ Phase 17 (observability — runs last, wraps everything)
 
 ## Wave Schedule
 
-| Wave | Plans                      | Can run in parallel                     |
-| ---- | -------------------------- | --------------------------------------- |
-| 1    | 11-01, 12-01, 14-01        | Yes — all schema/infra, no UI deps      |
-| 2    | 11-02, 12-02, 13-01, 16-01 | Yes — UI depends on wave 1 schemas      |
-| 3    | 11-03, 12-03, 13-02, 16-02 | Yes — analytics/content/compliance      |
-| 4    | 14-02, 15-01, 16-03        | Yes — compliance docs + E2E + AI engine |
-| 5    | 15-02, 15-03, 17-01, 17-02 | Yes — test coverage + observability     |
-| 6    | 17-03, 17-04, 17-05        | Yes — CI/CD, env, docs cleanup          |
+| Wave | Plans                      | Status | Can run in parallel                      |
+| ---- | -------------------------- | ------ | ---------------------------------------- |
+| 1    | 11-01, 12-01, 14-01        | DONE   | Yes — all schema/infra, no UI deps       |
+| 2    | 11-02, 12-02, 13-01, 16-01 | DONE   | Yes — UI depends on wave 1 schemas       |
+| 3    | 11-03, 12-03, 13-02, 16-02 | DONE   | Yes — analytics/content/compliance       |
+| 4    | 14-02, 15-01, 16-03        | DONE   | Yes — compliance docs + E2E + AI engine  |
+| 5    | 15-02, 15-03, 17-01, 17-02 | DONE   | Yes — test coverage + observability      |
+| 6    | 17-03, 17-04, 17-05        | DONE   | Yes — CI/CD, env, docs cleanup           |
+| 7    | 18-09, 18-11               | DONE   | Yes — infra/DB first (blocks 18-01+)     |
+| 8    | 18-01, 18-04, 18-05        | DONE   | Yes — XP engine, voice, onboarding       |
+| 9    | 18-02, 18-07, 18-08        | DONE   | Yes — educator LCP, parent view, streak  |
+| 10   | 18-03, 18-06, 18-10        | DONE   | Yes — narrative, content, course builder |

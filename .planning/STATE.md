@@ -1,7 +1,7 @@
 # NeuroLearn — Execution State
 
-Last updated: 2026-03-02
-Overall progress: 100% (All 6 waves complete)
+Last updated: 2026-03-08
+Overall progress: Phases 01–18 complete (131/131 issues). Operational gaps remaining.
 
 ## Completed Phases (01–10)
 
@@ -29,6 +29,21 @@ Overall progress: 100% (All 6 waves complete)
 | 15    | Testing               | DONE   | 15-01, 15-02        |
 | 16    | Learner Features      | DONE   | 16-01, 16-02        |
 | 17    | Observability & CI/CD | DONE   | 17-01, 17-02        |
+
+## Phase 18 — RACA Depth & Engagement — COMPLETE
+
+| Phase | Name                    | Status | Issues            |
+| ----- | ----------------------- | ------ | ----------------- |
+| 18    | RACA Depth & Engagement | DONE   | #198–#208 (11/11) |
+
+### Phase 18 Wave Plan
+
+| Wave | Requirements        | Focus                                  | Status |
+| ---- | ------------------- | -------------------------------------- | ------ |
+| 7    | 18-09, 18-11        | Infra/DB (unblocks everything else)    | DONE   |
+| 8    | 18-01, 18-04, 18-05 | XP engine, voice input, onboarding     | DONE   |
+| 9    | 18-02, 18-07, 18-08 | Educator LCP, parent view, deep streak | DONE   |
+| 10   | 18-03, 18-06, 18-10 | Growth narrative, regulation, builder  | DONE   |
 
 ## Wave Execution History
 
@@ -65,6 +80,29 @@ Overall progress: 100% (All 6 waves complete)
 
 - 17-02: CI migration job (supabase db push on main) + environment docs + journey maps (3 Mermaid diagrams)
 
+### Wave 7 — COMPLETE
+
+- 18-09: RACA feature flags (8 env-var-gated flags, localStorage overrides for dev)
+- 18-11: RACA production schema (migration 033 — indexes on cognitive_sessions, raca_agent_interactions)
+
+### Wave 8 — COMPLETE
+
+- 18-01: TRACE-weighted XP (XP multiplier from TRACE overall score, surfaced in XPBar)
+- 18-04: Voice input for RACA sessions (Web Speech API, VoiceInputButton component)
+- 18-05: Learner onboarding / first-run experience (goal selection, learning-style quiz, RACA intro)
+
+### Wave 9 — COMPLETE
+
+- 18-02: Educator LCP dashboard (per-student TRACE bars, trajectory badges, growth timeline)
+- 18-07: Parent growth narrative view (read-only LCP summary + trajectory badge)
+- 18-08: Deep work streak differentiation (consecutive RACA sessions tracked separately)
+
+### Wave 10 — COMPLETE
+
+- 18-03: Session history & growth narrative (timeline + AI growth summary, useSessionHistory hook)
+- 18-06: Regulation intervention content (co-regulation micro-activity library, RegulationIntervention component)
+- 18-10: Educator RACA-aware course builder (RACA phase tags on lessons, migration 034)
+
 ## CI Gate — Final
 
 ```bash
@@ -74,7 +112,7 @@ npm run test -- --run  # 30/30 tests passing
 npm run build       # clean build
 ```
 
-## Database Migrations (24 total)
+## Database Migrations (34 total)
 
 001-016: Base schema (profiles, courses, lessons, progress, RACA tables, RLS, audit)
 017: Educator profiles verified column
@@ -85,16 +123,37 @@ npm run build       # clean build
 022: Profiles soft-delete (deleted_at)
 023: Lessons moderation status
 024: Adaptive learning difficulty level
+025: Restrict role update (RLS policy tightening)
+026: Lesson completion counters
+027: Signup role from metadata
+028: Soft-delete RLS filter
+029: Immutable audit delete prevention
+030: Content ownership + gap analysis fixes
+031: Content moderation
+032: RLS hardening and parent messages
+033: RACA production indexes
+034: Lessons RACA phase column
 
 ## Platform Completion
 
-**All phases complete — 2026-03-02**
+**Phases 01–18 complete — 2026-03-08 (131/131 issues)**
 
-The NeuroLearn platform is feature-complete. Remaining operational steps:
+## Operational Gaps (code done, infrastructure pending)
 
-- Configure Sentry DSN in Vercel env vars (requires Sentry project)
-- Configure Supabase secrets in GitHub (SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD)
-- Run `supabase db push` to apply migrations 017-024 to production
-- Activate Playwright E2E tests (set PLAYWRIGHT_RUN=true with running Supabase)
-- Configure LHCI_GITHUB_APP_TOKEN for Lighthouse CI reporting
-- QA verification per staging checklist in docs/environment-management.md
+See `.planning/GAP_ANALYSIS.md` for full gap analysis and execution plan.
+
+**Critical (blocks production):**
+
+- [ ] Apply migrations 025-034 to production (`supabase db push`)
+- [ ] Set RACA feature flags in Vercel env vars (all 8 `VITE_RACA_ENABLE_*=true`)
+- [ ] Configure Supabase secrets in GitHub Actions (SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD)
+
+**High (observability/CI):**
+
+- [ ] Create Sentry project and set VITE_SENTRY_DSN in Vercel env vars
+- [ ] Set LHCI_GITHUB_APP_TOKEN for Lighthouse CI reporting
+
+**Medium (testing/QA):**
+
+- [ ] Enable Playwright E2E against live Supabase (PLAYWRIGHT_RUN=true)
+- [ ] QA verification per staging checklist in docs/environment-management.md

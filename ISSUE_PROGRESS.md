@@ -2,27 +2,28 @@
 
 This log tracks completed repository issues/workstreams and what is next.
 
-## Issue Summary (as of 2026-03-03)
+## Issue Summary (as of 2026-03-08)
 
-| Category            | Total   | Closed  | Open  | % Complete |
-| ------------------- | ------- | ------- | ----- | ---------- |
-| Config/Setup        | 10      | 10      | 0     | 100%       |
-| Database/Migrations | 12      | 12      | 0     | 100%       |
-| Auth                | 5       | 5       | 0     | 100%       |
-| UI Components       | 8       | 8       | 0     | 100%       |
-| Layout Components   | 5       | 5       | 0     | 100%       |
-| Pages (Learner)     | 11      | 11      | 0     | 100%       |
-| Hooks/Stores        | 3       | 3       | 0     | 100%       |
-| CI/CD               | 7       | 7       | 0     | 100%       |
-| Security/Compliance | 11      | 11      | 0     | 100%       |
-| Accessibility       | 10      | 10      | 0     | 100%       |
-| Testing             | 5       | 5       | 0     | 100%       |
-| Documentation       | 8       | 8       | 0     | 100%       |
-| Learner Features    | 4       | 4       | 0     | 100%       |
-| Educator Features   | 10      | 10      | 0     | 100%       |
-| Parent Features     | 5       | 5       | 0     | 100%       |
-| Admin Features      | 6       | 6       | 0     | 100%       |
-| **Total**           | **120** | **120** | **0** | **100%**   |
+| Category                  | Total   | Closed  | Open  | % Complete |
+| ------------------------- | ------- | ------- | ----- | ---------- |
+| Config/Setup              | 10      | 10      | 0     | 100%       |
+| Database/Migrations       | 12      | 12      | 0     | 100%       |
+| Auth                      | 5       | 5       | 0     | 100%       |
+| UI Components             | 8       | 8       | 0     | 100%       |
+| Layout Components         | 5       | 5       | 0     | 100%       |
+| Pages (Learner)           | 11      | 11      | 0     | 100%       |
+| Hooks/Stores              | 3       | 3       | 0     | 100%       |
+| CI/CD                     | 7       | 7       | 0     | 100%       |
+| Security/Compliance       | 11      | 11      | 0     | 100%       |
+| Accessibility             | 10      | 10      | 0     | 100%       |
+| Testing                   | 5       | 5       | 0     | 100%       |
+| Documentation             | 8       | 8       | 0     | 100%       |
+| Learner Features          | 4       | 4       | 0     | 100%       |
+| Educator Features         | 10      | 10      | 0     | 100%       |
+| Parent Features           | 5       | 5       | 0     | 100%       |
+| Admin Features            | 6       | 6       | 0     | 100%       |
+| **Phase 18 — RACA Depth** | **11**  | **11**  | **0** | **100%**   |
+| **Total**                 | **131** | **131** | **0** | **100%**   |
 
 ---
 
@@ -180,13 +181,29 @@ This log tracks completed repository issues/workstreams and what is next.
 
 ---
 
-## Validation Baseline (2026-03-03)
+## Validation Baseline (2026-03-08)
 
 - `npm run build` — 0 TypeScript errors, code-split into 15+ chunks
 - `npm run test -- --run` — 30/30 tests passing
 - `npm run lint` — 0 warnings
 - `npm run typecheck` — clean
 
-## Remaining Open Issues
+## Phase 18 — RACA Depth & Engagement (COMPLETE)
 
-None. All 120 tracked issues are resolved.
+| Issue | ID        | Title                                         | Status |
+| ----- | --------- | --------------------------------------------- | ------ |
+| #198  | REQ-18-01 | TRACE-Weighted XP                             | DONE   |
+| #199  | REQ-18-02 | Educator LCP Dashboard                        | DONE   |
+| #200  | REQ-18-03 | Session History & Growth Narrative            | DONE   |
+| #201  | REQ-18-04 | Voice Input for RACA Sessions                 | DONE   |
+| #202  | REQ-18-05 | Learner Onboarding / First-Run Experience     | DONE   |
+| #203  | REQ-18-06 | Regulation Intervention Content               | DONE   |
+| #204  | REQ-18-07 | Parent Growth Narrative View                  | DONE   |
+| #205  | REQ-18-08 | Deep Work Streak Differentiation              | DONE   |
+| #206  | REQ-18-09 | RACA Production Feature Flag Activation       | DONE   |
+| #207  | REQ-18-10 | Educator RACA-Aware Course Builder            | DONE   |
+| #208  | REQ-18-11 | RACA Supabase Schema Migration for Production | DONE   |
+
+## Remaining Open Items
+
+All 131 code issues resolved. Remaining work is operational/infrastructure — see `.planning/GAP_ANALYSIS.md`.
