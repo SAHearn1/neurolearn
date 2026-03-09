@@ -34,20 +34,35 @@ async function loadRole(userId: string): Promise<UserRole | null> {
 // onAuthStateChange fires INITIAL_SESSION on registration, so no getSession()
 // call is needed. A second call would race for the same Web Lock and produce
 // the "Lock not released" warning in StrictMode.
-supabase.auth.onAuthStateChange(async (_event, session) => {
+//
+// IMPORTANT: Do NOT call supabase.from() inside this callback. The Supabase JS
+// client's REST methods internally call getSession() which competes for the same
+// Web Lock held by onAuthStateChange, causing a deadlock. Role hydration is
+// deferred via setTimeout(0) to run after the lock is released.
+supabase.auth.onAuthStateChange((_event, session) => {
   const currentState = useAuthStore.getState()
-  const shouldHydrateRole =
-    !!session?.user && (!currentState.role || currentState.user?.id !== session.user.id)
 
-  const nextRole = shouldHydrateRole ? await loadRole(session.user.id) : currentState.role
-
+  // Set core auth state immediately — unblocks the initialized gate.
   useAuthStore.setState({
     user: session?.user ?? null,
     session,
-    role: session ? nextRole : null,
+    role: session ? currentState.role : null,
     initialized: true,
     pendingEmailConfirmation: false,
   })
+
+  // Defer role hydration outside the Web Lock context.
+  if (session?.user) {
+    const userId = session.user.id
+    const needsHydration = !currentState.role || currentState.user?.id !== userId
+    if (needsHydration) {
+      setTimeout(() => {
+        loadRole(userId).then((role) => {
+          useAuthStore.setState({ role })
+        })
+      }, 0)
+    }
+  }
 })
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -61,10 +76,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   signIn: async (email, password) => {
     set({ loading: true })
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-      const role = data.user ? await loadRole(data.user.id) : null
-      set({ user: data.user, session: data.session, role, pendingEmailConfirmation: false })
+      // onAuthStateChange handles user/session/role state update.
     } finally {
       set({ loading: false })
     }
@@ -85,11 +99,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         role: null,
         pendingEmailConfirmation: !data.session,
       })
-      // When email confirmation is enabled, data.session is null.
-      if (data.session && data.user) {
-        const userRole = await loadRole(data.user.id)
-        set({ role: userRole, pendingEmailConfirmation: false })
-      }
+      // onAuthStateChange handles role hydration out-of-band.
       return data.session
     } finally {
       set({ loading: false })
