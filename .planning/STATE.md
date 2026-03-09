@@ -138,22 +138,21 @@ npm run build       # clean build
 
 **Phases 01–18 complete — 2026-03-08 (131/131 issues)**
 
-## Operational Gaps (code done, infrastructure pending)
+## Operational Gaps (code done, operator config pending)
 
-See `.planning/GAP_ANALYSIS.md` for full gap analysis and execution plan.
+GitHub issues #211–#218 created and closed. See `.planning/GAP_ANALYSIS.md` for full details.
 
-**Critical (blocks production):**
+Code delivered: `scripts/seed-e2e.ts`, E2E CI job in `ci.yml`, `docs/staging-qa-checklist.md`.
 
-- [ ] Apply migrations 025-034 to production (`supabase db push`)
-- [ ] Set RACA feature flags in Vercel env vars (all 8 `VITE_RACA_ENABLE_*=true`)
-- [ ] Configure Supabase secrets in GitHub Actions (SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD)
+**Operator actions remaining (no code changes needed):**
 
-**High (observability/CI):**
-
-- [ ] Create Sentry project and set VITE_SENTRY_DSN in Vercel env vars
-- [ ] Set LHCI_GITHUB_APP_TOKEN for Lighthouse CI reporting
-
-**Medium (testing/QA):**
-
-- [ ] Enable Playwright E2E against live Supabase (PLAYWRIGHT_RUN=true)
-- [ ] QA verification per staging checklist in docs/environment-management.md
+| Priority | Action                                                                                                |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| CRITICAL | Add 3 GitHub Actions secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` |
+| CRITICAL | Run `supabase db push` (auto on next `main` push after secrets set)                                   |
+| CRITICAL | Set 8 `VITE_RACA_ENABLE_*=true` + `RACA_AI_PROVIDER` + `RACA_AI_MODEL` in Vercel, redeploy            |
+| HIGH     | Create Sentry project, set `VITE_SENTRY_DSN` in Vercel                                                |
+| HIGH     | Install LHCI GitHub App, add `LHCI_GITHUB_APP_TOKEN` secret                                           |
+| MEDIUM   | Set `ANTHROPIC_API_KEY` + AI vars in Supabase Edge Function secrets                                   |
+| MEDIUM   | Set E2E secrets + `PLAYWRIGHT_RUN=true` repo variable in GitHub Actions                               |
+| MEDIUM   | Execute `docs/staging-qa-checklist.md` against staging before production promotion                    |

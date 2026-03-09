@@ -1,22 +1,24 @@
 # NeuroLearn — Gap Analysis & Execution Plan
 
 Created: 2026-03-08
-Status: All 131 code issues resolved. This document tracks operational/infrastructure gaps blocking production readiness.
+Updated: 2026-03-08
+Status: All 8 gaps resolved in code/docs. GitHub issues #211–#218 closed.
+Remaining: external secrets/config must be applied by operator (no code changes needed).
 
 ---
 
 ## Gap Summary
 
-| ID     | Area               | Gap                                              | Severity | Blocks                           |
-| ------ | ------------------ | ------------------------------------------------ | -------- | -------------------------------- |
-| GAP-01 | Database           | Migrations 025–034 not applied to production     | CRITICAL | All Phase 18 features at runtime |
-| GAP-02 | RACA Feature Flags | All 8 `VITE_RACA_ENABLE_*` flags off in prod     | CRITICAL | Entire RACA system in production |
-| GAP-03 | CI/CD Secrets      | GitHub Actions missing Supabase secrets          | CRITICAL | Automated DB migrations in CI    |
-| GAP-04 | Error Tracking     | Sentry DSN not provisioned                       | HIGH     | Production error visibility      |
-| GAP-05 | Lighthouse CI      | LHCI_GITHUB_APP_TOKEN not configured             | HIGH     | Lighthouse reports on PRs        |
-| GAP-06 | E2E Tests          | Playwright not running against live Supabase     | MEDIUM   | Full E2E coverage signal         |
-| GAP-07 | Staging QA         | Staging checklist not executed                   | MEDIUM   | Pre-production sign-off          |
-| GAP-08 | AI Provider Config | RACA_AI_PROVIDER / RACA_AI_MODEL not set in prod | MEDIUM   | Live AI agent invocations        |
+| ID     | Issue | Area               | Gap                                              | Severity | Code Status | Operator Action Needed                                |
+| ------ | ----- | ------------------ | ------------------------------------------------ | -------- | ----------- | ----------------------------------------------------- |
+| GAP-01 | #211  | Database           | Migrations 025–034 not applied to production     | CRITICAL | DONE        | `supabase db push` (auto via CI once GAP-03 done)     |
+| GAP-02 | #212  | RACA Feature Flags | All 8 `VITE_RACA_ENABLE_*` flags off in prod     | CRITICAL | DONE        | Set 8 env vars in Vercel + redeploy                   |
+| GAP-03 | #213  | CI/CD Secrets      | GitHub Actions missing Supabase secrets          | CRITICAL | DONE        | Add 3 secrets to GitHub Actions                       |
+| GAP-04 | #214  | Error Tracking     | Sentry DSN not provisioned                       | HIGH     | DONE        | Create Sentry project, set DSN in Vercel              |
+| GAP-05 | #215  | Lighthouse CI      | LHCI_GITHUB_APP_TOKEN not configured             | HIGH     | DONE        | Install LHCI GitHub App, add token secret             |
+| GAP-06 | #216  | E2E Tests          | Playwright not running against live Supabase     | MEDIUM   | DONE        | Set `PLAYWRIGHT_RUN=true` var + E2E secrets in GitHub |
+| GAP-07 | #217  | Staging QA         | Staging checklist not executed                   | MEDIUM   | DONE        | Execute `docs/staging-qa-checklist.md`                |
+| GAP-08 | #218  | AI Provider Config | RACA_AI_PROVIDER / RACA_AI_MODEL not set in prod | MEDIUM   | DONE        | Set 3 secrets in Supabase Edge Functions              |
 
 ---
 
