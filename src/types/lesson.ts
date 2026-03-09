@@ -12,6 +12,8 @@ export interface Lesson {
   sort_order: number
   duration_minutes: number | null
   raca_phase?: string | null
+  learning_objectives?: string[] | null
+  glossary?: Record<string, string> | null
   created_at: string
   updated_at: string
 }

@@ -1,4 +1,8 @@
-import { STATE_METADATA, COGNITIVE_STATES } from '../../lib/raca/types/cognitive-states'
+import {
+  STATE_METADATA,
+  COGNITIVE_STATES,
+  STUDENT_STATE_LABELS,
+} from '../../lib/raca/types/cognitive-states'
 import type { CognitiveState } from '../../lib/raca/types/cognitive-states'
 
 interface Props {
@@ -29,7 +33,7 @@ export function CognitiveStateIndicator({ currentState, stateHistory }: Props) {
         <span
           className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${STATE_COLORS[currentState]}`}
         >
-          {meta.label}
+          {STUDENT_STATE_LABELS[currentState] ?? meta.label}
         </span>
         <span className="text-xs text-slate-500">{progress}% through session</span>
       </div>
@@ -45,7 +49,7 @@ export function CognitiveStateIndicator({ currentState, stateHistory }: Props) {
                   ? 'bg-brand-200'
                   : 'bg-slate-100'
             }`}
-            title={STATE_METADATA[s].label}
+            title={STUDENT_STATE_LABELS[s] ?? STATE_METADATA[s].label}
           />
         ))}
       </div>

@@ -92,6 +92,18 @@ export interface CognitiveTransition {
   conditions: string[]
 }
 
+export const STUDENT_STATE_LABELS: Record<string, string> = {
+  ROOT: 'Take a breath',
+  REGULATE: 'How are you feeling?',
+  POSITION: 'What do you want to know?',
+  PLAN: 'Make a plan',
+  APPLY: 'Write your first attempt',
+  REVISE: 'Improve your thinking',
+  DEFEND: 'Explain your why',
+  RECONNECT: 'Look back and grow',
+  ARCHIVE: 'Save your insights',
+}
+
 export const VALID_TRANSITIONS: CognitiveTransition[] = [
   { from: 'ROOT', to: 'REGULATE', trigger: 'learner_ready', conditions: ['Session initialized'] },
   {

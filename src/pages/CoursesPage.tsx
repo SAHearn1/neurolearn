@@ -1,13 +1,21 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert } from '../components/ui/Alert'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { GradientThumbnail } from '../components/ui/GradientThumbnail'
+import { Input } from '../components/ui/Input'
 import { Spinner } from '../components/ui/Spinner'
 import { useCourses } from '../hooks/useCourses'
 import { useEnrollment } from '../hooks/useEnrollment'
 import type { CourseLevel } from '../types/course'
+
+function estimatedTime(lessonCount: number): string {
+  const minutes = lessonCount * 20
+  if (minutes < 60) return `~${minutes} min`
+  const hours = Math.round(minutes / 60)
+  return `~${hours} hr${hours !== 1 ? 's' : ''}`
+}
 
 function EnrollButton({ courseId }: { courseId: string }) {
   const { isEnrolled, loading, enroll } = useEnrollment(courseId)
@@ -46,6 +54,30 @@ function EnrollButton({ courseId }: { courseId: string }) {
 
 export function CoursesPage() {
   const { courses, loading, error } = useCourses()
+  const [search, setSearch] = useState('')
+  const [difficulty, setDifficulty] = useState<'all' | CourseLevel>('all')
+  const [sort, setSort] = useState<'newest' | 'az' | 'shortest'>('newest')
+
+  const filtered = useMemo(() => {
+    let result = [...courses]
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(
+        (c) => c.title.toLowerCase().includes(q) || (c.description ?? '').toLowerCase().includes(q),
+      )
+    }
+    if (difficulty !== 'all') result = result.filter((c) => c.level === difficulty)
+    if (sort === 'az') result.sort((a, b) => a.title.localeCompare(b.title))
+    else if (sort === 'shortest')
+      result.sort((a, b) => (a.lesson_count ?? 0) - (b.lesson_count ?? 0))
+    return result
+  }, [courses, search, difficulty, sort])
+
+  const clearFilters = () => {
+    setSearch('')
+    setDifficulty('all')
+    setSort('newest')
+  }
 
   if (loading) {
     return (
@@ -66,6 +98,50 @@ export function CoursesPage() {
 
       {error && <Alert variant="error">{error}</Alert>}
 
+      {/* Filter toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="w-full sm:w-64">
+          <Input
+            label="Search courses"
+            type="search"
+            placeholder="Search courses…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Difficulty pills */}
+        <div role="group" aria-label="Filter by difficulty" className="flex flex-wrap gap-2">
+          {(['all', 'beginner', 'intermediate', 'advanced'] as const).map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setDifficulty(d)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize transition-colors ${
+                difficulty === d
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {d === 'all' ? 'All levels' : d}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as 'newest' | 'az' | 'shortest')}
+          className="ml-auto rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700"
+          aria-label="Sort courses"
+        >
+          <option value="newest">Newest</option>
+          <option value="az">A–Z</option>
+          <option value="shortest">Shortest first</option>
+        </select>
+      </div>
+
       {!error && courses.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center">
           <p className="text-4xl">🌱</p>
@@ -82,7 +158,7 @@ export function CoursesPage() {
       )}
 
       <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {courses.map((course) => (
+        {filtered.map((course) => (
           <article
             className="card-hover flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
             key={course.id}
@@ -100,15 +176,29 @@ export function CoursesPage() {
                   {course.description}
                 </p>
               )}
+              <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
+                <span>{course.lesson_count ?? 0} lessons</span>
+                <span>·</span>
+                <span>{estimatedTime(course.lesson_count ?? 0)}</span>
+              </div>
               <div className="mt-4 flex items-center justify-between gap-2">
-                <span className="text-xs text-slate-400">
-                  {course.lesson_count ?? 0} lesson{course.lesson_count !== 1 ? 's' : ''}
-                </span>
                 <EnrollButton courseId={course.id} />
               </div>
             </div>
           </article>
         ))}
+
+        {filtered.length === 0 && !error && (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-slate-500">No courses match your filter.</p>
+            <button
+              onClick={clearFilters}
+              className="mt-2 text-sm font-semibold text-brand-700 hover:underline"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </section>
     </main>
   )

@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
 import { LessonViewer } from '../components/lesson/LessonViewer'
 import { useLesson, useLessons } from '../hooks/useLessons'
-import { useLessonProgress } from '../hooks/useProgress'
+import { useLessonProgress, useCourseProgress } from '../hooks/useProgress'
 import { useAuthStore } from '../store/authStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { racaFlags } from '../lib/raca/feature-flags'
@@ -14,6 +14,132 @@ import { MilestoneCelebration, checkMilestone } from '../components/learner/Mile
 import type { MilestoneType } from '../components/learner/MilestoneCelebration'
 import { useProfile } from '../hooks/useProfile'
 import { useTimeTracking } from '../hooks/useTimeTracking'
+import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
+import { notifyParents } from '../lib/milestoneNotifier'
+
+function LessonOutlineDrawer({
+  courseId,
+  currentLessonId,
+  open,
+  onClose,
+}: {
+  courseId: string | undefined
+  currentLessonId: string | undefined
+  open: boolean
+  onClose: () => void
+}) {
+  const { lessons } = useLessons(courseId)
+  const { progress: courseProgress } = useCourseProgress(courseId)
+  const drawerRef = useRef<HTMLDivElement>(null)
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
+  // Focus trap: focus first element when opening
+  useEffect(() => {
+    if (open) drawerRef.current?.focus()
+  }, [open])
+
+  if (!open) return null
+
+  const completed = courseProgress?.completed_lessons ?? 0
+  const total = courseProgress?.total_lessons ?? lessons.length
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      {/* Drawer */}
+      <div
+        ref={drawerRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Course outline"
+        className="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[90vw] flex-col bg-white shadow-2xl outline-none"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h2 className="text-sm font-bold text-slate-900">Course Outline</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close course outline"
+            className="rounded-md p-1 text-slate-400 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-brand-500"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Progress summary */}
+        <div className="border-b border-slate-100 px-4 py-3">
+          <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
+            <span>
+              {completed} of {total} lessons
+            </span>
+            <span>{pct}% complete</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+
+        {/* Lesson list */}
+        <ol className="flex-1 overflow-y-auto py-2">
+          {lessons.map((lesson, idx) => {
+            const isCurrent = lesson.id === currentLessonId
+            return (
+              <li key={lesson.id}>
+                <Link
+                  to={`/courses/${courseId}/lessons/${lesson.id}`}
+                  onClick={onClose}
+                  className={`flex items-start gap-3 px-4 py-3 text-sm transition-colors hover:bg-slate-50 ${
+                    isCurrent ? 'border-l-2 border-brand-500 bg-brand-50' : ''
+                  }`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                      isCurrent ? 'bg-brand-500 text-white' : 'bg-slate-200 text-slate-500'
+                    }`}
+                  >
+                    {isCurrent ? '▶' : idx + 1}
+                  </span>
+                  <span
+                    className={`leading-snug ${isCurrent ? 'font-semibold text-brand-700' : 'text-slate-700'}`}
+                  >
+                    {lesson.title}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+    </>
+  )
+}
 
 export function LessonPage() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
@@ -24,7 +150,9 @@ export function LessonPage() {
   const { profile, refetch: refetchProfile } = useProfile()
   const [completing, setCompleting] = useState(false)
   const [milestone, setMilestone] = useState<MilestoneType | null>(null)
+  const [outlineOpen, setOutlineOpen] = useState(false)
   const { getElapsedSeconds } = useTimeTracking()
+  const { state: adaptiveState } = useAdaptiveLearning(courseId)
 
   const { accessibility, updateAccessibility } = useSettingsStore()
   const isCompleted = progress?.status === 'completed'
@@ -55,7 +183,15 @@ export function LessonPage() {
       const streakDays = profile?.streak_days ?? 0
       const courseComplete = nextLesson === null
       const triggered = checkMilestone(newLessonsCompleted, streakDays, courseComplete)
-      if (triggered) setMilestone(triggered)
+      if (triggered) {
+        setMilestone(triggered)
+        if (user?.id) {
+          void notifyParents(user.id, triggered, {
+            lessonTitle: lesson?.title,
+            courseTitle: undefined,
+          })
+        }
+      }
     } catch (err) {
       setCompleteError(
         err instanceof Error ? err.message : 'Failed to save progress. Please try again.',
@@ -84,6 +220,27 @@ export function LessonPage() {
       {/* Sticky lesson header */}
       <div className="sticky top-0 z-10 -mx-0 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 py-3 shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-3">
+          {/* Outline toggle */}
+          <button
+            type="button"
+            onClick={() => setOutlineOpen(true)}
+            aria-label="Open course outline"
+            aria-expanded={outlineOpen}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-500"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+            <span className="hidden sm:inline">Outline</span>
+          </button>
+
           <Link
             className="flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800"
             to={`/courses/${courseId}`}
@@ -119,6 +276,16 @@ export function LessonPage() {
             </span>
           )}
         </div>
+
+        {/* Mastery pill */}
+        {adaptiveState?.mastery_score != null && (
+          <span
+            title="Your mastery score for this course — updates as you complete lessons."
+            className="hidden rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 sm:inline"
+          >
+            🎯 {adaptiveState.mastery_score}% mastery
+          </span>
+        )}
 
         {/* Accessibility quick-toggles */}
         <div className="flex items-center gap-1" role="group" aria-label="Accessibility options">
@@ -169,6 +336,57 @@ export function LessonPage() {
         </h1>
         {lesson?.description && (
           <p className="mt-2 text-base text-slate-500">{lesson.description}</p>
+        )}
+
+        {adaptiveState?.current_difficulty && adaptiveState.current_difficulty !== 'adaptive' && (
+          <span
+            title="This lesson's difficulty is calibrated based on your recent performance."
+            className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+              adaptiveState.current_difficulty === 'easy'
+                ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                : adaptiveState.current_difficulty === 'medium'
+                  ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
+                  : 'bg-purple-50 text-purple-700 ring-1 ring-purple-200'
+            }`}
+          >
+            Calibrated: {adaptiveState.current_difficulty}
+          </span>
+        )}
+
+        {lesson?.learning_objectives && lesson.learning_objectives.length > 0 && (
+          <details
+            className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 open:pb-4"
+            open
+          >
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-emerald-800 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2">
+                <span>By the end of this lesson you will be able to:</span>
+                <svg
+                  className="h-4 w-4 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </summary>
+            <ul className="mt-2 space-y-1.5 px-4" aria-label="Learning objectives for this lesson">
+              {lesson.learning_objectives.map((obj, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-emerald-900">
+                  <span
+                    className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-bold text-emerald-800"
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
+                  {obj}
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
       </div>
 
@@ -295,6 +513,13 @@ export function LessonPage() {
           )}
         </div>
       </nav>
+
+      <LessonOutlineDrawer
+        courseId={courseId}
+        currentLessonId={lessonId}
+        open={outlineOpen}
+        onClose={() => setOutlineOpen(false)}
+      />
 
       <SmartReminders />
 
