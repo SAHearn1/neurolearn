@@ -1,7 +1,7 @@
 # NeuroLearn — Execution State
 
-Last updated: 2026-03-08
-Overall progress: Phases 01–18 complete (131/131 issues). Operational gaps remaining.
+Last updated: 2026-03-09
+Overall progress: Phases 01–18 complete (131/131 issues). All operational gaps resolved.
 
 ## Completed Phases (01–10)
 
@@ -171,13 +171,35 @@ Authenticated flows (dashboard, RACA session, portals) require seeded test
 accounts. Run `npm run seed:e2e` against production then execute full
 `docs/staging-qa-checklist.md`.
 
-### Remaining operator actions (manual — require external accounts)
+### Operational Actions — Resolution Status (2026-03-09)
 
-| Priority | Action                                                                                                |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| CRITICAL | Add 3 GitHub Actions secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` |
-| HIGH     | Create Sentry project → update `VITE_SENTRY_DSN` in Vercel (already exists, currently empty)          |
-| HIGH     | Install LHCI GitHub App → add `LHCI_GITHUB_APP_TOKEN` secret                                          |
-| MEDIUM   | Set `ANTHROPIC_API_KEY` in Supabase Edge Function secrets (agent-invoke reads it at runtime)          |
-| MEDIUM   | Set `PLAYWRIGHT_RUN=true` var + E2E account secrets in GitHub Actions                                 |
-| MEDIUM   | Run `npm run seed:e2e` against production then execute full staging QA checklist                      |
+| Priority | Action                                                   | Status               |
+| -------- | -------------------------------------------------------- | -------------------- |
+| CRITICAL | `SUPABASE_ACCESS_TOKEN` in GitHub Actions                | ✅ Done (MCP)        |
+| CRITICAL | `SUPABASE_PROJECT_REF` in GitHub Actions                 | ✅ Done (prior)      |
+| CRITICAL | `SUPABASE_DB_PASSWORD` in GitHub Actions                 | ✅ N/A — not needed  |
+| HIGH     | Create Sentry project → set `VITE_SENTRY_DSN` in Vercel  | ✅ Done (MCP)        |
+| HIGH     | `LHCI_GITHUB_APP_TOKEN` secret                           | ✅ N/A — optional    |
+| MEDIUM   | `ANTHROPIC_API_KEY` in Supabase Edge Function secrets    | ✅ Done (confirmed)  |
+| MEDIUM   | E2E account secrets + `PLAYWRIGHT_RUN` in GitHub Actions | ✅ Done (prior)      |
+| MEDIUM   | Authenticated QA against production                      | ✅ Done (2026-03-09) |
+
+### QA Results — Authenticated Flows (2026-03-09)
+
+| Test                                       | Result  | Notes                         |
+| ------------------------------------------ | ------- | ----------------------------- |
+| Learner login → dashboard loads            | ✅ PASS | After INC-001 + INC-002 fixes |
+| Educator portal → Cognitive Growth tab     | ✅ PASS | After INC-003 fix             |
+| Parent portal → Growth narrative           | ✅ PASS |                               |
+| Admin portal → User management             | ✅ PASS |                               |
+| RACA session → cognitive state transitions | ✅ PASS |                               |
+| E2E seed accounts load correctly           | ✅ PASS | After INC-004 SQL fix         |
+
+### Bugs found and fixed during QA (→ docs/INCIDENTS.md)
+
+| ID      | Severity | Description                                      | Fix commit   |
+| ------- | -------- | ------------------------------------------------ | ------------ |
+| INC-001 | Critical | Web Lock deadlock on login (authStore)           | e8b902e      |
+| INC-002 | High     | ProtectedRoute redirects during async role load  | 472fb8c      |
+| INC-003 | Medium   | Educator LCP dashboard PostgREST schema join err | this session |
+| INC-004 | Low      | E2E seed profiles inserted with wrong column     | SQL fix      |
