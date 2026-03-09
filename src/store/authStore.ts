@@ -10,6 +10,8 @@ interface AuthState {
   role: UserRole | null
   loading: boolean
   initialized: boolean
+  /** True while the deferred loadRole fetch is in-flight after auth state change. */
+  roleLoading: boolean
   pendingEmailConfirmation: boolean
   signIn: (email: string, password: string) => Promise<void>
   /** Returns the active Session when the user is immediately confirmed,
@@ -42,26 +44,27 @@ async function loadRole(userId: string): Promise<UserRole | null> {
 supabase.auth.onAuthStateChange((_event, session) => {
   const currentState = useAuthStore.getState()
 
+  const needsHydration =
+    !!session?.user && (!currentState.role || currentState.user?.id !== session.user.id)
+
   // Set core auth state immediately — unblocks the initialized gate.
   useAuthStore.setState({
     user: session?.user ?? null,
     session,
     role: session ? currentState.role : null,
     initialized: true,
+    roleLoading: needsHydration,
     pendingEmailConfirmation: false,
   })
 
   // Defer role hydration outside the Web Lock context.
-  if (session?.user) {
-    const userId = session.user.id
-    const needsHydration = !currentState.role || currentState.user?.id !== userId
-    if (needsHydration) {
-      setTimeout(() => {
-        loadRole(userId).then((role) => {
-          useAuthStore.setState({ role })
-        })
-      }, 0)
-    }
+  if (needsHydration) {
+    const userId = session!.user.id
+    setTimeout(() => {
+      loadRole(userId).then((role) => {
+        useAuthStore.setState({ role, roleLoading: false })
+      })
+    }, 0)
   }
 })
 
@@ -71,6 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   role: null,
   loading: false,
   initialized: false,
+  roleLoading: false,
   pendingEmailConfirmation: false,
 
   signIn: async (email, password) => {

@@ -17,9 +17,9 @@ function isRoleAllowed(role: UserRole | null, requiredRole?: UserRole | UserRole
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { session, initialized, loading, role } = useAuthStore()
+  const { session, initialized, loading, roleLoading, role } = useAuthStore()
   const navigate = useNavigate()
-  const isLoading = !initialized || loading
+  const isLoading = !initialized || loading || roleLoading
   const hasAccess = isRoleAllowed(role, requiredRole)
 
   useEffect(() => {
