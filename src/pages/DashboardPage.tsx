@@ -132,7 +132,13 @@ export function DashboardPage() {
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourse?.id)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
   const { showOnboarding, completeOnboarding } = useOnboarding()
-  const { racaStreakDays } = useRacaStreak()
+  const {
+    racaStreakDays,
+    totalRacaSessions,
+    reviseSessions,
+    defendSessions,
+    hasDeepThinkerSession,
+  } = useRacaStreak()
 
   const displayName = profile?.display_name ?? 'learner'
   const streakDays = profile?.streak_days ?? 0
@@ -236,7 +242,17 @@ export function DashboardPage() {
           aria-label="Achievements"
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"
         >
-          <BadgeShelf lessonsCompleted={lessonsCompleted} streakDays={streakDays} />
+          <BadgeShelf
+            lessonsCompleted={lessonsCompleted}
+            streakDays={streakDays}
+            session={{
+              totalRacaSessions,
+              reviseSessions,
+              defendSessions,
+              hasDeepThinkerSession,
+              deepWorkStreakDays: racaStreakDays,
+            }}
+          />
         </section>
 
         {/* Adaptive recommendation */}

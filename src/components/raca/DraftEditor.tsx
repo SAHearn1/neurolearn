@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
+import { VoiceInputButton } from '../ui/VoiceInputButton'
 
 interface Props {
   initialContent?: string
@@ -28,7 +29,12 @@ export function DraftEditor({
         placeholder={placeholder}
       />
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500">{wordCount} words</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">{wordCount} words</span>
+          <VoiceInputButton
+            onTranscript={(t) => setContent((prev) => (prev.trim() ? `${prev} ${t}` : t))}
+          />
+        </div>
         <Button onClick={() => onSave(content)} disabled={wordCount < 5}>
           Save draft
         </Button>

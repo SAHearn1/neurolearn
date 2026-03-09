@@ -5,6 +5,12 @@ import { useAuthStore } from '../store/authStore'
 interface UseRacaStreakResult {
   racaStreakDays: number
   totalRacaSessions: number
+  /** Sessions where the learner reached the REVISE state */
+  reviseSessions: number
+  /** Sessions where the learner reached the DEFEND state */
+  defendSessions: number
+  /** True if any session has a TRACE overall score ≥ 7 */
+  hasDeepThinkerSession: boolean
   loading: boolean
 }
 
@@ -40,11 +46,15 @@ function computeStreak(dates: string[]): number {
 /**
  * Computes the learner's consecutive RACA deep-work session streak (separate from lesson streak).
  * A streak day = any day with at least one completed cognitive_session.
+ * Also returns badge metrics: revise/defend session counts and deep thinker status.
  */
 export function useRacaStreak(): UseRacaStreakResult {
   const user = useAuthStore((s) => s.user)
   const [racaStreakDays, setRacaStreakDays] = useState(0)
   const [totalRacaSessions, setTotalRacaSessions] = useState(0)
+  const [reviseSessions, setReviseSessions] = useState(0)
+  const [defendSessions, setDefendSessions] = useState(0)
+  const [hasDeepThinkerSession, setHasDeepThinkerSession] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -55,23 +65,48 @@ export function useRacaStreak(): UseRacaStreakResult {
     const run = async () => {
       setLoading(true)
 
-      const { data } = await supabase
+      // Fetch completed sessions with state_history for badge metrics
+      const { data: sessionsData } = await supabase
         .from('cognitive_sessions')
-        .select('started_at')
+        .select('started_at, state_history')
         .eq('user_id', user.id)
         .eq('status', 'completed')
         .order('started_at', { ascending: false })
-        .limit(365) // enough for a full year streak
+        .limit(365)
+
+      // Fetch epistemic profile for Deep Thinker badge
+      const { data: profileData } = await supabase
+        .from('epistemic_profiles')
+        .select('trace_averages')
+        .eq('user_id', user.id)
+        .maybeSingle()
 
       if (cancelled) return
 
-      const sessions = data ?? []
+      const sessions = (sessionsData ?? []) as Array<{
+        started_at: string
+        state_history: string[]
+      }>
+
       setTotalRacaSessions(sessions.length)
 
-      // Unique days, descending
-      const uniqueDates = [
-        ...new Set(sessions.map((s: { started_at: string }) => s.started_at.slice(0, 10))),
-      ] as string[]
+      // Count sessions where learner reached REVISE or DEFEND
+      let revise = 0
+      let defend = 0
+      for (const s of sessions) {
+        const hist = s.state_history ?? []
+        if (hist.includes('REVISE')) revise++
+        if (hist.includes('DEFEND')) defend++
+      }
+      setReviseSessions(revise)
+      setDefendSessions(defend)
+
+      // Deep Thinker: TRACE overall average ≥ 7
+      const traceAverages = (profileData?.trace_averages ?? {}) as { overall?: number }
+      setHasDeepThinkerSession((traceAverages.overall ?? 0) >= 7)
+
+      // Unique days, descending for streak calculation
+      const uniqueDates = [...new Set(sessions.map((s) => s.started_at.slice(0, 10)))] as string[]
 
       setRacaStreakDays(computeStreak(uniqueDates))
       setLoading(false)
@@ -83,5 +118,12 @@ export function useRacaStreak(): UseRacaStreakResult {
     }
   }, [user?.id])
 
-  return { racaStreakDays, totalRacaSessions, loading }
+  return {
+    racaStreakDays,
+    totalRacaSessions,
+    reviseSessions,
+    defendSessions,
+    hasDeepThinkerSession,
+    loading,
+  }
 }

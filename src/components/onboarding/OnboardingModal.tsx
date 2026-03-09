@@ -206,42 +206,58 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
           {/* Step 4 — RACA intro */}
           {step === 4 && (
             <div>
-              <h2 className="mb-3 text-xl font-bold text-slate-900">
-                How deep learning works here
+              <h2 className="mb-2 text-xl font-bold text-slate-900">
+                How your deep learning sessions work
               </h2>
-              <div className="space-y-3 text-sm text-slate-700">
-                <div className="flex gap-3 rounded-xl bg-slate-50 p-3">
-                  <span className="text-lg">🌀</span>
-                  <div>
-                    <p className="font-semibold">9-stage learning sessions</p>
-                    <p className="text-slate-500">
-                      Each session guides you through grounding, planning, drafting, revising, and
-                      defending your ideas.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3 rounded-xl bg-slate-50 p-3">
-                  <span className="text-lg">🤖</span>
-                  <div>
-                    <p className="font-semibold">AI coaches you, doesn't do the work</p>
-                    <p className="text-slate-500">
-                      An AI tutor asks questions and gives feedback — but your thinking always comes
-                      first.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3 rounded-xl bg-slate-50 p-3">
-                  <span className="text-lg">📊</span>
-                  <div>
-                    <p className="font-semibold">TRACE fluency scores your growth</p>
-                    <p className="text-slate-500">
-                      Six dimensions measure how you think, reason, articulate, self-correct,
-                      connect ideas, and consider ethical dimensions — these are growth signals, not
-                      grades.
-                    </p>
-                  </div>
-                </div>
+              <p className="mb-4 text-sm text-slate-500">
+                You think. The AI scaffolds. Your reasoning stays yours — always.
+              </p>
+
+              {/* 9-state learning path */}
+              <div className="mb-4 rounded-xl border border-brand-100 bg-brand-50 p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-brand-700">
+                  Your learning path
+                </p>
+                <ol className="space-y-1 text-xs text-slate-700">
+                  {[
+                    'Ground yourself',
+                    'Check in',
+                    'Frame your question',
+                    'Plan your approach',
+                    'Build your draft',
+                    'Revise and deepen',
+                    'Defend your reasoning',
+                    'Reconnect and reflect',
+                    'Archive your learning',
+                  ].map((label, i) => (
+                    <li key={label} className="flex items-center gap-2">
+                      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-brand-200 text-[10px] font-bold text-brand-800">
+                        {i + 1}
+                      </span>
+                      {label}
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-2 text-xs text-slate-500 italic">
+                  You move forward when you're ready — there's no timer.
+                </p>
               </div>
+
+              {/* AI helpers */}
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Your AI helpers
+                </p>
+                <p className="text-xs text-slate-600">
+                  Specialist agents help you think at each stage — they ask you questions and
+                  challenge your ideas. None of them will do the work for you. That&apos;s the
+                  design.
+                </p>
+                <p className="mt-2 text-xs text-slate-500 italic">
+                  If you get stuck, you can always ask for a nudge — not an answer.
+                </p>
+              </div>
+
               <div className="mt-6 flex gap-3">
                 <Button variant="secondary" onClick={() => setStep(3)} className="flex-1">
                   Back

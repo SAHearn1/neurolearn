@@ -2,8 +2,7 @@ import { totalXP, LEVELS } from '../../lib/xp'
 
 /**
  * Badge definitions — tied to observable learner behaviors, not AI output.
- * Future badges will reward TRACE cycle completions and revision depth
- * (once RACA session artifacts are surfaced to the profile).
+ * Includes session-based RACA badges (REQ-18-01) and deep-work streak badges (REQ-18-08).
  */
 interface BadgeDef {
   id: string
@@ -14,9 +13,28 @@ interface BadgeDef {
   category: 'journey' | 'streak' | 'depth' | 'mastery'
 }
 
-function buildBadges(lessonsCompleted: number, streakDays: number): BadgeDef[] {
+interface SessionBadgeData {
+  totalRacaSessions: number
+  reviseSessions: number
+  defendSessions: number
+  hasDeepThinkerSession: boolean
+  deepWorkStreakDays: number
+}
+
+function buildBadges(
+  lessonsCompleted: number,
+  streakDays: number,
+  session: SessionBadgeData = {
+    totalRacaSessions: 0,
+    reviseSessions: 0,
+    defendSessions: 0,
+    hasDeepThinkerSession: false,
+    deepWorkStreakDays: 0,
+  },
+): BadgeDef[] {
   const xp = totalXP(lessonsCompleted, streakDays)
   return [
+    // ── Journey ─────────────────────────────────────────────────────
     {
       id: 'first-step',
       emoji: '🌱',
@@ -25,6 +43,31 @@ function buildBadges(lessonsCompleted: number, streakDays: number): BadgeDef[] {
       earned: lessonsCompleted >= 1,
       category: 'journey',
     },
+    {
+      id: 'bookworm',
+      emoji: '📚',
+      title: 'Bookworm',
+      description: 'Complete 10 lessons',
+      earned: lessonsCompleted >= 10,
+      category: 'journey',
+    },
+    {
+      id: 'scholar',
+      emoji: '🎓',
+      title: 'Scholar',
+      description: 'Complete 50 lessons',
+      earned: lessonsCompleted >= 50,
+      category: 'mastery',
+    },
+    {
+      id: 'centurion',
+      emoji: '💯',
+      title: 'Centurion',
+      description: 'Complete 100 lessons',
+      earned: lessonsCompleted >= 100,
+      category: 'mastery',
+    },
+    // ── Lesson streak ────────────────────────────────────────────────
     {
       id: 'on-fire',
       emoji: '🔥',
@@ -42,30 +85,6 @@ function buildBadges(lessonsCompleted: number, streakDays: number): BadgeDef[] {
       category: 'streak',
     },
     {
-      id: 'bookworm',
-      emoji: '📚',
-      title: 'Bookworm',
-      description: 'Complete 10 lessons',
-      earned: lessonsCompleted >= 10,
-      category: 'journey',
-    },
-    {
-      id: 'deep-thinker',
-      emoji: '🧠',
-      title: 'Deep Thinker',
-      description: 'Complete 25 lessons',
-      earned: lessonsCompleted >= 25,
-      category: 'depth',
-    },
-    {
-      id: 'scholar',
-      emoji: '🎓',
-      title: 'Scholar',
-      description: 'Complete 50 lessons',
-      earned: lessonsCompleted >= 50,
-      category: 'mastery',
-    },
-    {
       id: 'fire-keeper',
       emoji: '🏆',
       title: 'Champion',
@@ -73,14 +92,57 @@ function buildBadges(lessonsCompleted: number, streakDays: number): BadgeDef[] {
       earned: streakDays >= 30,
       category: 'streak',
     },
+    // ── Deep work streak — REQ-18-08 ─────────────────────────────────
     {
-      id: 'centurion',
-      emoji: '💯',
-      title: 'Centurion',
-      description: 'Complete 100 lessons',
-      earned: lessonsCompleted >= 100,
-      category: 'mastery',
+      id: 'first-deep-day',
+      emoji: '🧠',
+      title: 'First Deep Day',
+      description: 'Complete any RACA deep learning session',
+      earned: session.totalRacaSessions >= 1,
+      category: 'depth',
     },
+    {
+      id: 'deep-streak-3',
+      emoji: '🌊',
+      title: '3-Day Deep Streak',
+      description: '3 consecutive days with deep work sessions',
+      earned: session.deepWorkStreakDays >= 3,
+      category: 'depth',
+    },
+    {
+      id: 'deep-streak-7',
+      emoji: '🌟',
+      title: 'Week of Deep Work',
+      description: '7 consecutive days with deep work sessions',
+      earned: session.deepWorkStreakDays >= 7,
+      category: 'depth',
+    },
+    // ── RACA session depth — REQ-18-01 ───────────────────────────────
+    {
+      id: 'revisionist',
+      emoji: '✍️',
+      title: 'Revisionist',
+      description: 'Revise your work in 3 sessions',
+      earned: session.reviseSessions >= 3,
+      category: 'depth',
+    },
+    {
+      id: 'defender',
+      emoji: '⚔️',
+      title: 'Defender',
+      description: 'Complete the DEFEND state 5 times',
+      earned: session.defendSessions >= 5,
+      category: 'depth',
+    },
+    {
+      id: 'deep-thinker-trace',
+      emoji: '💡',
+      title: 'Deep Thinker',
+      description: 'Achieve a TRACE score of 7 or above in a session',
+      earned: session.hasDeepThinkerSession,
+      category: 'depth',
+    },
+    // ── Mastery ──────────────────────────────────────────────────────
     {
       id: 'legend',
       emoji: '🚀',
@@ -95,10 +157,11 @@ function buildBadges(lessonsCompleted: number, streakDays: number): BadgeDef[] {
 interface BadgeShelfProps {
   lessonsCompleted: number
   streakDays: number
+  session?: SessionBadgeData
 }
 
-export function BadgeShelf({ lessonsCompleted, streakDays }: BadgeShelfProps) {
-  const badges = buildBadges(lessonsCompleted, streakDays)
+export function BadgeShelf({ lessonsCompleted, streakDays, session }: BadgeShelfProps) {
+  const badges = buildBadges(lessonsCompleted, streakDays, session)
   const earned = badges.filter((b) => b.earned)
   const locked = badges.filter((b) => !b.earned)
   const all = [...earned, ...locked]

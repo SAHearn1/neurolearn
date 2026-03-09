@@ -23,6 +23,190 @@ const RACA_PHASES = [
   'ARCHIVE',
 ] as const
 
+const TRACE_DIMENSIONS = [
+  { key: 'think', label: 'Think' },
+  { key: 'reason', label: 'Reason' },
+  { key: 'articulate', label: 'Articulate' },
+  { key: 'check', label: 'Check' },
+  { key: 'extend', label: 'Extend' },
+  { key: 'ethical', label: 'Ethical' },
+] as const
+
+type TraceDimKey = (typeof TRACE_DIMENSIONS)[number]['key']
+
+type SessionDepth = 'introductory' | 'developing' | 'advanced'
+
+interface RacaConfig {
+  target_dims: TraceDimKey[]
+  defend_prompt: string
+  position_seed: string
+  session_depth: SessionDepth | ''
+  artifact_criteria: string
+}
+
+const EMPTY_RACA_CONFIG: RacaConfig = {
+  target_dims: [],
+  defend_prompt: '',
+  position_seed: '',
+  session_depth: '',
+  artifact_criteria: '',
+}
+
+/** Reusable Cognitive Design sub-form for lesson create/edit */
+function CognitiveDesignFields({
+  config,
+  onChange,
+}: {
+  config: RacaConfig
+  onChange: (c: RacaConfig) => void
+}) {
+  const toggleDim = (key: TraceDimKey) => {
+    const dims = config.target_dims.includes(key)
+      ? config.target_dims.filter((d) => d !== key)
+      : [...config.target_dims, key]
+    onChange({ ...config, target_dims: dims })
+  }
+
+  return (
+    <details className="rounded-xl border border-slate-200">
+      <summary className="cursor-pointer rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+        Cognitive Design (optional)
+      </summary>
+      <div className="space-y-4 border-t border-slate-100 px-4 pb-4 pt-3">
+        {/* Target TRACE dimensions */}
+        <div>
+          <p className="mb-1.5 text-xs font-semibold text-slate-600">
+            Target TRACE dimensions
+            <span className="ml-1 font-normal text-slate-400">
+              — Which thinking skills does this lesson develop?
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {TRACE_DIMENSIONS.map(({ key, label }) => {
+              const on = config.target_dims.includes(key)
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleDim(key)}
+                  className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
+                    on
+                      ? 'border-brand-400 bg-brand-50 text-brand-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* DEFEND prompt */}
+        <div>
+          <label
+            htmlFor="raca-defend-prompt"
+            className="block text-xs font-semibold text-slate-600"
+          >
+            DEFEND prompt
+            <span className="ml-1 font-normal text-slate-400">
+              — Question learners must defend in the DEFEND state
+            </span>
+          </label>
+          <textarea
+            id="raca-defend-prompt"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+            rows={2}
+            placeholder="e.g. Explain in your own words why photosynthesis is essential for life on Earth"
+            value={config.defend_prompt}
+            onChange={(e) => onChange({ ...config, defend_prompt: e.target.value })}
+          />
+        </div>
+
+        {/* POSITION seed */}
+        <div>
+          <label
+            htmlFor="raca-position-seed"
+            className="block text-xs font-semibold text-slate-600"
+          >
+            POSITION seed
+            <span className="ml-1 font-normal text-slate-400">
+              — Framing question shown at the start of POSITION state (optional)
+            </span>
+          </label>
+          <textarea
+            id="raca-position-seed"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+            rows={2}
+            placeholder="e.g. What do you already know or believe about this topic?"
+            value={config.position_seed}
+            onChange={(e) => onChange({ ...config, position_seed: e.target.value })}
+          />
+        </div>
+
+        {/* Session depth */}
+        <div>
+          <label
+            htmlFor="raca-session-depth"
+            className="block text-xs font-semibold text-slate-600"
+          >
+            Session depth
+          </label>
+          <select
+            id="raca-session-depth"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+            value={config.session_depth}
+            onChange={(e) =>
+              onChange({ ...config, session_depth: e.target.value as SessionDepth | '' })
+            }
+          >
+            <option value="">Select depth…</option>
+            <option value="introductory">Introductory</option>
+            <option value="developing">Developing</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+
+        {/* Artifact criteria */}
+        <div>
+          <label
+            htmlFor="raca-artifact-criteria"
+            className="block text-xs font-semibold text-slate-600"
+          >
+            Artifact criteria
+            <span className="ml-1 font-normal text-slate-400">
+              — What does a strong artifact look like? (educator reference only, not shown to
+              learners)
+            </span>
+          </label>
+          <textarea
+            id="raca-artifact-criteria"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-brand-500 focus:ring"
+            rows={3}
+            placeholder="e.g. A strong response will include a clear definition, one real-world example, and an explanation of cause-and-effect."
+            value={config.artifact_criteria}
+            onChange={(e) => onChange({ ...config, artifact_criteria: e.target.value })}
+          />
+        </div>
+      </div>
+    </details>
+  )
+}
+
+/** Returns null when the config contains no meaningful data (avoid storing empty JSONB) */
+function buildRacaConfigPayload(config: RacaConfig): RacaConfig | null {
+  if (
+    config.target_dims.length > 0 ||
+    config.defend_prompt ||
+    config.position_seed ||
+    config.session_depth ||
+    config.artifact_criteria
+  ) {
+    return config
+  }
+  return null
+}
+
 export function ContentManager() {
   const [tab, setTab] = useState<ContentTab>('courses')
   const [courses, setCourses] = useState<Course[]>([])
@@ -42,12 +226,14 @@ export function ContentManager() {
   const [lessonDesc, setLessonDesc] = useState('')
   const [lessonContent, setLessonContent] = useState('')
   const [lessonRacaPhase, setLessonRacaPhase] = useState('')
+  const [lessonRacaConfig, setLessonRacaConfig] = useState<RacaConfig>(EMPTY_RACA_CONFIG)
 
   // Lesson edit state
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
   const [editRacaPhase, setEditRacaPhase] = useState('')
+  const [editRacaConfig, setEditRacaConfig] = useState<RacaConfig>(EMPTY_RACA_CONFIG)
 
   const fetchCourses = useCallback(async () => {
     setLoading(true)
@@ -137,6 +323,7 @@ export function ContentManager() {
     setError(null)
     try {
       const nextOrder = lessons.length + 1
+      const racaConfigPayload = buildRacaConfigPayload(lessonRacaConfig)
       const { error: err } = await supabase.from('lessons').insert({
         course_id: selectedCourseId,
         title: lessonTitle.trim(),
@@ -147,6 +334,7 @@ export function ContentManager() {
         type: 'text',
         duration_minutes: 15,
         raca_phase: lessonRacaPhase || null,
+        raca_config: racaConfigPayload,
       })
 
       if (err) throw err
@@ -154,6 +342,7 @@ export function ContentManager() {
       setLessonDesc('')
       setLessonContent('')
       setLessonRacaPhase('')
+      setLessonRacaConfig(EMPTY_RACA_CONFIG)
       setShowLessonForm(false)
       await fetchLessons(selectedCourseId)
     } catch (e) {
@@ -165,6 +354,7 @@ export function ContentManager() {
     lessonDesc,
     lessonContent,
     lessonRacaPhase,
+    lessonRacaConfig,
     lessons.length,
     fetchLessons,
   ])
@@ -173,12 +363,14 @@ export function ContentManager() {
     if (!editingLessonId || !editTitle.trim() || !selectedCourseId) return
     setError(null)
     try {
+      const racaConfigPayload = buildRacaConfigPayload(editRacaConfig)
       const { error: err } = await supabase
         .from('lessons')
         .update({
           title: editTitle.trim(),
           content: editContent.trim() || null,
           raca_phase: editRacaPhase || null,
+          raca_config: racaConfigPayload,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editingLessonId)
@@ -188,11 +380,20 @@ export function ContentManager() {
       setEditTitle('')
       setEditContent('')
       setEditRacaPhase('')
+      setEditRacaConfig(EMPTY_RACA_CONFIG)
       await fetchLessons(selectedCourseId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update lesson')
     }
-  }, [editingLessonId, editTitle, editContent, editRacaPhase, selectedCourseId, fetchLessons])
+  }, [
+    editingLessonId,
+    editTitle,
+    editContent,
+    editRacaPhase,
+    editRacaConfig,
+    selectedCourseId,
+    fetchLessons,
+  ])
 
   const publishLesson = useCallback(
     async (lessonId: string, status: 'published' | 'draft' | 'archived') => {
@@ -363,6 +564,10 @@ export function ContentManager() {
                         ))}
                       </select>
                     </label>
+                    <CognitiveDesignFields
+                      config={lessonRacaConfig}
+                      onChange={setLessonRacaConfig}
+                    />
                     <Button onClick={createLesson} disabled={!lessonTitle.trim()}>
                       Create Lesson
                     </Button>
@@ -407,6 +612,7 @@ export function ContentManager() {
                           ))}
                         </select>
                       </label>
+                      <CognitiveDesignFields config={editRacaConfig} onChange={setEditRacaConfig} />
                       <div className="flex gap-2">
                         <Button onClick={saveEditLesson} disabled={!editTitle.trim()}>
                           Save
@@ -417,6 +623,7 @@ export function ContentManager() {
                             setEditingLessonId(null)
                             setEditTitle('')
                             setEditContent('')
+                            setEditRacaConfig(EMPTY_RACA_CONFIG)
                           }}
                         >
                           Cancel
@@ -448,6 +655,8 @@ export function ContentManager() {
                             setEditTitle(lesson.title)
                             setEditContent(lesson.content ?? '')
                             setEditRacaPhase(lesson.raca_phase ?? '')
+                            const rc = (lesson as { raca_config?: RacaConfig | null }).raca_config
+                            setEditRacaConfig(rc ?? EMPTY_RACA_CONFIG)
                           }}
                         >
                           Edit

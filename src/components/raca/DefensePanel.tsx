@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
+import { VoiceInputButton } from '../ui/VoiceInputButton'
 import type { AgentResponse } from '../../lib/raca/types/agents'
 
 interface Props {
@@ -33,7 +34,12 @@ export function DefensePanel({ agentQuestions, onSubmitDefense }: Props) {
           placeholder="Explain why you made the choices you did..."
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500">{wordCount} words</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">{wordCount} words</span>
+            <VoiceInputButton
+              onTranscript={(t) => setResponse((prev) => (prev.trim() ? `${prev} ${t}` : t))}
+            />
+          </div>
           <Button
             onClick={() => {
               onSubmitDefense(response)
