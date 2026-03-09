@@ -144,11 +144,32 @@ GitHub issues #211–#226 created and closed. See `.planning/GAP_ANALYSIS.md` fo
 
 ### Executed via MCP tools
 
-| Action                                             | Tool         | Status  |
-| -------------------------------------------------- | ------------ | ------- |
-| Apply migrations 030–034 to production             | Supabase MCP | ✅ Done |
-| Set 8 RACA flags + AI vars in Vercel production    | Vercel MCP   | ✅ Done |
-| Set `VITE_SENTRY_ENVIRONMENT=production` in Vercel | Vercel MCP   | ✅ Done |
+| Action                                                          | Tool         | Status  |
+| --------------------------------------------------------------- | ------------ | ------- |
+| Apply migrations 030–034 to production                          | Supabase MCP | ✅ Done |
+| Set 8 RACA flags + AI vars in Vercel production                 | Vercel MCP   | ✅ Done |
+| Set `VITE_SENTRY_ENVIRONMENT=production` in Vercel              | Vercel MCP   | ✅ Done |
+| Deploy `epistemic-analyze` edge function (v1)                   | Supabase MCP | ✅ Done |
+| Push ops commits → new Vercel build with RACA flags compiled    | git push     | ✅ Done |
+| Production deploy PROMOTED (`dpl_EDopsA6LD5KsRQHRQV9Sfy1y9ZGN`) | Vercel       | ✅ Done |
+| Partial QA of production (unauthenticated flows)                | Playwright   | ✅ Done |
+
+### QA Results — Unauthenticated Flows (2026-03-09)
+
+| Test                                         | Result  |
+| -------------------------------------------- | ------- |
+| Homepage loads, skip link present            | ✅ PASS |
+| Signup: all fields, role selector            | ✅ PASS |
+| Age gate enforced (blocked without checkbox) | ✅ PASS |
+| Login: invalid credentials error shown       | ✅ PASS |
+| `/dashboard` unauthenticated → `/login`      | ✅ PASS |
+| `/courses` unauthenticated → `/login`        | ✅ PASS |
+| Password reset: confirmation screen          | ✅ PASS |
+| 404 page renders                             | ✅ PASS |
+
+Authenticated flows (dashboard, RACA session, portals) require seeded test
+accounts. Run `npm run seed:e2e` against production then execute full
+`docs/staging-qa-checklist.md`.
 
 ### Remaining operator actions (manual — require external accounts)
 
@@ -157,6 +178,6 @@ GitHub issues #211–#226 created and closed. See `.planning/GAP_ANALYSIS.md` fo
 | CRITICAL | Add 3 GitHub Actions secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` |
 | HIGH     | Create Sentry project → update `VITE_SENTRY_DSN` in Vercel (already exists, currently empty)          |
 | HIGH     | Install LHCI GitHub App → add `LHCI_GITHUB_APP_TOKEN` secret                                          |
-| MEDIUM   | Set `ANTHROPIC_API_KEY` + `RACA_AI_PROVIDER` + `RACA_AI_MODEL` in Supabase Edge Function secrets      |
+| MEDIUM   | Set `ANTHROPIC_API_KEY` in Supabase Edge Function secrets (agent-invoke reads it at runtime)          |
 | MEDIUM   | Set `PLAYWRIGHT_RUN=true` var + E2E account secrets in GitHub Actions                                 |
-| MEDIUM   | Execute `docs/staging-qa-checklist.md` against staging before production promotion                    |
+| MEDIUM   | Run `npm run seed:e2e` against production then execute full staging QA checklist                      |
