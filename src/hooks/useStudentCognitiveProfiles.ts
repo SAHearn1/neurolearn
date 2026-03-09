@@ -36,13 +36,10 @@ export function useStudentCognitiveProfiles(): UseStudentCognitiveProfilesResult
       setLoading(true)
       setError(null)
 
-      // Step 1: get linked student IDs + display names
+      // Step 1: get linked student IDs
       const { data: links, error: linksErr } = await supabase
         .from('educator_student_links')
-        .select(
-          `student_id,
-           student:profiles!educator_student_links_student_id_fkey(display_name, avatar_url)`,
-        )
+        .select('student_id')
         .eq('educator_id', user.id)
 
       if (cancelled) return
@@ -52,19 +49,36 @@ export function useStudentCognitiveProfiles(): UseStudentCognitiveProfilesResult
         return
       }
 
-      // Supabase returns the joined profile as an array even for FK-to-one joins
-      const rows = (links ?? []) as Array<{
-        student_id: string
-        student: Array<{ display_name: string | null; avatar_url: string | null }> | null
-      }>
+      const studentIds = (links ?? []).map((r: { student_id: string }) => r.student_id)
 
-      if (rows.length === 0) {
+      if (studentIds.length === 0) {
         setStudents([])
         setLoading(false)
         return
       }
 
-      const studentIds = rows.map((r) => r.student_id)
+      // Step 1b: fetch display names from profiles using user_id
+      const { data: profileRows, error: profileRowsErr } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', studentIds)
+
+      if (cancelled) return
+      if (profileRowsErr) {
+        setError(profileRowsErr.message)
+        setLoading(false)
+        return
+      }
+
+      const displayNameMap = new Map(
+        (
+          (profileRows ?? []) as Array<{
+            user_id: string
+            display_name: string | null
+            avatar_url: string | null
+          }>
+        ).map((p) => [p.user_id, p]),
+      )
 
       // Step 2: fetch their epistemic profiles (educator read policy allows this)
       const { data: profiles, error: profilesErr } = await supabase
@@ -84,11 +98,11 @@ export function useStudentCognitiveProfiles(): UseStudentCognitiveProfilesResult
       )
 
       setStudents(
-        rows.map((r) => ({
-          student_id: r.student_id,
-          display_name: r.student?.[0]?.display_name ?? null,
-          avatar_url: r.student?.[0]?.avatar_url ?? null,
-          profile: profileMap.get(r.student_id) ?? null,
+        studentIds.map((id) => ({
+          student_id: id,
+          display_name: displayNameMap.get(id)?.display_name ?? null,
+          avatar_url: displayNameMap.get(id)?.avatar_url ?? null,
+          profile: profileMap.get(id) ?? null,
         })),
       )
       setLoading(false)

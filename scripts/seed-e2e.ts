@@ -92,12 +92,13 @@ async function seedUsers(): Promise<Record<string, string>> {
     const userId = data.user.id
     userIds[account.role] = userId
 
-    // Upsert profile
-    await supabase.from('profiles').upsert({
-      id: userId,
-      display_name: account.displayName,
-      role: account.role,
-    })
+    // Upsert profile (profiles table uses user_id as the auth FK, not id)
+    await supabase
+      .from('profiles')
+      .upsert(
+        { user_id: userId, display_name: account.displayName, role: account.role },
+        { onConflict: 'user_id' },
+      )
 
     console.log(`  + Created ${account.role}: ${account.email} (${userId})`)
   }
