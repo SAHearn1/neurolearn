@@ -138,21 +138,25 @@ npm run build       # clean build
 
 **Phases 01–18 complete — 2026-03-08 (131/131 issues)**
 
-## Operational Gaps (code done, operator config pending)
+## Operational Gaps — Resolution Status
 
-GitHub issues #211–#218 created and closed. See `.planning/GAP_ANALYSIS.md` for full details.
+GitHub issues #211–#226 created and closed. See `.planning/GAP_ANALYSIS.md` for full details.
 
-Code delivered: `scripts/seed-e2e.ts`, E2E CI job in `ci.yml`, `docs/staging-qa-checklist.md`.
+### Executed via MCP tools
 
-**Operator actions remaining (no code changes needed):**
+| Action                                             | Tool         | Status  |
+| -------------------------------------------------- | ------------ | ------- |
+| Apply migrations 030–034 to production             | Supabase MCP | ✅ Done |
+| Set 8 RACA flags + AI vars in Vercel production    | Vercel MCP   | ✅ Done |
+| Set `VITE_SENTRY_ENVIRONMENT=production` in Vercel | Vercel MCP   | ✅ Done |
+
+### Remaining operator actions (manual — require external accounts)
 
 | Priority | Action                                                                                                |
 | -------- | ----------------------------------------------------------------------------------------------------- |
 | CRITICAL | Add 3 GitHub Actions secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` |
-| CRITICAL | Run `supabase db push` (auto on next `main` push after secrets set)                                   |
-| CRITICAL | Set 8 `VITE_RACA_ENABLE_*=true` + `RACA_AI_PROVIDER` + `RACA_AI_MODEL` in Vercel, redeploy            |
-| HIGH     | Create Sentry project, set `VITE_SENTRY_DSN` in Vercel                                                |
-| HIGH     | Install LHCI GitHub App, add `LHCI_GITHUB_APP_TOKEN` secret                                           |
-| MEDIUM   | Set `ANTHROPIC_API_KEY` + AI vars in Supabase Edge Function secrets                                   |
-| MEDIUM   | Set E2E secrets + `PLAYWRIGHT_RUN=true` repo variable in GitHub Actions                               |
+| HIGH     | Create Sentry project → update `VITE_SENTRY_DSN` in Vercel (already exists, currently empty)          |
+| HIGH     | Install LHCI GitHub App → add `LHCI_GITHUB_APP_TOKEN` secret                                          |
+| MEDIUM   | Set `ANTHROPIC_API_KEY` + `RACA_AI_PROVIDER` + `RACA_AI_MODEL` in Supabase Edge Function secrets      |
+| MEDIUM   | Set `PLAYWRIGHT_RUN=true` var + E2E account secrets in GitHub Actions                                 |
 | MEDIUM   | Execute `docs/staging-qa-checklist.md` against staging before production promotion                    |

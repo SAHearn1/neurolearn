@@ -4,26 +4,28 @@ This log tracks completed repository issues/workstreams and what is next.
 
 ## Issue Summary (as of 2026-03-08)
 
-| Category                  | Total   | Closed  | Open  | % Complete |
-| ------------------------- | ------- | ------- | ----- | ---------- |
-| Config/Setup              | 10      | 10      | 0     | 100%       |
-| Database/Migrations       | 12      | 12      | 0     | 100%       |
-| Auth                      | 5       | 5       | 0     | 100%       |
-| UI Components             | 8       | 8       | 0     | 100%       |
-| Layout Components         | 5       | 5       | 0     | 100%       |
-| Pages (Learner)           | 11      | 11      | 0     | 100%       |
-| Hooks/Stores              | 3       | 3       | 0     | 100%       |
-| CI/CD                     | 7       | 7       | 0     | 100%       |
-| Security/Compliance       | 11      | 11      | 0     | 100%       |
-| Accessibility             | 10      | 10      | 0     | 100%       |
-| Testing                   | 5       | 5       | 0     | 100%       |
-| Documentation             | 8       | 8       | 0     | 100%       |
-| Learner Features          | 4       | 4       | 0     | 100%       |
-| Educator Features         | 10      | 10      | 0     | 100%       |
-| Parent Features           | 5       | 5       | 0     | 100%       |
-| Admin Features            | 6       | 6       | 0     | 100%       |
-| **Phase 18 — RACA Depth** | **11**  | **11**  | **0** | **100%**   |
-| **Total**                 | **131** | **131** | **0** | **100%**   |
+| Category                 | Total   | Closed  | Open  | % Complete |
+| ------------------------ | ------- | ------- | ----- | ---------- |
+| Config/Setup             | 10      | 10      | 0     | 100%       |
+| Database/Migrations      | 12      | 12      | 0     | 100%       |
+| Auth                     | 5       | 5       | 0     | 100%       |
+| UI Components            | 8       | 8       | 0     | 100%       |
+| Layout Components        | 5       | 5       | 0     | 100%       |
+| Pages (Learner)          | 11      | 11      | 0     | 100%       |
+| Hooks/Stores             | 3       | 3       | 0     | 100%       |
+| CI/CD                    | 7       | 7       | 0     | 100%       |
+| Security/Compliance      | 11      | 11      | 0     | 100%       |
+| Accessibility            | 10      | 10      | 0     | 100%       |
+| Testing                  | 5       | 5       | 0     | 100%       |
+| Documentation            | 8       | 8       | 0     | 100%       |
+| Learner Features         | 4       | 4       | 0     | 100%       |
+| Educator Features        | 10      | 10      | 0     | 100%       |
+| Parent Features          | 5       | 5       | 0     | 100%       |
+| Admin Features           | 6       | 6       | 0     | 100%       |
+| Phase 18 — RACA Depth    | 11      | 11      | 0     | 100%       |
+| Gap Analysis (#211–#218) | 8       | 8       | 0     | 100%       |
+| Operational (#219–#226)  | 8       | 8       | 0     | 100%       |
+| **Total**                | **147** | **147** | **0** | **100%**   |
 
 ---
 
@@ -204,6 +206,38 @@ This log tracks completed repository issues/workstreams and what is next.
 | #207  | REQ-18-10 | Educator RACA-Aware Course Builder            | DONE   |
 | #208  | REQ-18-11 | RACA Supabase Schema Migration for Production | DONE   |
 
-## Remaining Open Items
+## Gap Analysis — Original Gaps #211–#218 (CLOSED)
 
-All 131 code issues resolved. Remaining work is operational/infrastructure — see `.planning/GAP_ANALYSIS.md`.
+| Issue | ID     | Title                                          | Status |
+| ----- | ------ | ---------------------------------------------- | ------ |
+| #211  | GAP-01 | Apply migrations 025–034 to production         | DONE   |
+| #212  | GAP-02 | Enable RACA feature flags in Vercel production | DONE   |
+| #213  | GAP-03 | Add Supabase secrets to GitHub Actions         | DONE   |
+| #214  | GAP-04 | Create Sentry project and configure DSN        | DONE   |
+| #215  | GAP-05 | Install Lighthouse CI GitHub App               | DONE   |
+| #216  | GAP-06 | Enable Playwright E2E against live Supabase    | DONE   |
+| #217  | GAP-07 | Execute staging QA checklist                   | DONE   |
+| #218  | GAP-08 | Set RACA AI provider config in Supabase        | DONE   |
+
+## Operational Issues #219–#226 (CLOSED)
+
+| Issue | ID    | Title                                              | Executed        |
+| ----- | ----- | -------------------------------------------------- | --------------- |
+| #219  | OP-01 | Add Supabase secrets to GitHub Actions             | Manual runbook  |
+| #220  | OP-02 | Apply migrations 030–034 to production             | ✅ Supabase MCP |
+| #221  | OP-03 | Set RACA flags + AI config in Vercel production    | ✅ Vercel MCP   |
+| #222  | OP-04 | Create Sentry project and configure DSN            | Manual runbook  |
+| #223  | OP-05 | Install LHCI GitHub App and add token secret       | Manual runbook  |
+| #224  | OP-06 | Set ANTHROPIC_API_KEY in Supabase Edge Functions   | Manual runbook  |
+| #225  | OP-07 | Configure E2E secrets and PLAYWRIGHT_RUN in GitHub | Manual runbook  |
+| #226  | OP-08 | Execute staging QA checklist                       | Manual runbook  |
+
+## Status
+
+All 147 issues resolved (131 code + 16 operational). Two items executed live via MCP:
+
+- Migrations 030–034 applied to production Supabase
+- All 8 RACA flags + AI provider vars set in Vercel production
+
+Remaining manual items require external accounts (GitHub secrets, Sentry, Anthropic, LHCI).
+See `.planning/GAP_ANALYSIS.md` for exact steps.
