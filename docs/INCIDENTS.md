@@ -95,3 +95,26 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 - Added 29 new unit tests covering session engine initialisation, adaptive loop, and regulation state updates.
 
 **Files changed:** `src/lib/raca/feature-flags.ts`, `src/hooks/useRacaSession.ts`, `.env.example`, `src/lib/raca/layer0-runtime/session-manager.test.ts` (new), `src/lib/raca/layer4-epistemic/adaptation-engine.test.ts` (new)
+
+---
+
+## INC-007 — 2026-03-10 — Insufficient test coverage across hooks, pages, and dashboard components
+
+**Severity:** Low — no runtime behavior changed; risk of undetected regressions
+**Detected:** Manual audit of test count vs module count (issue #270)
+**Fixed:** PR #275
+
+**Root cause:** Feature development prioritized delivery over test coverage. The repository had ~182 source files but only 13 test files (~79 tests), leaving hooks, dashboard components, pages, and RACA runtime modules entirely untested.
+
+**Fix:** Added 15 new test files covering:
+
+- `src/components/dashboard/` — CourseCard, ProgressWidget, RecentActivity, StreakBadge
+- `src/hooks/` — useAuth, useUserRole, useSettings, useAdaptiveLearning, useRacaSession
+- `src/pages/` — LoginPage (form rendering, validation, sign-in success/error flows), SessionPage
+- `src/lib/raca/layer0-runtime/` — session-manager (start/end/recordEvent), runtime-reducer (all action types)
+- `src/lib/raca/layer1-cognitive-fsm/` — preconditions (all 9 cognitive states)
+- `src/store/progressStore.ts` — fetchCourseProgress, fetchLessonProgress, updateLessonProgress
+
+Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criterion. Also added `@vitest/coverage-v8` dependency and excluded `coverage/**` from ESLint.
+
+**Files changed:** 15 new test files, `package.json`, `eslint.config.js`
