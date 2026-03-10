@@ -10,6 +10,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: 'hidden',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-router': ['react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-sentry': ['@sentry/react'],
+          'vendor-state': ['zustand', 'zod'],
+        },
+      },
+    },
   },
   test: {
     globals: true,
