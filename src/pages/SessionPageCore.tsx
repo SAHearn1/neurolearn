@@ -26,6 +26,8 @@ import { PriorSessionSummary } from '../components/raca/PriorSessionSummary'
 import { BreakOffering } from '../components/raca/BreakOffering'
 import { RegulationCheckIn } from '../components/raca/RegulationCheckIn'
 import type { RegulationLevel } from '../components/raca/RegulationCheckIn'
+import { FormativeCheckIn } from '../components/raca/FormativeCheckIn'
+import type { ConfidenceLevel } from '../components/raca/FormativeCheckIn'
 import { TransitionAnnouncement } from '../components/raca/TransitionAnnouncement'
 import { SessionSummaryCard } from '../components/raca/SessionSummaryCard'
 import { DiagnosticBanner } from '../components/raca/DiagnosticBanner'
@@ -53,8 +55,21 @@ const REGULATION_BREAK_THRESHOLD = 30
 /** Minimum ms between break offerings */
 const BREAK_COOLDOWN_MS = 5 * 60 * 1000
 
-/** Transitions that gate on a RegulationCheckIn before proceeding */
-const CHECK_IN_TRANSITIONS = new Set<string>(['REGULATE→POSITION', 'APPLY→REVISE'])
+/** Transitions that gate on a RegulationCheckIn (emotional regulation) before proceeding */
+const REGULATION_CHECK_IN_TRANSITIONS = new Set<string>(['REGULATE→POSITION', 'APPLY→REVISE'])
+
+/** Transitions that gate on a FormativeCheckIn (comprehension confidence) before proceeding */
+const FORMATIVE_CHECK_IN_TRANSITIONS = new Set<string>([
+  'POSITION→PLAN',
+  'PLAN→APPLY',
+  'REVISE→DEFEND',
+])
+
+/** All check-in gated transitions */
+const CHECK_IN_TRANSITIONS = new Set<string>([
+  ...REGULATION_CHECK_IN_TRANSITIONS,
+  ...FORMATIVE_CHECK_IN_TRANSITIONS,
+])
 
 /** Core RACA session UI — lazily imported by SessionPage when the runtime flag is on */
 export function SessionPageCore() {
@@ -158,9 +173,14 @@ export function SessionPageCore() {
     visible: false,
   })
 
-  // ── P21-03: Regulation check-in between transitions ───────────────────────
+  // ── P21-03 / #325: Check-in between transitions ───────────────────────────
   const [checkInPending, setCheckInPending] = useState(false)
+  const [checkInType, setCheckInType] = useState<'regulation' | 'formative'>('regulation')
+  // Refs hold the actual CognitiveState for callback execution
   const pendingTransitionRef = useRef<CognitiveState | null>(null)
+  // State holds display strings (read during render)
+  const [pendingFrom, setPendingFrom] = useState('')
+  const [pendingTo, setPendingTo] = useState('')
 
   // ── P21-02: Break offering ────────────────────────────────────────────────
   const [showBreakOffering, setShowBreakOffering] = useState(false)
@@ -214,12 +234,15 @@ export function SessionPageCore() {
     [session, lessonId, courseId],
   )
 
-  // P21-03: Transition with optional check-in gate
+  // P21-03 / #325: Transition with optional check-in gate
   const handleTransition = useCallback(
     (to: CognitiveState) => {
       const key = `${cognitive.currentState}→${to}`
       if (CHECK_IN_TRANSITIONS.has(key)) {
         pendingTransitionRef.current = to
+        setPendingFrom(cognitive.currentState)
+        setPendingTo(to)
+        setCheckInType(FORMATIVE_CHECK_IN_TRANSITIONS.has(key) ? 'formative' : 'regulation')
         setCheckInPending(true)
         return
       }
@@ -244,7 +267,25 @@ export function SessionPageCore() {
     [user, session.sessionId, cognitive],
   )
 
-  // P21-03: Skip check-in without persisting
+  // #325: Formative check-in submitted → persist confidence level + proceed
+  const handleFormativeCheckIn = useCallback(
+    async (level: ConfidenceLevel) => {
+      if (user?.id && session.sessionId) {
+        await supabase.from('regulation_checkins').insert({
+          user_id: user.id,
+          session_id: session.sessionId,
+          level,
+        })
+      }
+      setCheckInPending(false)
+      const pending = pendingTransitionRef.current
+      pendingTransitionRef.current = null
+      if (pending) cognitive.transition(pending)
+    },
+    [user, session.sessionId, cognitive],
+  )
+
+  // P21-03 / #325: Skip check-in without persisting
   const handleCheckInSkip = useCallback(() => {
     setCheckInPending(false)
     const pending = pendingTransitionRef.current
@@ -401,20 +442,31 @@ export function SessionPageCore() {
         onDone={() => setAnnouncement((a) => ({ ...a, visible: false }))}
       />
 
-      {/* P21-03: Regulation check-in modal */}
+      {/* P21-03 / #325: Regulation or formative check-in modal */}
       {checkInPending && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="w-full max-w-lg space-y-3">
-            <RegulationCheckIn onSelect={(level) => void handleCheckInSelect(level)} />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={handleCheckInSkip}
-                className="text-xs text-slate-400 underline hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              >
-                Skip check-in
-              </button>
-            </div>
+          <div className="w-full max-w-lg">
+            {checkInType === 'formative' ? (
+              <FormativeCheckIn
+                fromState={pendingFrom}
+                toState={pendingTo}
+                onSelect={(level) => void handleFormativeCheckIn(level)}
+                onSkip={handleCheckInSkip}
+              />
+            ) : (
+              <div className="space-y-3">
+                <RegulationCheckIn onSelect={(level) => void handleCheckInSelect(level)} />
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCheckInSkip}
+                    className="text-xs text-slate-400 underline hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                  >
+                    Skip check-in
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
