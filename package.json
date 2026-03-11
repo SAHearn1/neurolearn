@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@sentry/react": "^10.43.0",
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/supabase-js": "^2.99.0",
     "@vercel/analytics": "^1.6.1",
     "axe-core": "^4.11.1",
     "dompurify": "^3.3.2",
