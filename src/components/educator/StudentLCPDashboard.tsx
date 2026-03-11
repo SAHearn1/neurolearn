@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { useStudentCognitiveProfiles } from '../../hooks/useStudentCognitiveProfiles'
 import { TraceBars } from '../ui/TraceBars'
 import { Spinner } from '../ui/Spinner'
 import { Alert } from '../ui/Alert'
+import { EducatorStandardsView } from './EducatorStandardsView'
+import { LCPGenerator } from './LCPGenerator'
 
 const TRAJECTORY_META = {
   emerging: { label: 'Emerging', badge: 'bg-slate-100 text-slate-700' },
@@ -16,6 +19,7 @@ const TRAJECTORY_META = {
  */
 export function StudentLCPDashboard() {
   const { students, loading, error } = useStudentCognitiveProfiles()
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
 
   if (loading) return <Spinner />
   if (error) return <Alert variant="error">{error}</Alert>
@@ -56,45 +60,73 @@ export function StudentLCPDashboard() {
           if (!profile) return null
           const traj = TRAJECTORY_META[profile.growth_trajectory]
           return (
-            <div
-              key={student_id}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              {/* Header */}
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900">{display_name ?? 'Student'}</p>
-                  <p className="text-xs text-slate-500">{profile.session_count} sessions</p>
+            <div key={student_id}>
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-900">{display_name ?? 'Student'}</p>
+                    <p className="text-xs text-slate-500">{profile.session_count} sessions</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${traj.badge}`}>
+                    {traj.label}
+                  </span>
                 </div>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${traj.badge}`}>
-                  {traj.label}
-                </span>
+
+                {/* TRACE bars */}
+                <TraceBars traceAverages={profile.trace_averages} />
+
+                {/* Mini stats */}
+                <div className="mt-4 grid grid-cols-3 gap-2 rounded-lg bg-slate-50 p-3 text-center text-xs">
+                  <div>
+                    <p className="font-bold text-slate-800">
+                      {Math.round(profile.trace_averages.overall * 10) / 10}
+                    </p>
+                    <p className="text-slate-500">TRACE</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">
+                      {Math.round(profile.revision_frequency * 100)}%
+                    </p>
+                    <p className="text-slate-500">Revised</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">
+                      {Math.round(profile.reflection_depth_avg)}
+                    </p>
+                    <p className="text-slate-500">Reflect. words</p>
+                  </div>
+                </div>
+
+                {/* View details button */}
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedStudentId(selectedStudentId === student_id ? null : student_id)
+                    }
+                    aria-label={`${selectedStudentId === student_id ? 'Close' : 'View'} details for ${display_name ?? 'Student'}`}
+                    aria-expanded={selectedStudentId === student_id}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    {selectedStudentId === student_id ? 'Close ↑' : 'View details ↓'}
+                  </button>
+                </div>
               </div>
 
-              {/* TRACE bars */}
-              <TraceBars traceAverages={profile.trace_averages} />
-
-              {/* Mini stats */}
-              <div className="mt-4 grid grid-cols-3 gap-2 rounded-lg bg-slate-50 p-3 text-center text-xs">
-                <div>
-                  <p className="font-bold text-slate-800">
-                    {Math.round(profile.trace_averages.overall * 10) / 10}
-                  </p>
-                  <p className="text-slate-500">TRACE</p>
+              {/* Conditional detail panel */}
+              {selectedStudentId === student_id && (
+                <div className="mt-2 space-y-6 rounded-xl border border-brand-200 bg-brand-50 p-5">
+                  <EducatorStandardsView
+                    studentId={student_id}
+                    studentName={display_name ?? 'Student'}
+                  />
+                  <LCPGenerator
+                    studentId={student_id}
+                    studentName={display_name ?? 'Student'}
+                  />
                 </div>
-                <div>
-                  <p className="font-bold text-slate-800">
-                    {Math.round(profile.revision_frequency * 100)}%
-                  </p>
-                  <p className="text-slate-500">Revised</p>
-                </div>
-                <div>
-                  <p className="font-bold text-slate-800">
-                    {Math.round(profile.reflection_depth_avg)}
-                  </p>
-                  <p className="text-slate-500">Reflect. words</p>
-                </div>
-              </div>
+              )}
             </div>
           )
         })}

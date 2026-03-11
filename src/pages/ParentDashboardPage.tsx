@@ -5,13 +5,41 @@ import { Spinner } from '../components/ui/Spinner'
 import { Alert } from '../components/ui/Alert'
 import { useParentProfile } from '../hooks/useParentProfile'
 import { useParentStudentLinks } from '../hooks/useParentStudentLinks'
+import { useParentNarratives } from '../hooks/useParentNarratives'
 import { ParentStudentList } from '../components/parent/ParentStudentList'
 import { ParentProgressReports } from '../components/parent/ParentProgressReports'
 import { ParentNotificationPrefs } from '../components/parent/ParentNotificationPrefs'
 import { ParentMessages } from '../components/parent/ParentMessages'
 import { ParentGrowthNarrative } from '../components/parent/ParentGrowthNarrative'
+import { SessionNarrativeCard } from '../components/parent/SessionNarrativeCard'
 
-type Tab = 'overview' | 'students' | 'progress' | 'growth' | 'notifications' | 'messages'
+type Tab = 'overview' | 'students' | 'progress' | 'growth' | 'notifications' | 'messages' | 'narratives'
+
+function StudentNarratives({ studentId, childName }: { studentId: string; childName: string | null }) {
+  const { narratives, loading } = useParentNarratives(studentId)
+
+  if (loading) return <div className="h-20 animate-pulse rounded-lg bg-slate-100" />
+
+  if (narratives.length === 0) {
+    return (
+      <p className="text-sm text-slate-400">
+        Session stories will appear here after {childName ?? 'your child'} completes a learning session.
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {narratives.map((narrative) => (
+        <SessionNarrativeCard
+          key={narrative.sessionIdentifier}
+          narrative={narrative}
+          childName={childName ?? undefined}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function ParentDashboardPage() {
   const { profile, loading: profileLoading, error: profileError } = useParentProfile()
@@ -41,6 +69,7 @@ export function ParentDashboardPage() {
     { key: 'growth', label: 'Cognitive Growth' },
     { key: 'notifications', label: 'Notifications' },
     { key: 'messages', label: 'Messages' },
+    { key: 'narratives', label: 'Session Stories' },
   ]
 
   const activeStudentIds = activeLinks.map((l) => l.link.student_id)
@@ -146,6 +175,36 @@ export function ParentDashboardPage() {
         hidden={activeTab !== 'messages'}
       >
         <ParentMessages />
+      </div>
+      <div
+        id="parent-panel-narratives"
+        role="tabpanel"
+        aria-labelledby="parent-tab-narratives"
+        hidden={activeTab !== 'narratives'}
+      >
+        {activeStudentIds.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
+            <p className="text-sm text-slate-500">
+              Link your child's account in the My Students tab to see their session stories.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {activeStudentIds.map((studentId) => (
+              <section key={studentId}>
+                {activeStudentIds.length > 1 && (
+                  <h3 className="mb-3 text-sm font-semibold text-slate-700">
+                    {studentNames[studentId] ?? 'Your child'}
+                  </h3>
+                )}
+                <StudentNarratives
+                  studentId={studentId}
+                  childName={studentNames[studentId] ?? null}
+                />
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   )
