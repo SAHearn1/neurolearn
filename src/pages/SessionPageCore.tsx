@@ -5,6 +5,7 @@ import { useRacaSession } from '../hooks/useRacaSession'
 import { useCognitiveState } from '../hooks/useCognitiveState'
 import { useEpistemicProfile } from '../hooks/useEpistemicProfile'
 import { useAgent } from '../hooks/useAgent'
+import type { AgentSessionPersonalization } from '../hooks/useAgent'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getAgentDefinitionsForState } from '../lib/raca/layer2-agent-router/state-agent-map'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
@@ -64,7 +65,63 @@ export function SessionPageCore() {
   const session = useRacaSession()
   const cognitive = useCognitiveState()
   const epistemic = useEpistemicProfile()
-  const agent = useAgent()
+
+  // AI-09/#323: Session personalization — fetch prior mastery status + TRACE profile
+  // so all agent invocations are contextualised for returning learners.
+  const [priorOutcome, setPriorOutcome] =
+    useState<AgentSessionPersonalization['priorSessionOutcome']>(undefined)
+  const [traceProfileData, setTraceProfileData] = useState<Record<string, number> | undefined>(
+    undefined,
+  )
+
+  useEffect(() => {
+    if (!user?.id || !lessonId) return
+    let cancelled = false
+
+    const fetchPersonalization = async () => {
+      const [masteryResult, epistemicResult] = await Promise.all([
+        supabase
+          .from('adaptive_learning_state')
+          .select('mastery_status')
+          .eq('user_id', user.id)
+          .eq('lesson_id', lessonId)
+          .maybeSingle(),
+        supabase
+          .from('epistemic_profiles')
+          .select('trace_averages')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ])
+      if (cancelled) return
+
+      const status = masteryResult.data?.mastery_status as
+        | AgentSessionPersonalization['priorSessionOutcome']
+        | null
+        | undefined
+      if (status) setPriorOutcome(status)
+
+      const traceAvg = epistemicResult.data?.trace_averages as
+        | Record<string, number>
+        | null
+        | undefined
+      if (traceAvg) setTraceProfileData(traceAvg)
+    }
+
+    void fetchPersonalization()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, lessonId])
+
+  const agentPersonalization = useMemo<AgentSessionPersonalization>(
+    () => ({
+      traceProfile: traceProfileData,
+      priorSessionOutcome: priorOutcome,
+    }),
+    [traceProfileData, priorOutcome],
+  )
+
+  const agent = useAgent(agentPersonalization)
   const dispatch = useRuntimeStore((s) => s.dispatch)
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)

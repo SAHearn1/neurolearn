@@ -11,7 +11,14 @@ import { useAuthStore } from '../store/authStore'
 import type { AgentId, AgentResponse } from '../lib/raca/types/agents'
 import type { AgentContext } from '../lib/raca/layer3-agents/agent-base'
 
-export function useAgent() {
+/** AI-09/#323: Session-level personalization injected into every agent invocation */
+export interface AgentSessionPersonalization {
+  traceProfile?: Record<string, number>
+  ccssStandardCodes?: string[]
+  priorSessionOutcome?: AgentContext['priorSessionOutcome']
+}
+
+export function useAgent(personalization?: AgentSessionPersonalization) {
   const [loading, setLoading] = useState(false)
   const [lastResponse, setLastResponse] = useState<AgentResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +59,10 @@ export function useAgent() {
             .slice(-5)
             .map((e) => `[${e.kind}] ${JSON.stringify(e.payload).slice(0, 100)}`),
           accessibility: { text_size: 'medium', reduce_motion: true },
+          // AI-09/#323: session-level personalization (TRACE profile, CCSS codes, prior outcome)
+          traceProfile: personalization?.traceProfile,
+          ccssStandardCodes: personalization?.ccssStandardCodes,
+          priorSessionOutcome: personalization?.priorSessionOutcome,
         }
 
         // Build prompt
@@ -109,7 +120,7 @@ export function useAgent() {
         setLoading(false)
       }
     },
-    [session?.access_token],
+    [session?.access_token, personalization],
   )
 
   return {
