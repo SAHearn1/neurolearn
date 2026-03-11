@@ -23,20 +23,28 @@ export function useRacaSession() {
 
   const userId = user?.id
   const start = useCallback(
-    (config: SessionConfig) => {
+    async (config: SessionConfig) => {
       if (!userId) return null
-      return startSession(userId, config)
+      const id = startSession(userId, config)
+      if (racaFlags.auditPersistence) {
+        // cognitive_sessions row must exist in DB before the audit flush timer
+        // fires, otherwise the RLS subquery finds no matching session and
+        // rejects every INSERT into raca_audit_events.
+        await saveSessionRemote()
+      }
+      return id
     },
     [userId],
   )
 
   const end = useCallback(async (abandoned = false) => {
     endSession(abandoned ? 'abandoned' : 'completed')
-    await flushAuditBuffer()
-    stopAuditFlush()
     if (racaFlags.auditPersistence) {
+      // Persist the session row first so audit events can pass RLS validation.
       await saveSessionRemote()
     }
+    await flushAuditBuffer()
+    stopAuditFlush()
     clearSessionLocal()
   }, [])
 
