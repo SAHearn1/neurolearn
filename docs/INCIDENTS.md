@@ -301,3 +301,17 @@ Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criteri
 **Fix:** Changed to `total = lessons.length || courseProgress?.total_lessons || 0` — always prefers the live lesson count from the already-loaded `lessons` array.
 
 **Files changed:** `src/pages/CoursePage.tsx`
+
+---
+
+## INC-011 — 2026-03-11 — RACA audit events rejected by RLS due to missing cognitive_sessions row
+
+**Severity:** Medium — audit trail silent data loss when `racaFlags.auditPersistence` is enabled
+**Detected:** Code review during Phase 21 planning
+**Fixed:** Commit `406d55f`
+
+**Root cause:** `start()` in `useRacaSession` was synchronous and never persisted the session to the DB before returning. The audit flush timer fires 5 seconds later with a `session_id` that doesn't exist in `cognitive_sessions` yet — the RLS policy on `raca_audit_events` performs a subquery against `cognitive_sessions` and rejects every INSERT. Additionally, `end()` called `flushAuditBuffer()` before `saveSessionRemote()`, creating the same race on termination.
+
+**Fix:** Made `start()` async; `await saveSessionRemote()` immediately after `startSession()` when `racaFlags.auditPersistence` is true. In `end()`, moved `saveSessionRemote()` before `flushAuditBuffer()`. Both operations gated by the feature flag, so no behavior change in production (flag is OFF).
+
+**Files changed:** `src/hooks/useRacaSession.ts`
