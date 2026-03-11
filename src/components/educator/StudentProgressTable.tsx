@@ -5,6 +5,16 @@ import { Alert } from '../ui/Alert'
 import { Spinner } from '../ui/Spinner'
 import { ProgressBar } from '../ui/ProgressBar'
 import { useClassManagement } from '../../hooks/useClassManagement'
+import { STATE_METADATA } from '../../lib/raca/types/cognitive-states'
+import type { CognitiveState } from '../../lib/raca/types/cognitive-states'
+
+const FIVE_R_COLORS: Record<string, string> = {
+  Relate: 'bg-blue-100 text-blue-700',
+  Regulate: 'bg-amber-100 text-amber-700',
+  Reason: 'bg-brand-100 text-brand-700',
+  Repair: 'bg-purple-100 text-purple-700',
+  Restore: 'bg-green-100 text-green-700',
+}
 
 interface StudentProgress {
   student_id: string
@@ -12,6 +22,9 @@ interface StudentProgress {
   lessons_completed: number
   streak_days: number
   courses: { course_id: string; title: string; progress_pct: number }[]
+  /** Current 5Rs phase derived from active cognitive session (#328) */
+  currentFiveR: string | null
+  activeSessionState: string | null
 }
 
 export function StudentProgressTable() {
@@ -62,6 +75,21 @@ export function StudentProgressTable() {
         .select('id, title, lesson_count')
         .in('id', courseIds.length ? courseIds : ['__none__'])
 
+      // Get active sessions for 5Rs phase (#328)
+      const { data: activeSessions } = await supabase
+        .from('cognitive_sessions')
+        .select('user_id, current_state')
+        .in('user_id', studentIds)
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+
+      const activeSessionMap = new Map<string, string>()
+      for (const s of activeSessions ?? []) {
+        if (!activeSessionMap.has(s.user_id)) {
+          activeSessionMap.set(s.user_id, s.current_state)
+        }
+      }
+
       const courseMap = new Map((courses ?? []).map((c) => [c.id, c]))
 
       const result: StudentProgress[] = (profiles ?? []).map((p) => {
@@ -85,12 +113,20 @@ export function StudentProgressTable() {
           }
         })
 
+        const activeState = activeSessionMap.get(p.user_id) ?? null
+        const fiveR =
+          activeState && activeState in STATE_METADATA
+            ? STATE_METADATA[activeState as CognitiveState].fiveRMapping
+            : null
+
         return {
           student_id: p.user_id,
           display_name: p.display_name ?? 'Student',
           lessons_completed: p.lessons_completed ?? 0,
           streak_days: p.streak_days ?? 0,
           courses: courseProgressList,
+          currentFiveR: fiveR,
+          activeSessionState: activeState,
         }
       })
 
@@ -146,13 +182,22 @@ export function StudentProgressTable() {
             <div className="space-y-3">
               {students.map((s) => (
                 <Card key={s.student_id}>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold text-slate-900">{s.display_name}</h3>
                       <p className="text-sm text-slate-500">
                         {s.lessons_completed} lessons completed · {s.streak_days} day streak
                       </p>
                     </div>
+                    {s.currentFiveR && (
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${FIVE_R_COLORS[s.currentFiveR] ?? 'bg-slate-100 text-slate-600'}`}
+                        title={`5Rs phase: ${s.currentFiveR} (${s.activeSessionState ?? ''})`}
+                        aria-label={`Currently in ${s.currentFiveR} phase`}
+                      >
+                        {s.currentFiveR}
+                      </span>
+                    )}
                   </div>
                   {s.courses.length > 0 && (
                     <div className="mt-3 space-y-2">

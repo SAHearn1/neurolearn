@@ -4,7 +4,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../utils/supabase/client'
-import { STUDENT_STATE_LABELS } from '../lib/raca/types/cognitive-states'
+import { STUDENT_STATE_LABELS, STATE_METADATA } from '../lib/raca/types/cognitive-states'
+import type { CognitiveState } from '../lib/raca/types/cognitive-states'
 
 export interface StudentSessionStatus {
   userId: string
@@ -13,6 +14,12 @@ export interface StudentSessionStatus {
   regulationLevel: number | null // from most recent regulation_checkin
   lastActiveAt: string | null
   isActive: boolean // active if lastActiveAt within last 10 minutes
+  /** #332: lesson title from active session */
+  lessonTitle: string | null
+  /** #332: mastery score from adaptive_learning_state for current lesson */
+  masteryScore: number | null
+  /** #332: 5Rs phase derived from current cognitive state */
+  fiveRPhase: string | null
 }
 
 interface ProfileRow {
@@ -30,6 +37,7 @@ interface SessionRow {
   user_id: string
   current_state: string
   updated_at: string
+  lesson_id: string | null
 }
 
 function levelToNumber(level: string): number {
@@ -76,7 +84,7 @@ export function useClassroomRealtime(studentIds: string[]): {
           .order('checked_in_at', { ascending: false }),
         supabase
           .from('cognitive_sessions')
-          .select('user_id, current_state, updated_at')
+          .select('user_id, current_state, updated_at, lesson_id')
           .in('user_id', ids)
           .eq('status', 'active')
           .order('updated_at', { ascending: false }),
@@ -97,12 +105,48 @@ export function useClassroomRealtime(studentIds: string[]): {
         }
       }
 
-      const sessionMap = new Map<string, { state: string; at: string }>()
+      const sessionMap = new Map<string, { state: string; at: string; lessonId: string | null }>()
       for (const s of sessions) {
         if (!sessionMap.has(s.user_id)) {
-          sessionMap.set(s.user_id, { state: s.current_state, at: s.updated_at })
+          sessionMap.set(s.user_id, {
+            state: s.current_state,
+            at: s.updated_at,
+            lessonId: s.lesson_id ?? null,
+          })
         }
       }
+
+      // Fetch lesson titles for active sessions (#332)
+      const lessonIds = [
+        ...new Set([...sessionMap.values()].map((s) => s.lessonId).filter(Boolean)),
+      ] as string[]
+      const lessonTitleMap = new Map<string, string>()
+      if (lessonIds.length > 0) {
+        const { data: lessons } = await supabase
+          .from('lessons')
+          .select('id, title')
+          .in('id', lessonIds)
+        for (const l of lessons ?? []) {
+          lessonTitleMap.set(l.id, l.title)
+        }
+      }
+
+      // Fetch mastery scores for active sessions (#332)
+      const masteryMap = new Map<string, number>()
+      if (lessonIds.length > 0) {
+        const { data: mastery } = await supabase
+          .from('adaptive_learning_state')
+          .select('user_id, lesson_id, mastery_score_float')
+          .in('user_id', ids)
+          .in('lesson_id', lessonIds)
+        for (const m of mastery ?? []) {
+          if (typeof m.mastery_score_float === 'number') {
+            masteryMap.set(`${m.user_id}:${m.lesson_id}`, m.mastery_score_float)
+          }
+        }
+      }
+
+      if (cancelled) return
 
       const result: StudentSessionStatus[] = ids.map((id) => {
         const checkin = regulationMap.get(id)
@@ -110,6 +154,16 @@ export function useClassroomRealtime(studentIds: string[]): {
         const lastActiveAt = session?.at ?? checkin?.at ?? null
         const stateLabel = session?.state
           ? (STUDENT_STATE_LABELS[session.state]?.label ?? session.state)
+          : null
+        const fiveRPhase =
+          session?.state && session.state in STATE_METADATA
+            ? STATE_METADATA[session.state as CognitiveState].fiveRMapping
+            : null
+        const lessonTitle = session?.lessonId
+          ? (lessonTitleMap.get(session.lessonId) ?? null)
+          : null
+        const masteryScore = session?.lessonId
+          ? (masteryMap.get(`${id}:${session.lessonId}`) ?? null)
           : null
 
         return {
@@ -119,6 +173,9 @@ export function useClassroomRealtime(studentIds: string[]): {
           regulationLevel: checkin ? levelToNumber(checkin.level) : null,
           lastActiveAt,
           isActive: isActiveWithin10Min(lastActiveAt),
+          lessonTitle,
+          masteryScore,
+          fiveRPhase,
         }
       })
 
