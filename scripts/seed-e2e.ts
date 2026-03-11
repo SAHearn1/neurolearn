@@ -24,6 +24,19 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   process.exit(1)
 }
 
+// Environment guard — prevent accidental seeding of production
+const PROD_URL_PATTERN = /supabase\.co/
+if (PROD_URL_PATTERN.test(SUPABASE_URL) && !process.env.ALLOW_PROD_SEED) {
+  console.error(
+    '\n⛔  BLOCKED: SUPABASE_URL appears to point at a hosted Supabase instance.',
+    '\n   This script is for local / CI environments only.',
+    '\n   If you intentionally need to seed a hosted instance, set ALLOW_PROD_SEED=true.',
+    '\n   URL:',
+    SUPABASE_URL,
+  )
+  process.exit(1)
+}
+
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
@@ -115,15 +128,15 @@ async function seedCourses(): Promise<string[]> {
       title: 'Reading Fundamentals',
       description:
         'Build core reading skills with accessible, multimodal lessons designed for every learner.',
-      difficulty: 'beginner',
-      tags: ['reading', 'literacy'],
+      level: 'beginner',
+      status: 'published',
     },
     {
       title: 'Math Concepts',
       description:
         'Explore foundational math ideas through visual walkthroughs, practice, and real-world connections.',
-      difficulty: 'intermediate',
-      tags: ['math', 'numeracy'],
+      level: 'intermediate',
+      status: 'published',
     },
   ]
 

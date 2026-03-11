@@ -29,12 +29,22 @@ import { SessionSummaryCard } from '../components/raca/SessionSummaryCard'
 import { DiagnosticBanner } from '../components/raca/DiagnosticBanner'
 import { useSessionDiagnostic } from '../hooks/useSessionDiagnostic'
 import { Button } from '../components/ui/Button'
+import { useSkillEvidence } from '../hooks/useSkillEvidence'
+import { useMasteryScoring } from '../hooks/useMasteryScoring'
 import { scoreTRACE } from '../lib/raca/layer4-epistemic/fluency-tracker'
 import { traceSessionXPBreakdown } from '../lib/xp'
 import type { CognitiveState } from '../lib/raca/types/cognitive-states'
 import type { ArtifactKind } from '../lib/raca/types/artifacts'
 
 type SelectableMode = 'review' | 'standard' | 'challenge'
+
+/** Artifact kinds that trigger skill evidence extraction */
+const EVIDENCE_KINDS: ArtifactKind[] = [
+  'draft',
+  'revision',
+  'defense_response',
+  'reconnection_reflection',
+]
 
 /** Regulation score below which a break is offered */
 const REGULATION_BREAK_THRESHOLD = 30
@@ -58,6 +68,10 @@ export function SessionPageCore() {
   const dispatch = useRuntimeStore((s) => s.dispatch)
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)
+
+  // Issue #321/#322: evidence + mastery hooks (declared before saveArtifact/handleEndSession)
+  const { saveEvidence } = useSkillEvidence(session.sessionId ?? '', lessonId)
+  const { archiveSession } = useMasteryScoring()
 
   // ── P21-01: Session mode selection ───────────────────────────────────────
   const [sessionStarted, setSessionStarted] = useState(false)
@@ -167,12 +181,13 @@ export function SessionPageCore() {
 
   const saveArtifact = useCallback(
     (kind: ArtifactKind, state: CognitiveState, content: string) => {
+      const artifactId = crypto.randomUUID()
       const wordCount = content.trim().split(/\s+/).filter(Boolean).length
       const version = artifacts.filter((a) => a.kind === kind).length + 1
       dispatch({
         type: 'ARTIFACT_SAVED',
         artifact: {
-          id: crypto.randomUUID(),
+          id: artifactId,
           session_id: session.sessionId ?? '',
           kind,
           state,
@@ -183,8 +198,12 @@ export function SessionPageCore() {
         },
       })
       epistemic.processMessage(content, [])
+      // Issue #321: persist skill evidence for substantive artifact kinds
+      if (EVIDENCE_KINDS.includes(kind)) {
+        void saveEvidence(content, state, 'system', artifactId)
+      }
     },
-    [artifacts, dispatch, session.sessionId, epistemic],
+    [artifacts, dispatch, session.sessionId, epistemic, saveEvidence],
   )
 
   // P21-06: End session → compute summary → show card before navigating
@@ -198,9 +217,24 @@ export function SessionPageCore() {
       wordCount,
       traceScores,
     })
+    // Issue #322: archive mastery score and run CCSS bridge
+    if (lessonId) {
+      try {
+        await archiveSession({
+          sessionId: session.sessionId ?? '',
+          lessonId,
+          statesCompleted: cognitive.stateHistory,
+          artifactText: artifacts.map((a) => a.content).join('\n\n'),
+          sessionDurationMs: durationMs,
+          traceScores: traceScores ? (traceScores as unknown as Record<string, number>) : undefined,
+        })
+      } catch {
+        // Non-critical — session still ends cleanly
+      }
+    }
     await session.end(false)
     setShowSummary(true)
-  }, [artifacts, cognitive.stateHistory, session])
+  }, [artifacts, cognitive.stateHistory, session, lessonId, archiveSession])
 
   // P21-05: Session diagnostic for personalized start banner
   const { diagnostic } = useSessionDiagnostic(lessonId)
