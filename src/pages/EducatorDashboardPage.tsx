@@ -19,6 +19,7 @@ import { AlertBadge } from '../components/educator/AlertBadge'
 import { NeedsAttentionPanel } from '../components/educator/NeedsAttentionPanel'
 import { useEducatorAlerts } from '../hooks/useEducatorAlerts'
 import { useStudentRegulation } from '../hooks/useStudentRegulation'
+import { ClassCcssReport } from '../components/educator/ClassCcssReport'
 
 type Tab =
   | 'overview'
@@ -30,6 +31,7 @@ type Tab =
   | 'growth'
   | 'live'
   | 'alerts'
+  | 'standards'
 
 export function EducatorDashboardPage() {
   const user = useAuthStore((s) => s.user)
@@ -98,6 +100,7 @@ export function EducatorDashboardPage() {
     { key: 'content', label: 'Content' },
     { key: 'analytics', label: 'Analytics' },
     { key: 'live', label: 'Live Classroom' },
+    { key: 'standards', label: 'Class Standards' },
     { key: 'alerts', label: 'Alerts' },
   ]
 
@@ -238,6 +241,14 @@ export function EducatorDashboardPage() {
         hidden={activeTab !== 'live'}
       >
         <LiveClassroomView studentIds={studentIds} />
+      </div>
+      <div
+        id="edu-panel-standards"
+        role="tabpanel"
+        aria-labelledby="edu-tab-standards"
+        hidden={activeTab !== 'standards'}
+      >
+        <ClassCcssReport studentIds={studentIds} studentNames={studentNames} />
       </div>
       <div
         id="edu-panel-alerts"
