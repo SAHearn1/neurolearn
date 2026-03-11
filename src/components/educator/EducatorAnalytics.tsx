@@ -77,7 +77,7 @@ export function EducatorAnalytics() {
         const { data: courses } = await supabase
           .from('courses')
           .select('id, title')
-          .in('id', courseIds.length ? courseIds : ['__none__'])
+          .in('id', courseIds.length ? courseIds : ['00000000-0000-0000-0000-000000000000'])
 
         const courseMap = new Map((courses ?? []).map((c) => [c.id, c.title]))
 

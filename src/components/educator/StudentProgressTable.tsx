@@ -73,7 +73,7 @@ export function StudentProgressTable() {
       const { data: courses } = await supabase
         .from('courses')
         .select('id, title, lesson_count')
-        .in('id', courseIds.length ? courseIds : ['__none__'])
+        .in('id', courseIds.length ? courseIds : ['00000000-0000-0000-0000-000000000000'])
 
       // Get active sessions for 5Rs phase (#328)
       const { data: activeSessions } = await supabase

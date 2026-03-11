@@ -80,13 +80,13 @@ async function seedUsers(): Promise<Record<string, string>> {
     // Check if user already exists
     const { data: existing } = await supabase
       .from('profiles')
-      .select('id')
+      .select('user_id')
       .eq('display_name', account.displayName)
       .maybeSingle()
 
     if (existing) {
       console.log(`  ✓ ${account.role} already exists (${account.email})`)
-      userIds[account.role] = existing.id
+      userIds[account.role] = existing.user_id
       continue
     }
 
@@ -310,6 +310,48 @@ async function seedClass(userIds: Record<string, string>, courseIds: string[]): 
   }
 }
 
+async function seedEducatorStudentLinks(userIds: Record<string, string>): Promise<void> {
+  console.log('\n── Educator–Student Links ───────────────')
+
+  const educatorId = userIds['educator']
+  const learnerId = userIds['learner']
+  if (!educatorId || !learnerId) {
+    console.log('  ⚠ Skipping — educator or learner user_id missing')
+    return
+  }
+
+  // Look up the class created by seedClass
+  const { data: cls } = await supabase
+    .from('classes')
+    .select('id')
+    .eq('name', 'Spring 2026 Cohort')
+    .maybeSingle()
+
+  const { data: existing } = await supabase
+    .from('educator_student_links')
+    .select('id')
+    .eq('educator_id', educatorId)
+    .eq('student_id', learnerId)
+    .maybeSingle()
+
+  if (existing) {
+    console.log('  ✓ Educator–student link already exists')
+    return
+  }
+
+  const { error } = await supabase.from('educator_student_links').insert({
+    educator_id: educatorId,
+    student_id: learnerId,
+    class_id: cls?.id ?? null,
+  })
+
+  if (error) {
+    console.error('  ✗ Failed to create educator–student link:', error.message)
+  } else {
+    console.log(`  + Linked educator → learner (class: ${cls?.id ?? 'none'})`)
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -320,6 +362,7 @@ async function main() {
   const courseIds = await seedCourses()
   await seedLessons(courseIds)
   await seedClass(userIds, courseIds)
+  await seedEducatorStudentLinks(userIds)
 
   console.log('\n── Summary ──────────────────────────────')
   console.log('Seed complete. Test accounts:')

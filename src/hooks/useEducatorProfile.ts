@@ -22,9 +22,9 @@ export function useEducatorProfile() {
         .from('educator_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
-      if (err && err.code !== 'PGRST116') throw err
+      if (err) throw err
       setProfile(data as EducatorProfile | null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load educator profile')
