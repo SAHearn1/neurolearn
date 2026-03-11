@@ -315,3 +315,36 @@ Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criteri
 **Fix:** Made `start()` async; `await saveSessionRemote()` immediately after `startSession()` when `racaFlags.auditPersistence` is true. In `end()`, moved `saveSessionRemote()` before `flushAuditBuffer()`. Both operations gated by the feature flag, so no behavior change in production (flag is OFF).
 
 **Files changed:** `src/hooks/useRacaSession.ts`
+
+---
+
+## INC-012 — 2026-03-11 — ESLint `react-hooks/set-state-in-effect` in SessionPageCore (#324 wiring)
+
+**Severity:** Low — build blocked until resolved
+**Detected:** TypeScript/lint gate during Phase 22 implementation
+**Fixed:** This session
+
+**Root cause:** The `useEffect` for fetching prior mastery data called `setPriorDataLoaded(true)` synchronously in its early-return branch (when `user?.id` or `lessonId` were absent). The `react-hooks/set-state-in-effect` ESLint rule prohibits synchronous `setState` calls in the effect body's early-return path.
+
+**Fix:** Wrapped the early-return `setState` call in `setTimeout(0)`, returning a cleanup that clears the timeout:
+
+```typescript
+const id = setTimeout(() => setPriorDataLoaded(true), 0)
+return () => clearTimeout(id)
+```
+
+**Files changed:** `src/pages/SessionPageCore.tsx`
+
+---
+
+## INC-013 — 2026-03-11 — ESLint `react-hooks/refs` — ref `.current` read during render (#325 wiring)
+
+**Severity:** Low — build blocked until resolved
+**Detected:** TypeScript/lint gate during Phase 22 implementation
+**Fixed:** This session
+
+**Root cause:** `pendingTransitionFromRef.current` (a `useRef`) was read directly inside JSX to populate `<FormativeCheckIn fromState={...} toState={...} />`. The `react-hooks/refs` rule prohibits reading `.current` in render-time code.
+
+**Fix:** Replaced `pendingTransitionFromRef` and a second similar ref with two parallel state variables `pendingFrom` / `pendingTo` that are set alongside the ref mutations in `handleTransition`. The ref `pendingTransitionRef` is retained for callback execution logic; state vars are used exclusively for rendering.
+
+**Files changed:** `src/pages/SessionPageCore.tsx`

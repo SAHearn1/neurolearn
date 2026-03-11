@@ -64,3 +64,11 @@ vite.config.js
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ─── Agent / tooling artifacts ───────────────────────
+.claude/
+.playwright-mcp/
+.codex-issue-bodies/
+MCP_CREDENTIAL_CHECKLIST.md
+tmp_codex_config.toml
+*.png
