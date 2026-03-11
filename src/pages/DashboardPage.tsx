@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Alert } from '../components/ui/Alert'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
@@ -16,16 +16,48 @@ import {
 } from '../components/learner/MilestoneCelebration'
 import { BadgeShelf } from '../components/gamification/BadgeShelf'
 import { XPBar } from '../components/ui/XPBar'
+import { TraceRadar } from '../components/ui/TraceRadar'
+import { StreakCalendar } from '../components/dashboard/StreakCalendar'
+import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
+import type { TraceScores } from '../components/ui/TraceRadar'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
 import { useEnrolledCourses } from '../hooks/useEnrollment'
 import { useOnboarding } from '../hooks/useOnboarding'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
 import { useRacaStreak } from '../hooks/useRacaStreak'
+import { useCourses } from '../hooks/useCourses'
 import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getLevelStatus } from '../lib/xp'
 import type { CourseLevel } from '../types/course'
+
+function TraceProfile() {
+  const { cognitiveProfile, loading } = useCognitiveProfile()
+
+  if (loading) {
+    return <div className="h-48 animate-pulse rounded-lg bg-slate-100" />
+  }
+
+  if (!cognitiveProfile?.trace_averages) {
+    return (
+      <p className="text-sm text-slate-400">
+        Complete a deep learning session to see your thinking profile.
+      </p>
+    )
+  }
+
+  const scores: TraceScores = {
+    think: cognitiveProfile.trace_averages.think,
+    reason: cognitiveProfile.trace_averages.reason,
+    articulate: cognitiveProfile.trace_averages.articulate,
+    check: cognitiveProfile.trace_averages.check,
+    extend: cognitiveProfile.trace_averages.extend,
+    ethical: cognitiveProfile.trace_averages.ethical,
+  }
+
+  return <TraceRadar scores={scores} />
+}
 
 const MILESTONE_KEY = 'neurolearn_seen_milestones'
 function getSeenMilestones(): Set<string> {
@@ -126,8 +158,10 @@ function ContinueLearningCard({
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate()
   const { profile, loading: profileLoading } = useProfile()
   const { courses, loading: coursesLoading, error: coursesError } = useEnrolledCourses()
+  const { courses: catalogCourses } = useCourses()
   const firstCourse = courses[0]
   const { state: adaptiveState, loading: adaptiveLoading } = useAdaptiveLearning(firstCourse?.id)
   const [pendingMilestone, setPendingMilestone] = useState<MilestoneType | null>(null)
@@ -159,6 +193,9 @@ export function DashboardPage() {
     }
   }, [profile])
 
+  // Suppress unused variable warning — navigate is available for future use
+  void navigate
+
   if (profileLoading || coursesLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -166,6 +203,26 @@ export function DashboardPage() {
       </div>
     )
   }
+
+  // Today's Focus section logic
+  const todaysFocusHref =
+    adaptiveState?.recommended_lesson_id && firstCourse
+      ? `/courses/${firstCourse.id}/lessons/${adaptiveState.recommended_lesson_id}`
+      : firstCourse
+        ? `/courses/${firstCourse.id}`
+        : null
+
+  const todaysFocusTitle =
+    adaptiveState?.recommended_lesson_id && firstCourse
+      ? 'Pick up where you left off'
+      : firstCourse
+        ? 'Continue your course'
+        : null
+
+  const todaysFocusSubtitle = firstCourse?.title ?? null
+
+  const todaysFocusLabel =
+    adaptiveState?.recommended_lesson_id && firstCourse ? 'Continue lesson →' : 'Go to course →'
 
   return (
     <>
@@ -195,6 +252,28 @@ export function DashboardPage() {
 
         {coursesError && <Alert variant="error">{coursesError}</Alert>}
 
+        {/* Today's Focus */}
+        {todaysFocusHref && todaysFocusTitle && (
+          <section aria-label="Today's focus">
+            <h2 className="mb-3 text-xl font-bold text-slate-900">Today's Focus</h2>
+            <div className="flex items-center gap-4 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-purple-50 p-5 shadow-sm">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 text-xl text-white shadow-brand">
+                🎯
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+                  Recommended
+                </p>
+                <p className="text-lg font-bold text-slate-900 truncate">{todaysFocusTitle}</p>
+                <p className="text-sm text-slate-500">{todaysFocusSubtitle}</p>
+              </div>
+              <Link to={todaysFocusHref} className="flex-shrink-0">
+                <Button>{todaysFocusLabel}</Button>
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* Continue Learning */}
         {firstCourse && (
           <section aria-label="Continue learning">
@@ -223,17 +302,36 @@ export function DashboardPage() {
             </div>
           </section>
         ) : (
-          <section className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
-            <p className="text-2xl">📚</p>
-            <p className="mt-2 font-semibold text-slate-700">No courses yet</p>
-            <p className="mt-1 text-sm text-slate-500">
-              Browse the catalog to find your first course.
-            </p>
-            <Link to="/courses">
-              <Button className="mt-4" variant="secondary">
-                Browse courses
-              </Button>
-            </Link>
+          <section aria-label="Explore courses">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Start Learning</h2>
+              <Link to="/courses" className="text-sm font-semibold text-brand-700">
+                Browse all →
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {catalogCourses.slice(0, 3).map((course) => (
+                <Link
+                  key={course.id}
+                  to={`/courses/${course.id}`}
+                  className="card-hover block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                >
+                  <GradientThumbnail level={course.level as CourseLevel} />
+                  <div className="p-4">
+                    <Badge>{course.level}</Badge>
+                    <h3 className="mt-1 text-base font-semibold text-slate-900 leading-snug">
+                      {course.title}
+                    </h3>
+                    <p className="mt-2 text-xs text-slate-400">
+                      {course.lesson_count ?? 0} lessons
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {catalogCourses.length === 0 && (
+              <p className="text-sm text-slate-500">No courses available yet — check back soon.</p>
+            )}
           </section>
         )}
 
@@ -253,37 +351,22 @@ export function DashboardPage() {
               deepWorkStreakDays: racaStreakDays,
             }}
           />
+          <div className="mt-5 border-t border-slate-100 pt-5">
+            <h3 className="mb-3 text-sm font-bold text-slate-700">Learning Consistency</h3>
+            <StreakCalendar />
+          </div>
         </section>
 
-        {/* Adaptive recommendation */}
-        <section aria-label="Recommended next lesson">
-          <h2 className="mb-3 text-xl font-bold text-slate-900">Recommended for You</h2>
-          {adaptiveLoading ? (
-            <Spinner />
-          ) : adaptiveState?.recommended_lesson_id ? (
-            <Card>
-              <p className="text-sm text-slate-600">
-                Based on your performance (mastery: <strong>{adaptiveState.mastery_score}%</strong>
-                ), we recommend continuing at <strong>
-                  {adaptiveState.current_difficulty}
-                </strong>{' '}
-                difficulty.
-              </p>
-              <Link
-                className="mt-2 inline-block text-sm font-semibold text-brand-700"
-                to="/courses"
-              >
-                View recommendations →
-              </Link>
-            </Card>
-          ) : (
-            <p className="text-sm text-slate-500">
-              Complete a lesson to get personalized recommendations.
-            </p>
-          )}
+        {/* TRACE Cognitive Profile */}
+        <section
+          aria-label="Thinking profile"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"
+        >
+          <h2 className="mb-4 text-xl font-bold text-slate-900">Your Thinking Profile</h2>
+          <TraceProfile />
         </section>
 
-        {racaFlags.epistemicMonitoring && (
+        {!adaptiveLoading && racaFlags.epistemicMonitoring && (
           <section aria-label="Cognitive profile">
             <h2 className="mb-3 text-xl font-bold text-slate-900">Cognitive Profile</h2>
             <Card>

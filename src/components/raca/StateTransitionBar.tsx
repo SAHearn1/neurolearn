@@ -1,6 +1,6 @@
 import { Button } from '../ui/Button'
 import type { CognitiveState } from '../../lib/raca/types/cognitive-states'
-import { STATE_METADATA } from '../../lib/raca/types/cognitive-states'
+import { STATE_METADATA, STUDENT_STATE_LABELS } from '../../lib/raca/types/cognitive-states'
 
 interface Props {
   currentState: CognitiveState
@@ -26,7 +26,7 @@ export function StateTransitionBar({
         <div className="flex flex-wrap gap-2">
           {forwardStates.map((s) => (
             <Button key={s} onClick={() => onTransition(s)} disabled={disabled} variant="primary">
-              Move to {STATE_METADATA[s].label}
+              Move to {STUDENT_STATE_LABELS[s] ?? STATE_METADATA[s].label}
             </Button>
           ))}
           {canRegulate && (
@@ -36,7 +36,7 @@ export function StateTransitionBar({
           )}
         </div>
         <span className="text-xs text-slate-500">
-          Currently: {STATE_METADATA[currentState].label}
+          Currently: {STUDENT_STATE_LABELS[currentState] ?? STATE_METADATA[currentState].label}
         </span>
       </div>
       {hint && <p className="mt-2 text-sm text-amber-600">{hint}</p>}

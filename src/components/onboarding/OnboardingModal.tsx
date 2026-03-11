@@ -135,13 +135,22 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                   )
                 })}
               </div>
-              <div className="mt-6 flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(1)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(3)} className="flex-1">
-                  Next →
-                </Button>
+              <div className="mt-6">
+                <div className="flex gap-3">
+                  <Button variant="secondary" onClick={() => setStep(1)} className="flex-1">
+                    Back
+                  </Button>
+                  <Button onClick={() => setStep(3)} className="flex-1">
+                    Next →
+                  </Button>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  className="mt-3 w-full text-center text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2"
+                >
+                  Skip for now — I'll explore on my own
+                </button>
               </div>
             </div>
           )}
@@ -192,13 +201,22 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                   )
                 })}
               </div>
-              <div className="mt-6 flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(2)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(4)} className="flex-1">
-                  Next →
-                </Button>
+              <div className="mt-6">
+                <div className="flex gap-3">
+                  <Button variant="secondary" onClick={() => setStep(2)} className="flex-1">
+                    Back
+                  </Button>
+                  <Button onClick={() => setStep(4)} className="flex-1">
+                    Next →
+                  </Button>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  className="mt-3 w-full text-center text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2"
+                >
+                  Skip for now — I'll explore on my own
+                </button>
               </div>
             </div>
           )}
@@ -220,15 +238,15 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                 </p>
                 <ol className="space-y-1 text-xs text-slate-700">
                   {[
-                    'Ground yourself',
-                    'Check in',
-                    'Frame your question',
-                    'Plan your approach',
-                    'Build your draft',
-                    'Revise and deepen',
-                    'Defend your reasoning',
-                    'Reconnect and reflect',
-                    'Archive your learning',
+                    'Take a breath',
+                    'How are you feeling?',
+                    'What do you want to know?',
+                    'Make a plan',
+                    'Write your first attempt',
+                    'Improve your thinking',
+                    'Explain your why',
+                    'Look back and grow',
+                    'Save your insights',
                   ].map((label, i) => (
                     <li key={label} className="flex items-center gap-2">
                       <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-brand-200 text-[10px] font-bold text-brand-800">
@@ -258,13 +276,22 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                 </p>
               </div>
 
-              <div className="mt-6 flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(3)} className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={handleComplete} disabled={saving} className="flex-1">
-                  {saving ? 'Saving…' : "I'm ready — let's learn 🚀"}
-                </Button>
+              <div className="mt-6">
+                <div className="flex gap-3">
+                  <Button variant="secondary" onClick={() => setStep(3)} className="flex-1">
+                    Back
+                  </Button>
+                  <Button onClick={handleComplete} disabled={saving} className="flex-1">
+                    {saving ? 'Saving…' : "I'm ready — let's learn 🚀"}
+                  </Button>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  className="mt-3 w-full text-center text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2"
+                >
+                  Skip for now — I'll explore on my own
+                </button>
               </div>
             </div>
           )}

@@ -186,7 +186,10 @@ export function LessonViewer({ lesson, courseId }: LessonViewerProps) {
       <div role="tabpanel" className="animate-fade-in">
         {activeMode === 'read' &&
           (content ? (
-            <RichContentPanel content={content} />
+            <RichContentPanel
+              content={content}
+              glossary={(lesson as Lesson & { glossary?: Record<string, string> }).glossary}
+            />
           ) : (
             <p className="py-8 text-center text-slate-400">No content available.</p>
           ))}
