@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useProfile } from '../hooks/useProfile'
 import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
+import { useLearningTranscript } from '../hooks/useLearningTranscript'
 import { SessionHistory } from '../components/raca/SessionHistory'
 import { SkillPowerUps } from '../components/profile/SkillPowerUps'
 import { Badge } from '../components/ui/Badge'
@@ -55,10 +56,24 @@ function TraceDimensionBar({ label, desc, score }: { label: string; desc: string
 export function ProfilePage() {
   const { profile, loading, error, updateProfile } = useProfile()
   const { cognitiveProfile, loading: lcpLoading } = useCognitiveProfile()
+  const { transcript, loading: transcriptLoading } = useLearningTranscript()
   const [editing, setEditing] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [selectedStyles, setSelectedStyles] = useState<LearningStyle[]>([])
   const [saving, setSaving] = useState(false)
+
+  const downloadTranscript = useCallback(() => {
+    if (!transcript) return
+    const date = new Date().toISOString().slice(0, 10)
+    const json = JSON.stringify(transcript, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `transcript-${date}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [transcript])
 
   const startEdit = () => {
     setDisplayName(profile?.display_name ?? '')
@@ -240,9 +255,16 @@ export function ProfilePage() {
 
       {/* Session History — REQ-18-03 */}
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-slate-900">Session History</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Your recent deep learning sessions.</p>
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Session History</h2>
+            <p className="mt-0.5 text-xs text-slate-500">Your recent deep learning sessions.</p>
+          </div>
+          {transcript && (
+            <Button variant="secondary" onClick={downloadTranscript} disabled={transcriptLoading}>
+              {transcriptLoading ? 'Building…' : '⬇ Download transcript'}
+            </Button>
+          )}
         </div>
         <SessionHistory />
       </section>
