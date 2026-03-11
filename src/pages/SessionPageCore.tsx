@@ -225,6 +225,11 @@ export function SessionPageCore() {
           lessonId,
           statesCompleted: cognitive.stateHistory,
           artifactText: artifacts.map((a) => a.content).join('\n\n'),
+          artifacts: artifacts.map((a) => ({
+            kind: a.kind,
+            content: a.content,
+            word_count: a.word_count ?? 0,
+          })),
           sessionDurationMs: durationMs,
           traceScores: traceScores ? (traceScores as unknown as Record<string, number>) : undefined,
         })

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { supabase } from '../../utils/supabase/client'
 import { useAuthStore } from '../store/authStore'
 import { computeSessionMastery } from '../lib/intelligence/mastery-scorer'
-import type { SessionMasteryResult } from '../lib/intelligence/mastery-scorer'
+import type { ArtifactInput, SessionMasteryResult } from '../lib/intelligence/mastery-scorer'
 
 /**
  * Hook that computes summative mastery at ARCHIVE and persists the result.
@@ -14,6 +14,7 @@ export function useMasteryScoring(): {
     lessonId: string
     statesCompleted: string[]
     artifactText: string
+    artifacts?: ArtifactInput[]
     sessionDurationMs: number
     traceScores?: Record<string, number>
   }) => Promise<SessionMasteryResult>
@@ -26,6 +27,7 @@ export function useMasteryScoring(): {
       lessonId: string
       statesCompleted: string[]
       artifactText: string
+      artifacts?: ArtifactInput[]
       sessionDurationMs: number
       traceScores?: Record<string, number>
     }): Promise<SessionMasteryResult> => {
