@@ -4,13 +4,22 @@ import { Spinner } from './components/ui/Spinner'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 import { useKeyboardNavigation } from './lib/keyboard-nav'
-import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
-import { SignUpPage } from './pages/SignUpPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { PasswordResetPage } from './pages/PasswordResetPage'
-import { CheckEmailPage } from './pages/CheckEmailPage'
-import { UpdatePasswordPage } from './pages/UpdatePasswordPage'
+
+const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })))
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })))
+const SignUpPage = lazy(() => import('./pages/SignUpPage').then((m) => ({ default: m.SignUpPage })))
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+)
+const PasswordResetPage = lazy(() =>
+  import('./pages/PasswordResetPage').then((m) => ({ default: m.PasswordResetPage })),
+)
+const CheckEmailPage = lazy(() =>
+  import('./pages/CheckEmailPage').then((m) => ({ default: m.CheckEmailPage })),
+)
+const UpdatePasswordPage = lazy(() =>
+  import('./pages/UpdatePasswordPage').then((m) => ({ default: m.UpdatePasswordPage })),
+)
 
 const DashboardPage = lazy(() =>
   import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),

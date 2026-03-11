@@ -57,3 +57,22 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 **Fix:** Inserted correct profiles via direct SQL with `user_id` column. The seed script should be updated to upsert by `user_id` rather than `id`.
 
 **Files changed:** None (SQL fix applied directly; seed script fix noted)
+
+---
+
+## INC-005 — 2026-03-10 — Large client bundle (518 kB) degrading initial load performance
+
+**Severity:** Medium — Build warning on every production build; degraded load on low-bandwidth networks
+**Detected:** Vite build output warning (chunk size exceeds 500 kB limit)
+**Fixed:** Commit (this session)
+
+**Root cause:** The main entry bundle (`index.js`) included all vendor dependencies (`@supabase/supabase-js`, `@sentry/react`, `react-router-dom`, `zustand`, `zod`) plus all public route pages (LoginPage, SignUpPage, PasswordResetPage, CheckEmailPage, UpdatePasswordPage, HomePage) bundled eagerly. No `manualChunks` splitting was configured.
+
+**Fix:**
+
+1. Added `build.rollupOptions.output.manualChunks` in `vite.config.ts` to split large vendor libraries into separately cacheable chunks (`vendor-router`, `vendor-supabase`, `vendor-sentry`, `vendor-state`).
+2. Converted all eagerly-imported public pages in `App.tsx` to lazy imports via `React.lazy()` / dynamic `import()`, so only the shell code is in the entry chunk.
+
+**Result:** Main bundle reduced from 518 kB → 192 kB (63% reduction). No chunks exceed 400 kB. Build warning eliminated.
+
+**Files changed:** `vite.config.ts`, `src/App.tsx`
