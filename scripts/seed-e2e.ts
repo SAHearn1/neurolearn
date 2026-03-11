@@ -112,16 +112,18 @@ async function seedCourses(): Promise<string[]> {
 
   const courses = [
     {
-      title: 'E2E Test Course — Reading Fundamentals',
-      description: 'Seed course for E2E testing',
+      title: 'Reading Fundamentals',
+      description:
+        'Build core reading skills with accessible, multimodal lessons designed for every learner.',
       difficulty: 'beginner',
-      tags: ['reading', 'e2e-test'],
+      tags: ['reading', 'literacy'],
     },
     {
-      title: 'E2E Test Course — Math Concepts',
-      description: 'Seed course for E2E testing',
+      title: 'Math Concepts',
+      description:
+        'Explore foundational math ideas through visual walkthroughs, practice, and real-world connections.',
       difficulty: 'intermediate',
-      tags: ['math', 'e2e-test'],
+      tags: ['math', 'numeracy'],
     },
   ]
 
@@ -159,13 +161,38 @@ async function seedLessons(courseIds: string[]): Promise<void> {
 
   const lessonsPerCourse = [
     [
-      { title: 'Lesson 1 — Introduction', content_type: 'text', order_index: 1 },
-      { title: 'Lesson 2 — Core Concepts', content_type: 'text', order_index: 2 },
-      { title: 'Lesson 3 — Practice Quiz', content_type: 'interactive', order_index: 3 },
+      {
+        title: 'Introduction to Reading',
+        type: 'text',
+        sort_order: 1,
+        content: `# Introduction to Reading\n\nReading is one of the most powerful tools you have. It opens doors to ideas, stories, and knowledge from every corner of the world.\n\nIn this lesson, we will explore what strong readers do and how you can build those same habits — at your own pace, in your own way.\n\n## What strong readers do\n\n- They **connect** what they read to things they already know\n- They **ask questions** as they go (not just at the end)\n- They **slow down** when something is confusing — that's a sign to pay closer attention\n- They **visualise** — creating a mental picture of what is happening\n\n## Try it now\n\nBefore moving on, take a moment. Think of a time you read something that surprised you. What made it stick in your memory?\n\nThere is no right answer. The goal is to notice what reading feels like for *you*.`,
+      },
+      {
+        title: 'Core Concepts: Decoding and Fluency',
+        type: 'text',
+        sort_order: 2,
+        content: `# Core Concepts: Decoding and Fluency\n\nDecoding means translating printed letters into words. Fluency means reading smoothly enough that your brain has space to understand, not just decode.\n\n## Decoding strategies\n\n**Sound it out** — break the word into smaller parts (syl-la-bles).\n\n**Look for patterns** — words like *bright*, *night*, and *might* all follow the same pattern.\n\n**Use context** — if you are unsure of a word, read the whole sentence. The meaning of nearby words often reveals it.\n\n## Building fluency\n\nFluency grows with practice. It does not mean reading fast — it means reading at a pace that feels natural and clear.\n\n> Re-reading a short passage two or three times builds fluency faster than reading something new each time.\n\n## Check your understanding\n\nWhat is the difference between decoding and fluency? Write one sentence in your own words before continuing.`,
+      },
+      {
+        title: 'Practice: Reading Comprehension',
+        type: 'interactive',
+        sort_order: 3,
+        content: `# Practice: Reading Comprehension\n\nRead the short passage below, then answer the questions that follow.\n\n---\n\n*Maya sat by the window, watching the rain streak down the glass. She had been trying to read the same page for twenty minutes. Every time she got to the third paragraph, her mind wandered to tomorrow's presentation.*\n\n*She closed the book, took three slow breaths, and decided to try something different: she would read just one sentence at a time, and after each one, she would say what it meant in her own words.*\n\n*By the time the rain stopped, she had finished the chapter.*\n\n---\n\n[CHECK]\nquestion: Why did Maya change her reading strategy?\na: She finished the chapter too quickly\nb: Her mind kept wandering when she tried to read a full page\nc: She wanted to read faster\nd: The book was too easy\ncorrect: b\nexplanation: Maya noticed she could not focus on the full page, so she broke it into smaller steps — one sentence at a time.\n[/CHECK]`,
+      },
     ],
     [
-      { title: 'Lesson 1 — Foundations', content_type: 'text', order_index: 1 },
-      { title: 'Lesson 2 — Visual Walkthrough', content_type: 'video', order_index: 2 },
+      {
+        title: 'Foundations of Number Sense',
+        type: 'text',
+        sort_order: 1,
+        content: `# Foundations of Number Sense\n\nNumber sense is the ability to understand, relate, and connect numbers — not just memorise them. It is the foundation everything else in maths is built on.\n\n## What is number sense?\n\nNumber sense means you can:\n- Estimate whether an answer is reasonable before calculating\n- Understand that **7 + 5 = 12** is the same as **5 + 7 = 12** (and why)\n- Break numbers apart to make calculations easier: **8 × 7 = (8 × 5) + (8 × 2)**\n\n## Why it matters\n\nStudents with strong number sense make fewer errors — not because they are more careful, but because they can *feel* when something is wrong.\n\nIf you calculate 23 × 4 and get 512, number sense tells you immediately: that is too big. 23 × 4 should be around 90.\n\n## Build it now\n\nWithout a calculator, estimate: roughly how many seconds are in a day?\n\nDon't try to be exact. Use what you know: 60 seconds in a minute, 60 minutes in an hour, 24 hours in a day. Round as you go.`,
+      },
+      {
+        title: 'Visual Walkthrough: Fractions',
+        type: 'video',
+        sort_order: 2,
+        content: `# Visual Walkthrough: Fractions\n\nFractions describe parts of a whole. Before we look at rules and procedures, let's build a picture.\n\n## Seeing fractions\n\nImagine a pizza cut into 8 equal slices. If you eat 3 slices, you have eaten **3/8** of the pizza.\n\n- The **bottom number** (denominator) tells you how many equal parts the whole is divided into\n- The **top number** (numerator) tells you how many parts you have\n\n## Common misconception\n\nMany students think a bigger denominator means a bigger fraction. It is actually the opposite.\n\n- 1/2 is larger than 1/8 — because each piece of a pizza cut into 2 is much bigger than each piece cut into 8\n\n## Equivalent fractions\n\n**1/2 = 2/4 = 4/8** — these all describe the same amount, just divided differently.\n\nThink of folding a piece of paper: fold it once → 2 equal parts (1/2). Fold again → 4 equal parts (2/4). The shaded area has not changed.\n\n## Try it\n\nDraw a rectangle. Shade 3/4 of it. Now divide each section in half. How many sections are shaded out of the total? What fraction is that?`,
+      },
     ],
   ]
 
@@ -188,7 +215,6 @@ async function seedLessons(courseIds: string[]): Promise<void> {
       const { error } = await supabase.from('lessons').insert({
         ...lesson,
         course_id: courseId,
-        content_body: `# ${lesson.title}\n\nThis is E2E test content for automated testing.`,
       })
 
       if (error) {
@@ -210,7 +236,7 @@ async function seedClass(userIds: Record<string, string>, courseIds: string[]): 
   const { data: existing } = await supabase
     .from('classes')
     .select('id')
-    .eq('name', 'E2E Test Class')
+    .eq('name', 'Spring 2026 Cohort')
     .maybeSingle()
 
   let classId: string
@@ -221,7 +247,7 @@ async function seedClass(userIds: Record<string, string>, courseIds: string[]): 
   } else {
     const { data, error } = await supabase
       .from('classes')
-      .insert({ name: 'E2E Test Class', educator_id: educatorId })
+      .insert({ name: 'Spring 2026 Cohort', educator_id: educatorId })
       .select('id')
       .single()
 
@@ -230,7 +256,7 @@ async function seedClass(userIds: Record<string, string>, courseIds: string[]): 
       return
     }
     classId = data.id
-    console.log(`  + Created class: E2E Test Class (${classId})`)
+    console.log(`  + Created class: Spring 2026 Cohort (${classId})`)
   }
 
   // Enroll learner
