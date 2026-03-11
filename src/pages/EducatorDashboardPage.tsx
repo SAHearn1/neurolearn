@@ -13,6 +13,7 @@ import { ContentManager } from '../components/educator/ContentManager'
 import { EducatorAnalytics } from '../components/educator/EducatorAnalytics'
 import { StudentLCPDashboard } from '../components/educator/StudentLCPDashboard'
 import { supabase } from '../../utils/supabase/client'
+import { LiveClassroomView } from '../components/educator/LiveClassroomView'
 import { AlertsPanel } from '../components/educator/AlertsPanel'
 import { AlertBadge } from '../components/educator/AlertBadge'
 import { NeedsAttentionPanel } from '../components/educator/NeedsAttentionPanel'
@@ -27,6 +28,7 @@ type Tab =
   | 'content'
   | 'analytics'
   | 'growth'
+  | 'live'
   | 'alerts'
 
 export function EducatorDashboardPage() {
@@ -95,6 +97,7 @@ export function EducatorDashboardPage() {
     { key: 'assignments', label: 'Assignments' },
     { key: 'content', label: 'Content' },
     { key: 'analytics', label: 'Analytics' },
+    { key: 'live', label: 'Live Classroom' },
     { key: 'alerts', label: 'Alerts' },
   ]
 
@@ -227,6 +230,14 @@ export function EducatorDashboardPage() {
         hidden={activeTab !== 'analytics'}
       >
         <EducatorAnalytics />
+      </div>
+      <div
+        id="edu-panel-live"
+        role="tabpanel"
+        aria-labelledby="edu-tab-live"
+        hidden={activeTab !== 'live'}
+      >
+        <LiveClassroomView studentIds={studentIds} />
       </div>
       <div
         id="edu-panel-alerts"
