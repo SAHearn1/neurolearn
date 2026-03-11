@@ -92,16 +92,19 @@ export interface CognitiveTransition {
   conditions: string[]
 }
 
-export const STUDENT_STATE_LABELS: Record<string, string> = {
-  ROOT: 'Take a breath',
-  REGULATE: 'How are you feeling?',
-  POSITION: 'What do you want to know?',
-  PLAN: 'Make a plan',
-  APPLY: 'Write your first attempt',
-  REVISE: 'Improve your thinking',
-  DEFEND: 'Explain your why',
-  RECONNECT: 'Look back and grow',
-  ARCHIVE: 'Save your insights',
+export const STUDENT_STATE_LABELS: Record<string, { label: string; description: string }> = {
+  ROOT: { label: 'Take a breath', description: 'Ground yourself before we begin.' },
+  REGULATE: { label: 'How are you feeling?', description: 'Check in with your mind and body.' },
+  POSITION: {
+    label: 'What do you want to know?',
+    description: 'Frame the question in your own words.',
+  },
+  PLAN: { label: 'Make a plan', description: 'Map the steps you will take.' },
+  APPLY: { label: 'Write your first attempt', description: 'Build a draft response.' },
+  REVISE: { label: 'Improve your thinking', description: 'Strengthen your draft.' },
+  DEFEND: { label: 'Explain your why', description: 'Justify your reasoning.' },
+  RECONNECT: { label: 'Look back and grow', description: 'Reflect on what you have learned.' },
+  ARCHIVE: { label: 'Save your insights', description: 'Capture and celebrate your progress.' },
 }
 
 export const VALID_TRANSITIONS: CognitiveTransition[] = [

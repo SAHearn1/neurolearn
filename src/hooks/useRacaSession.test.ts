@@ -56,11 +56,11 @@ describe('useRacaSession', () => {
     expect(typeof result.current.save).toBe('function')
   })
 
-  it('start returns null when no user is authenticated', () => {
+  it('start returns null when no user is authenticated', async () => {
     const { result } = renderHook(() => useRacaSession())
     let sessionId: string | null = undefined as never
-    act(() => {
-      sessionId = result.current.start({ lesson_id: 'lesson-1', course_id: 'course-1' })
+    await act(async () => {
+      sessionId = await result.current.start({ lesson_id: 'lesson-1', course_id: 'course-1' })
     })
     expect(sessionId).toBeNull()
   })

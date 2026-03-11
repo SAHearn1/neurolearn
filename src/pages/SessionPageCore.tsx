@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLesson } from '../hooks/useLessons'
 import { useRacaSession } from '../hooks/useRacaSession'
@@ -8,6 +8,8 @@ import { useAgent } from '../hooks/useAgent'
 import { racaFlags } from '../lib/raca/feature-flags'
 import { getAgentDefinitionsForState } from '../lib/raca/layer2-agent-router/state-agent-map'
 import { useRuntimeStore } from '../lib/raca/layer0-runtime/runtime-store'
+import { useAuthStore } from '../store/authStore'
+import { supabase } from '../../utils/supabase/client'
 import { CognitiveStateIndicator } from '../components/raca/CognitiveStateIndicator'
 import { StateTransitionBar } from '../components/raca/StateTransitionBar'
 import { ReflectionPrompt } from '../components/raca/ReflectionPrompt'
@@ -18,16 +20,33 @@ import { DefensePanel } from '../components/raca/DefensePanel'
 import { EpistemicDashboard } from '../components/raca/EpistemicDashboard'
 import { RegulationIntervention } from '../components/raca/RegulationIntervention'
 import { AuditTimeline } from '../components/raca/AuditTimeline'
+import { SessionModeSelector } from '../components/raca/SessionModeSelector'
+import { BreakOffering } from '../components/raca/BreakOffering'
+import { RegulationCheckIn } from '../components/raca/RegulationCheckIn'
+import type { RegulationLevel } from '../components/raca/RegulationCheckIn'
+import { TransitionAnnouncement } from '../components/raca/TransitionAnnouncement'
+import { SessionSummaryCard } from '../components/raca/SessionSummaryCard'
 import { Button } from '../components/ui/Button'
 import { scoreTRACE } from '../lib/raca/layer4-epistemic/fluency-tracker'
 import { traceSessionXPBreakdown } from '../lib/xp'
 import type { CognitiveState } from '../lib/raca/types/cognitive-states'
 import type { ArtifactKind } from '../lib/raca/types/artifacts'
 
+type SelectableMode = 'review' | 'standard' | 'challenge'
+
+/** Regulation score below which a break is offered */
+const REGULATION_BREAK_THRESHOLD = 30
+/** Minimum ms between break offerings */
+const BREAK_COOLDOWN_MS = 5 * 60 * 1000
+
+/** Transitions that gate on a RegulationCheckIn before proceeding */
+const CHECK_IN_TRANSITIONS = new Set<string>(['REGULATE→POSITION', 'APPLY→REVISE'])
+
 /** Core RACA session UI — lazily imported by SessionPage when the runtime flag is on */
 export function SessionPageCore() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
   const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
   const { lesson } = useLesson(lessonId)
 
   const session = useRacaSession()
@@ -38,36 +57,148 @@ export function SessionPageCore() {
   const artifacts = useRuntimeStore((s) => s.artifacts)
   const events = useRuntimeStore((s) => s.events)
 
-  const handleTransition = (to: CognitiveState) => {
-    const result = cognitive.transition(to)
-    if (!result.success) {
-      // Error is shown via the hint mechanism
+  // ── P21-01: Session mode selection ───────────────────────────────────────
+  const [sessionStarted, setSessionStarted] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<SelectableMode | null>(null)
+  const sessionStartedAtRef = useRef<number | null>(null)
+
+  // ── P21-04: Transition announcement ──────────────────────────────────────
+  const prevStateRef = useRef<string | null>(null)
+  const [announcement, setAnnouncement] = useState<{ toState: string; visible: boolean }>({
+    toState: '',
+    visible: false,
+  })
+
+  // ── P21-03: Regulation check-in between transitions ───────────────────────
+  const [checkInPending, setCheckInPending] = useState(false)
+  const pendingTransitionRef = useRef<CognitiveState | null>(null)
+
+  // ── P21-02: Break offering ────────────────────────────────────────────────
+  const [showBreakOffering, setShowBreakOffering] = useState(false)
+  const [onBreak, setOnBreak] = useState(false)
+  const breakOfferedAtRef = useRef<number | null>(null)
+
+  // ── P21-06: Session summary ───────────────────────────────────────────────
+  const [showSummary, setShowSummary] = useState(false)
+  const [summaryData, setSummaryData] = useState<{
+    completedStates: string[]
+    durationMs: number
+    wordCount: number
+    traceScores: ReturnType<typeof scoreTRACE> | null
+  } | null>(null)
+
+  // P21-04: Detect state transitions and show announcement
+  useEffect(() => {
+    if (!sessionStarted) return
+    const current = cognitive.currentState
+    if (prevStateRef.current !== null && prevStateRef.current !== current) {
+      // Defer to avoid setState-in-effect cascade lint warning
+      const id = setTimeout(() => setAnnouncement({ toState: current, visible: true }), 0)
+      prevStateRef.current = current
+      return () => clearTimeout(id)
     }
-  }
+    prevStateRef.current = current
+  }, [cognitive.currentState, sessionStarted])
 
-  const saveArtifact = (kind: ArtifactKind, state: CognitiveState, content: string) => {
-    const wordCount = content.trim().split(/\s+/).filter(Boolean).length
-    const version = artifacts.filter((a) => a.kind === kind).length + 1
-    dispatch({
-      type: 'ARTIFACT_SAVED',
-      artifact: {
-        id: crypto.randomUUID(),
-        session_id: session.sessionId ?? '',
-        kind,
-        state,
-        content,
-        word_count: wordCount,
-        version,
-        created_at: new Date().toISOString(),
-      },
+  // P21-02: Watch regulation level — offer a break when it falls below threshold
+  useEffect(() => {
+    if (!sessionStarted || onBreak || showBreakOffering) return
+    if (epistemic.regulation.level >= REGULATION_BREAK_THRESHOLD) return
+    const now = Date.now()
+    if (breakOfferedAtRef.current !== null && now - breakOfferedAtRef.current < BREAK_COOLDOWN_MS) {
+      return
+    }
+    breakOfferedAtRef.current = now
+    const id = setTimeout(() => setShowBreakOffering(true), 0)
+    return () => clearTimeout(id)
+  }, [epistemic.regulation.level, sessionStarted, onBreak, showBreakOffering])
+
+  // P21-01: Mode selected → start session
+  const handleModeSelect = useCallback(
+    async (mode: SelectableMode) => {
+      setSelectedMode(mode)
+      await session.start({ lesson_id: lessonId ?? '', course_id: courseId ?? '' })
+      sessionStartedAtRef.current = Date.now()
+      prevStateRef.current = null // reset so the initial ROOT→first-state fires announcement
+      setSessionStarted(true)
+    },
+    [session, lessonId, courseId],
+  )
+
+  // P21-03: Transition with optional check-in gate
+  const handleTransition = useCallback(
+    (to: CognitiveState) => {
+      const key = `${cognitive.currentState}→${to}`
+      if (CHECK_IN_TRANSITIONS.has(key)) {
+        pendingTransitionRef.current = to
+        setCheckInPending(true)
+        return
+      }
+      cognitive.transition(to)
+    },
+    [cognitive],
+  )
+
+  // P21-03: Check-in submitted → persist + proceed with transition
+  const handleCheckInSelect = useCallback(
+    async (level: RegulationLevel) => {
+      if (user?.id && session.sessionId) {
+        await supabase
+          .from('regulation_checkins')
+          .insert({ user_id: user.id, session_id: session.sessionId, level })
+      }
+      setCheckInPending(false)
+      const pending = pendingTransitionRef.current
+      pendingTransitionRef.current = null
+      if (pending) cognitive.transition(pending)
+    },
+    [user, session.sessionId, cognitive],
+  )
+
+  // P21-03: Skip check-in without persisting
+  const handleCheckInSkip = useCallback(() => {
+    setCheckInPending(false)
+    const pending = pendingTransitionRef.current
+    pendingTransitionRef.current = null
+    if (pending) cognitive.transition(pending)
+  }, [cognitive])
+
+  const saveArtifact = useCallback(
+    (kind: ArtifactKind, state: CognitiveState, content: string) => {
+      const wordCount = content.trim().split(/\s+/).filter(Boolean).length
+      const version = artifacts.filter((a) => a.kind === kind).length + 1
+      dispatch({
+        type: 'ARTIFACT_SAVED',
+        artifact: {
+          id: crypto.randomUUID(),
+          session_id: session.sessionId ?? '',
+          kind,
+          state,
+          content,
+          word_count: wordCount,
+          version,
+          created_at: new Date().toISOString(),
+        },
+      })
+      epistemic.processMessage(content, [])
+    },
+    [artifacts, dispatch, session.sessionId, epistemic],
+  )
+
+  // P21-06: End session → compute summary → show card before navigating
+  const handleEndSession = useCallback(async () => {
+    const traceScores = artifacts.length > 0 ? scoreTRACE(artifacts) : null
+    const durationMs = sessionStartedAtRef.current ? Date.now() - sessionStartedAtRef.current : 0
+    const wordCount = artifacts.reduce((sum, a) => sum + (a.word_count ?? 0), 0)
+    setSummaryData({
+      completedStates: cognitive.stateHistory,
+      durationMs,
+      wordCount,
+      traceScores,
     })
-    epistemic.processMessage(content, [])
-  }
-
-  const handleEndSession = async () => {
     await session.end(false)
-    navigate(`/courses/${courseId}/lessons/${lessonId}`)
-  }
+    setShowSummary(true)
+  }, [artifacts, cognitive.stateHistory, session])
 
   const availableAgents = getAgentDefinitionsForState(cognitive.currentState)
 
@@ -77,18 +208,104 @@ export function SessionPageCore() {
     return traceSessionXPBreakdown(trace.overall)
   }, [cognitive.currentState, artifacts])
 
+  // ── P21-01: Pre-session mode selector ────────────────────────────────────
+  if (!sessionStarted) {
+    return (
+      <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-2xl flex-col p-6">
+        <header className="mb-6">
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
+            RACA Session
+          </p>
+          <h1 className="text-2xl font-bold text-slate-900">{lesson?.title ?? 'Loading…'}</h1>
+        </header>
+        <SessionModeSelector onSelect={handleModeSelect} />
+      </main>
+    )
+  }
+
+  // ── P21-06: Post-session summary ──────────────────────────────────────────
+  if (showSummary && summaryData) {
+    return (
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 p-6"
+      >
+        <SessionSummaryCard
+          completedStates={summaryData.completedStates}
+          sessionDurationMs={summaryData.durationMs}
+          artifactWordCount={summaryData.wordCount}
+          traceScores={summaryData.traceScores ?? undefined}
+        />
+        <div className="flex justify-center">
+          <Button onClick={() => navigate(`/courses/${courseId}/lessons/${lessonId}`)}>
+            Back to lesson
+          </Button>
+        </div>
+      </main>
+    )
+  }
+
+  // ── P21-02: Break screen ─────────────────────────────────────────────────
+  if (onBreak) {
+    return (
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-center gap-4 p-6"
+      >
+        <p className="text-5xl" aria-hidden="true">
+          ☕
+        </p>
+        <h2 className="text-2xl font-bold text-slate-800">Take a moment</h2>
+        <p className="text-sm text-slate-500">
+          Step away, breathe, stretch. Come back when you&apos;re ready.
+        </p>
+        <Button onClick={() => setOnBreak(false)}>Resume session</Button>
+      </main>
+    )
+  }
+
   return (
     <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-6xl gap-6 p-6">
+      {/* P21-04: Transition announcement overlay */}
+      <TransitionAnnouncement
+        toState={announcement.toState}
+        visible={announcement.visible}
+        onDone={() => setAnnouncement((a) => ({ ...a, visible: false }))}
+      />
+
+      {/* P21-03: Regulation check-in modal */}
+      {checkInPending && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="w-full max-w-lg space-y-3">
+            <RegulationCheckIn onSelect={(level) => void handleCheckInSelect(level)} />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleCheckInSkip}
+                className="text-xs text-slate-400 underline hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+              >
+                Skip check-in
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main content */}
       <div className="flex flex-1 flex-col gap-4">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
               RACA Session
+              {selectedMode && (
+                <span className="ml-2 font-normal normal-case text-slate-400">
+                  — {selectedMode}
+                </span>
+              )}
             </p>
             <h1 className="text-2xl font-bold text-slate-900">{lesson?.title ?? 'Loading…'}</h1>
           </div>
-          <Button variant="ghost" onClick={handleEndSession}>
+          <Button variant="ghost" onClick={() => void handleEndSession()}>
             End session
           </Button>
         </header>
@@ -97,6 +314,17 @@ export function SessionPageCore() {
           currentState={cognitive.currentState}
           stateHistory={cognitive.stateHistory}
         />
+
+        {/* P21-02: Break offering card */}
+        {showBreakOffering && (
+          <BreakOffering
+            onTakeBreak={() => {
+              setShowBreakOffering(false)
+              setOnBreak(true)
+            }}
+            onContinue={() => setShowBreakOffering(false)}
+          />
+        )}
 
         {/* State-specific content areas */}
         <div className="space-y-4">
@@ -204,8 +432,8 @@ export function SessionPageCore() {
                 states.
               </p>
               {sessionXP && (
-                <div className="mb-5 mx-auto max-w-xs rounded-xl bg-white border border-green-200 px-4 py-3 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                <div className="mx-auto mb-5 max-w-xs rounded-xl border border-green-200 bg-white px-4 py-3 shadow-sm">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     XP Earned
                   </p>
                   <div className="flex justify-center gap-4 text-sm">
@@ -215,14 +443,14 @@ export function SessionPageCore() {
                     </div>
                     {sessionXP.bonus > 0 && (
                       <>
-                        <div className="text-slate-300 self-center">+</div>
+                        <div className="self-center text-slate-300">+</div>
                         <div className="text-center">
                           <p className="text-lg font-bold text-amber-600">+{sessionXP.bonus}</p>
                           <p className="text-xs text-slate-500">TRACE bonus</p>
                         </div>
                       </>
                     )}
-                    <div className="text-slate-300 self-center">=</div>
+                    <div className="self-center text-slate-300">=</div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-brand-700">+{sessionXP.total} XP</p>
                       <p className="text-xs text-slate-500">Total</p>
@@ -230,7 +458,7 @@ export function SessionPageCore() {
                   </div>
                 </div>
               )}
-              <Button onClick={handleEndSession}>Finish and return to lesson</Button>
+              <Button onClick={() => void handleEndSession()}>Finish and return to lesson</Button>
             </div>
           )}
 

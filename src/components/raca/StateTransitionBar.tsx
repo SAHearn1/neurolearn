@@ -26,7 +26,7 @@ export function StateTransitionBar({
         <div className="flex flex-wrap gap-2">
           {forwardStates.map((s) => (
             <Button key={s} onClick={() => onTransition(s)} disabled={disabled} variant="primary">
-              Move to {STUDENT_STATE_LABELS[s] ?? STATE_METADATA[s].label}
+              Move to {STUDENT_STATE_LABELS[s]?.label ?? STATE_METADATA[s].label}
             </Button>
           ))}
           {canRegulate && (
@@ -36,7 +36,8 @@ export function StateTransitionBar({
           )}
         </div>
         <span className="text-xs text-slate-500">
-          Currently: {STUDENT_STATE_LABELS[currentState] ?? STATE_METADATA[currentState].label}
+          Currently:{' '}
+          {STUDENT_STATE_LABELS[currentState]?.label ?? STATE_METADATA[currentState].label}
         </span>
       </div>
       {hint && <p className="mt-2 text-sm text-amber-600">{hint}</p>}

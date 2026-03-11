@@ -33,7 +33,7 @@ export function CognitiveStateIndicator({ currentState, stateHistory }: Props) {
         <span
           className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${STATE_COLORS[currentState]}`}
         >
-          {STUDENT_STATE_LABELS[currentState] ?? meta.label}
+          {STUDENT_STATE_LABELS[currentState]?.label ?? meta.label}
         </span>
         <span className="text-xs text-slate-500">{progress}% through session</span>
       </div>
@@ -49,7 +49,7 @@ export function CognitiveStateIndicator({ currentState, stateHistory }: Props) {
                   ? 'bg-brand-200'
                   : 'bg-slate-100'
             }`}
-            title={STUDENT_STATE_LABELS[s] ?? STATE_METADATA[s].label}
+            title={STUDENT_STATE_LABELS[s]?.label ?? STATE_METADATA[s].label}
           />
         ))}
       </div>

@@ -8,6 +8,7 @@ export interface AccessibilityPreferences {
   high_contrast: boolean
   screen_reader_hints: boolean
   dyslexia_font?: boolean
+  preferredInputMode?: 'text' | 'voice'
 }
 
 export interface UserProfile {
