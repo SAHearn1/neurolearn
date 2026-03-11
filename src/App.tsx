@@ -48,6 +48,11 @@ const ParentDashboardPage = lazy(() =>
 const AdminDashboardPage = lazy(() =>
   import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })),
 )
+const EducatorStudentDetailPage = lazy(() =>
+  import('./pages/EducatorStudentDetailPage').then((m) => ({
+    default: m.EducatorStudentDetailPage,
+  })),
+)
 
 /**
  * Intercepts Supabase auth hash fragments that land on any page.
@@ -164,6 +169,14 @@ export function App() {
               </ProtectedRoute>
             }
             path="/educator"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole={['educator', 'admin']}>
+                <EducatorStudentDetailPage />
+              </ProtectedRoute>
+            }
+            path="/educator/students/:studentId"
           />
           <Route
             element={
