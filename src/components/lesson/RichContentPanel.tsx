@@ -1,9 +1,27 @@
 import { useMemo } from 'react'
 import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import { useContentSettings } from '../../hooks/useContentSettings'
 import { useSettingsStore } from '../../store/settingsStore'
 import { InlineCheck } from './InlineCheck'
 import { GlossaryTerm } from './GlossaryTerm'
+
+// Detect whether a string is Markdown (vs already-HTML).
+// Heuristic: if it starts with a Markdown heading, bullet, or bold marker
+// before any HTML tag, treat it as Markdown.
+function looksLikeMarkdown(text: string): boolean {
+  const trimmed = text.trimStart()
+  return (
+    /^#{1,6}\s|^\*{1,2}[^*]|\*\*|^[-*+]\s|^>\s|^```/.test(trimmed) &&
+    !/<[a-z][\s\S]*?>/i.test(trimmed.slice(0, 100))
+  )
+}
+
+function markdownToHtml(text: string): string {
+  if (!looksLikeMarkdown(text)) return text
+  // marked.parse returns string when not using async option
+  return marked.parse(text, { async: false }) as string
+}
 
 interface RichContentPanelProps {
   content: string
@@ -33,7 +51,7 @@ function parseContent(raw: string): ContentBlock[] {
 
   while ((match = checkRe.exec(raw)) !== null) {
     if (match.index > lastIndex) {
-      blocks.push({ type: 'html', content: raw.slice(lastIndex, match.index) })
+      blocks.push({ type: 'html', content: markdownToHtml(raw.slice(lastIndex, match.index)) })
     }
 
     const inner = match[1]
@@ -56,11 +74,11 @@ function parseContent(raw: string): ContentBlock[] {
   }
 
   if (lastIndex < raw.length) {
-    blocks.push({ type: 'html', content: raw.slice(lastIndex) })
+    blocks.push({ type: 'html', content: markdownToHtml(raw.slice(lastIndex)) })
   }
 
   if (blocks.length === 0) {
-    blocks.push({ type: 'html', content: raw })
+    blocks.push({ type: 'html', content: markdownToHtml(raw) })
   }
 
   return blocks
