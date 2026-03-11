@@ -4,16 +4,8 @@ import { Footer } from './Footer'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 
-const routesWithoutShell = new Set(['/', '/login', '/signup'])
-
 export function PageWrapper() {
   const location = useLocation()
-  const useAppShell = !routesWithoutShell.has(location.pathname)
-
-  if (!useAppShell) {
-    return <Outlet />
-  }
-
   const isLessonRoute = /^\/courses\/[^/]+\/lessons\/[^/]+$/.test(location.pathname)
 
   return (

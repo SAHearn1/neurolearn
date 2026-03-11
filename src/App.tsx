@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { Spinner } from './components/ui/Spinner'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { PageWrapper } from './components/layout/PageWrapper'
 import { useAuth } from './hooks/useAuth'
 import { useKeyboardNavigation } from './lib/keyboard-nav'
 
@@ -114,87 +115,89 @@ export function App() {
         <Route element={<CheckEmailPage />} path="/check-email" />
         <Route element={<UpdatePasswordPage />} path="/update-password" />
 
-        {/* Authenticated routes */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-          path="/dashboard"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <CoursesPage />
-            </ProtectedRoute>
-          }
-          path="/courses"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <CoursePage />
-            </ProtectedRoute>
-          }
-          path="/courses/:courseId"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <LessonPage />
-            </ProtectedRoute>
-          }
-          path="/courses/:courseId/lessons/:lessonId"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <SessionPage />
-            </ProtectedRoute>
-          }
-          path="/courses/:courseId/lessons/:lessonId/session"
-        />
-        <Route
-          element={
-            <ProtectedRoute requiredRole={['educator', 'admin']}>
-              <EducatorDashboardPage />
-            </ProtectedRoute>
-          }
-          path="/educator"
-        />
-        <Route
-          element={
-            <ProtectedRoute requiredRole={['parent', 'admin']}>
-              <ParentDashboardPage />
-            </ProtectedRoute>
-          }
-          path="/parent"
-        />
-        <Route
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <AdminDashboardPage />
-            </ProtectedRoute>
-          }
-          path="/admin"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-          path="/profile"
-        />
-        <Route
-          element={
-            <ProtectedRoute>
-              <SettingsPage />
-            </ProtectedRoute>
-          }
-          path="/settings"
-        />
+        {/* Authenticated routes — rendered inside PageWrapper shell */}
+        <Route element={<PageWrapper />}>
+          <Route
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+            path="/dashboard"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <CoursesPage />
+              </ProtectedRoute>
+            }
+            path="/courses"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <CoursePage />
+              </ProtectedRoute>
+            }
+            path="/courses/:courseId"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <LessonPage />
+              </ProtectedRoute>
+            }
+            path="/courses/:courseId/lessons/:lessonId"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <SessionPage />
+              </ProtectedRoute>
+            }
+            path="/courses/:courseId/lessons/:lessonId/session"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole={['educator', 'admin']}>
+                <EducatorDashboardPage />
+              </ProtectedRoute>
+            }
+            path="/educator"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole={['parent', 'admin']}>
+                <ParentDashboardPage />
+              </ProtectedRoute>
+            }
+            path="/parent"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+            path="/admin"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+            path="/profile"
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+            path="/settings"
+          />
+        </Route>
 
         <Route element={<NotFoundPage />} path="*" />
       </Routes>
