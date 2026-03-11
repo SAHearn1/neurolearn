@@ -348,3 +348,45 @@ return () => clearTimeout(id)
 **Fix:** Replaced `pendingTransitionFromRef` and a second similar ref with two parallel state variables `pendingFrom` / `pendingTo` that are set alongside the ref mutations in `handleTransition`. The ref `pendingTransitionRef` is retained for callback execution logic; state vars are used exclusively for rendering.
 
 **Files changed:** `src/pages/SessionPageCore.tsx`
+
+---
+
+## INC-014 — 2026-03-11 — 406 on educator_profiles / parent_profiles fetch
+
+**Severity:** Medium — console error on every educator/parent page load
+**Detected:** Playwright QA — educator portal verification
+**Fixed:** Commit `441458f`
+
+**Root cause:** `useEducatorProfile` and `useParentProfile` used `.single()` which always issues a 406 HTTP response when no row is found, even though the PGRST116 error code was being caught and silenced. The 406 appeared as a network error in the browser console.
+
+**Fix:** Changed `.single()` to `.maybeSingle()`. Returns `null` with no error when no row exists; no HTTP error is emitted.
+
+**Files changed:** `src/hooks/useEducatorProfile.ts`, `src/hooks/useParentProfile.ts`
+
+---
+
+## INC-015 — 2026-03-11 — 400 on courses query with '**none**' sentinel
+
+**Severity:** Medium — educator and parent components fail to load course data when no progress exists yet
+**Detected:** Playwright QA — educator dashboard, parent progress reports
+**Fixed:** Commit `441458f`
+
+**Root cause:** Three components guarded empty `courseIds` arrays with `.in('id', ['__none__'])` as a no-match sentinel. PostgREST rejects `__none__` with a 400 because `courses.id` is a UUID column and `__none__` is not a valid UUID.
+
+**Fix:** Replaced `'__none__'` with the nil UUID `'00000000-0000-0000-0000-000000000000'`, which is a valid UUID that matches no real records.
+
+**Files changed:** `src/components/educator/StudentProgressTable.tsx`, `src/components/parent/ParentProgressReports.tsx`, `src/components/educator/EducatorAnalytics.tsx`
+
+---
+
+## INC-016 — 2026-03-11 — ANTHROPIC_API_KEY absent from Supabase secrets
+
+**Severity:** Critical — Amara agent (all 5 agents) non-functional; every agent-invoke call returned ERR_FAILED
+**Detected:** Playwright QA — RACA session agent invocation
+**Fixed:** This session (no code change — secret set via CLI)
+
+**Root cause:** The `agent-invoke` Edge Function requires `ANTHROPIC_API_KEY` to call the Claude API. The key was never set in Supabase production secrets. All agent calls failed silently from the learner's perspective (agent panel showed error alert).
+
+**Fix:** `supabase secrets set ANTHROPIC_API_KEY=<key>` run against the production project.
+
+**Files changed:** None (Supabase secret configuration only)
