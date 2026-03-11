@@ -57,3 +57,64 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 **Fix:** Inserted correct profiles via direct SQL with `user_id` column. The seed script should be updated to upsert by `user_id` rather than `id`.
 
 **Files changed:** None (SQL fix applied directly; seed script fix noted)
+
+---
+
+## INC-005 — 2026-03-10 — Large client bundle (518 kB) degrading initial load performance
+
+**Severity:** Medium — Build warning on every production build; degraded load on low-bandwidth networks
+**Detected:** Vite build output warning (chunk size exceeds 500 kB limit)
+**Fixed:** PR #276
+
+**Root cause:** The main entry bundle (`index.js`) included all vendor dependencies (`@supabase/supabase-js`, `@sentry/react`, `react-router-dom`, `zustand`, `zod`) plus all public route pages (LoginPage, SignUpPage, PasswordResetPage, CheckEmailPage, UpdatePasswordPage, HomePage) bundled eagerly. No `manualChunks` splitting was configured.
+
+**Fix:**
+
+1. Added `build.rollupOptions.output.manualChunks` in `vite.config.ts` to split large vendor libraries into separately cacheable chunks (`vendor-router`, `vendor-supabase`, `vendor-sentry`, `vendor-state`).
+2. Converted all eagerly-imported public pages in `App.tsx` to lazy imports via `React.lazy()` / dynamic `import()`, so only the shell code is in the entry chunk.
+
+**Result:** Main bundle reduced from 518 kB → 192 kB (63% reduction). No chunks exceed 400 kB. Build warning eliminated.
+
+**Files changed:** `vite.config.ts`, `src/App.tsx`
+
+---
+
+## INC-006 — 2026-03-10 — RACA engine disabled by default via feature flags
+
+**Severity:** High — adaptive session experience never activated; users always received fallback UI
+**Detected:** Issue review / code inspection (this session)
+**Fixed:** PR #274
+
+**Root cause:** `.env.example` set all `VITE_RACA_ENABLE_*` flags to `false`. `feature-flags.ts` treated any absent/false env var as `false`, so the engine was always off unless every flag was manually set. `SessionPage` gated on `racaFlags.runtime` and showed a fallback UI whenever it was `false`. `useRacaSession.start()` additionally blocked session start when `racaFlags.runtime` was `false`.
+
+**Fix:**
+
+- `feature-flags.ts`: `readFlag()` now accepts a `devDefault` parameter (default `true`). In development, when a flag env var is absent or empty the dev default is used rather than defaulting to `false`. Flags requiring external services (`AGENTS`, `AUDIT`) default to `false`.
+- `.env.example`: Updated development defaults — stable flags set to `true`; service-dependent flags (`AGENTS`, `AUDIT`) remain `false` with explanatory comments.
+- `useRacaSession.ts`: Removed the redundant `!racaFlags.runtime` guard in `start()` — `SessionPage` already gates on this flag before rendering.
+- Added 29 new unit tests covering session engine initialisation, adaptive loop, and regulation state updates.
+
+**Files changed:** `src/lib/raca/feature-flags.ts`, `src/hooks/useRacaSession.ts`, `.env.example`, `src/lib/raca/layer0-runtime/session-manager.test.ts` (new), `src/lib/raca/layer4-epistemic/adaptation-engine.test.ts` (new)
+
+---
+
+## INC-007 — 2026-03-10 — Insufficient test coverage across hooks, pages, and dashboard components
+
+**Severity:** Low — no runtime behavior changed; risk of undetected regressions
+**Detected:** Manual audit of test count vs module count (issue #270)
+**Fixed:** PR #275
+
+**Root cause:** Feature development prioritized delivery over test coverage. The repository had ~182 source files but only 13 test files (~79 tests), leaving hooks, dashboard components, pages, and RACA runtime modules entirely untested.
+
+**Fix:** Added 15 new test files covering:
+
+- `src/components/dashboard/` — CourseCard, ProgressWidget, RecentActivity, StreakBadge
+- `src/hooks/` — useAuth, useUserRole, useSettings, useAdaptiveLearning, useRacaSession
+- `src/pages/` — LoginPage (form rendering, validation, sign-in success/error flows), SessionPage
+- `src/lib/raca/layer0-runtime/` — session-manager (start/end/recordEvent), runtime-reducer (all action types)
+- `src/lib/raca/layer1-cognitive-fsm/` — preconditions (all 9 cognitive states)
+- `src/store/progressStore.ts` — fetchCourseProgress, fetchLessonProgress, updateLessonProgress
+
+Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criterion. Also added `@vitest/coverage-v8` dependency and excluded `coverage/**` from ESLint.
+
+**Files changed:** 15 new test files, `package.json`, `eslint.config.js`

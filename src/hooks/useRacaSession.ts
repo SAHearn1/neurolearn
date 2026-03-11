@@ -24,7 +24,7 @@ export function useRacaSession() {
   const userId = user?.id
   const start = useCallback(
     (config: SessionConfig) => {
-      if (!userId || !racaFlags.runtime) return null
+      if (!userId) return null
       return startSession(userId, config)
     },
     [userId],

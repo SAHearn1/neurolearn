@@ -1,0 +1,537 @@
+{
+  "meta": {
+    "project": "neurolearn",
+    "phase": "19-20",
+    "first_issue_number": 227,
+    "generated": "2026-03-09",
+    "migration_sequence_start": 21,
+    "total_issues": 69,
+    "milestones": {
+      "Phase 19 — Intelligence Engine Core": "Phase 19",
+      "Phase 20 — Educator, Parent & Standards": "Phase 20"
+    }
+  },
+  "labels_to_create": [
+    {"name": "priority:critical", "color": "B91C1C", "description": "Blocks core platform function"},
+    {"name": "priority:high",     "color": "D97706", "description": "Required for launch"},
+    {"name": "priority:medium",   "color": "1D4ED8", "description": "Important quality improvement"},
+    {"name": "priority:low",      "color": "065F46", "description": "Nice to have"},
+    {"name": "layer:ai-engine",   "color": "4338CA", "description": "Agentic intelligence engine"},
+    {"name": "layer:assessment",  "color": "0F766E", "description": "Diagnostic/formative/summative loop"},
+    {"name": "layer:standards",   "color": "065F46", "description": "Common Core / CCSS alignment"},
+    {"name": "layer:educator",    "color": "6366F1", "description": "Educator-facing features"},
+    {"name": "layer:parent",      "color": "7C3AED", "description": "Parent-facing features"},
+    {"name": "layer:admin",       "color": "374151", "description": "Admin-facing features"},
+    {"name": "layer:student-ux",  "color": "B8860B", "description": "Student experience & agency"},
+    {"name": "layer:data",        "color": "1A472A", "description": "Data, reporting, exports"},
+    {"name": "layer:bug",         "color": "DC2626", "description": "Bug fix"},
+    {"name": "phase:19",          "color": "4338CA", "description": "Phase 19 implementation"},
+    {"name": "phase:20",          "color": "6366F1", "description": "Phase 20 implementation"},
+    {"name": "rootwork",          "color": "1A472A", "description": "RootWork Framework alignment"}
+  ],
+  "issues": [
+
+    {
+      "id": "AI-01",
+      "title": "Diagnostic gate: query adaptive_learning_state on session ROOT entry",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-06"],
+      "files": [
+        "src/pages/SessionPageCore.tsx",
+        "src/hooks/useAdaptiveLearning.ts",
+        "src/lib/raca/layer3-agents/prompt-templates.ts",
+        "src/lib/raca/layer0-runtime/runtime-store.ts"
+      ],
+      "body": "## Problem\nEvery RACA session begins with generic grounding prompts regardless of prior history. `adaptive_learning_state` exists in the DB and the hook exists, but neither is queried at session initialization. The AI engine treats every session as a blank slate — first-timer and returning learner with 3 failed attempts receive identical prompts.\n\n## Required\n1. On ROOT entry, query `adaptive_learning_state` for `mastery_score`, `strengths[]`, `weaknesses[]`, `last_assessment_at`.\n2. Fetch `epistemic_profiles` for `trace_averages` and `growth_trajectory`.\n3. Inject a `diagnosticContext` object into the ROOT stage prompt template.\n4. For first-time learners (`last_assessment_at IS NULL`): run a `DIAGNOSTIC_CALIBRATION` sub-state with 3 short-answer probes scored by the framing-agent to establish baseline TRACE + initial mastery score. Write result to `adaptive_learning_state`.\n5. For returning learners: the agent must acknowledge the gap from last session and anchor the session to it.\n\n## Implementation\n- Create `useSessionDiagnostic(userId, courseId)` hook: fetches both tables, returns `DiagnosticContext`.\n- Pass `DiagnosticContext` into `SessionPageCore` props.\n- Modify `buildPromptBundle` in `prompt-templates.ts` to accept and embed `diagnosticContext`.\n- Add `DIAGNOSTIC_CALIBRATION` entry in cognitive-states if not already present.\n\n## RootWork Alignment\n**Root (5Rs):** The Root phase requires connecting to prior knowledge. Without the diagnostic gate, Root cannot function as designed. Epistemic fluency requires a known baseline."
+    },
+
+    {
+      "id": "AI-02",
+      "title": "Gap detection + micro-learning prescription engine (post-ARCHIVE pipeline)",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "XL (1-2 weeks)",
+      "depends_on": ["AI-04", "AI-05", "AI-06"],
+      "files": [
+        "src/hooks/useAdaptiveLearning.ts",
+        "src/pages/SessionPageCore.tsx",
+        "src/lib/raca/learning-events.ts"
+      ],
+      "new_files": [
+        "src/lib/intelligence/gap-analysis.ts",
+        "supabase/migrations/021_micro_learning_prescriptions.sql"
+      ],
+      "body": "## Problem\n`adaptive_learning_state.strengths[]` and `weaknesses[]` are always empty arrays — never populated by session outcomes. `computeDifficultyAdjustment` uses only raw quiz scores, ignoring multi-dimensional TRACE data. No gap detection algorithm runs post-session. No prescription engine converts gaps into micro-learning sequences.\n\n## Required\nAfter each session reaches ARCHIVE:\n1. Extract session artifacts + TRACE scores.\n2. Cross-reference artifact content against `skill_tags` on the lesson (requires AI-06).\n3. Update `adaptive_learning_state.weaknesses[]` with skill codes lacking evidence.\n4. Update `strengths[]` with skills above threshold.\n5. Set `recommended_lesson_id` to the lesson most targeted to the top-priority gap.\n6. Generate a micro-learning prescription: 1-3 targeted activities surfaced as \"Your next challenge\" on dashboard.\n\n## Implementation\n- Create `GapAnalysisService` in `src/lib/intelligence/gap-analysis.ts`.\n- Subscribe to `LEARNING.STATE_COMPLETED` where `state === 'ARCHIVE'` in learning-events.ts.\n- On event: fetch artifacts, run concept extraction against lesson `skill_tags`, compute coverage per skill.\n- Write top gaps to `adaptive_learning_state`, set `recommended_lesson_id`.\n- Create `micro_learning_prescriptions` table via new migration.\n- Surface on dashboard as a \"Targeted Practice\" card.\n\n## RootWork Alignment\n**Regulate + Reconnect (5Rs):** Regulate requires knowing current capacity. Reconnect requires bridges to unmastered knowledge. Both are impossible without gap detection."
+    },
+
+    {
+      "id": "AI-03",
+      "title": "Continuous regulation monitoring: check-in widget + frustration detector",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": [],
+      "files": [
+        "src/pages/SessionPageCore.tsx",
+        "src/components/raca/RegulationIntervention.tsx",
+        "src/lib/raca/regulation-content.ts"
+      ],
+      "new_files": [
+        "src/components/raca/RegulationCheckIn.tsx",
+        "src/lib/intelligence/frustration-detector.ts",
+        "supabase/migrations/021_regulation_checkins.sql"
+      ],
+      "body": "## Problem\nRegulation starts at 75 (hardcoded default) and is only updated reactively when dysregulation triggers a rollback. No proactive check-in at session start, no time-of-day awareness, no inter-session regulation tracking, no frustration signal monitoring during session.\n\n## Required\n1. **Pre-ROOT check-in widget**: 3-option selector (Ready / Somewhat ready / Not ready) sets initial `regulation.level` before ROOT.\n2. **Frustration detector**: monitor `response_latency_ms`, `word_count_trend`, `revision_reversals`, `agent_clarification_requests`. On 2+ signals within 3 turns → emit `FRUSTRATION_SIGNAL` → runtime dispatches REGULATE re-entry.\n3. **Persist regulation trajectory**: `regulation_checkins` table records `(session_id, reported_level, detected_signals[], timestamp)`.\n4. **Regulation heatmap data**: weekly pattern (day × time) of peak vs. dysregulation available for educator dashboard (EDU-13).\n\n## Implementation\n- Build `<RegulationCheckIn />` component with 3 labeled buttons + optional \"Tell me more\" text.\n- Create `frustration-detector.ts` utility; subscribe to session event stream.\n- In `runtime-reducer.ts`: on `FRUSTRATION_SIGNAL` action (2+ in window) → dispatch REGULATE transition.\n- Migration: `regulation_checkins(id, session_id, reported_level, detected_signals jsonb, timestamp)`.\n\n## RootWork Alignment\n**Regulate (5Rs — primary):** Regulation is the first R. Without continuous monitoring, regulation-awareness is performative."
+    },
+
+    {
+      "id": "AI-04",
+      "title": "Formative skill evidence collection per agent turn",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-06"],
+      "files": [
+        "src/lib/raca/layer3-agents/agent-base.ts",
+        "src/lib/raca/layer3-agents/output-validator.ts",
+        "src/lib/raca/layer3-agents/prompt-templates.ts"
+      ],
+      "new_files": [
+        "src/lib/intelligence/skill-evidence-extractor.ts",
+        "supabase/migrations/022_skill_evidence_events.sql"
+      ],
+      "body": "## Problem\nArtifacts are saved as text blobs. TRACE scorer runs on surface text features only. No per-turn skill tagging happens. Agents do not know which learning objectives have been demonstrated vs. remain unshown. The DEFEND state collects rich evidence but its output is never analyzed for skill coverage.\n\n## Required\nEach agent interaction produces a `skill_evidence_events` record:\n1. Extract key claims, reasoning chains, vocabulary from learner artifact.\n2. Tag which `skill_tags` (from AI-06 lesson taxonomy) are `\"present\"` vs. `\"gap\"`.\n3. Update `session_skill_evidence` in real time.\n4. Use gap tags to sharpen next agent probe — if learner has not shown Claim-Evidence-Reasoning, the next turn explicitly probes for it.\n\n## Implementation\n- Create `extractSkillEvidence(agentId, learnerContent, targetSkills[])` in `skill-evidence-extractor.ts`.\n- Call from `output-validator.ts` after compliance check.\n- Save to `skill_evidence_events(session_id, agent_id, artifact_id, skill_code, evidence_type, confidence_score, excerpt)`.\n- Add `currentSkillGaps[]` to `AgentContext` in `agent-base.ts`; populate from `adaptive_learning_state.weaknesses`.\n- Expose session evidence summary to educator via Supabase Realtime subscription.\n\n## RootWork Alignment\n**TRACE — Check and Extend:** Formative evidence is the mechanical implementation of Check (self-correction) and Extend (transfer)."
+    },
+
+    {
+      "id": "AI-05",
+      "title": "Summative mastery evaluation at ARCHIVE: computeSessionMastery()",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-04"],
+      "files": [
+        "src/pages/SessionPageCore.tsx",
+        "src/lib/raca/learning-events.ts"
+      ],
+      "new_files": [
+        "src/lib/intelligence/mastery-scorer.ts",
+        "supabase/migrations/023_lesson_progress_mastery.sql"
+      ],
+      "body": "## Problem\nARCHIVE marks a session complete but performs no summative evaluation. A learner who provided one-word answers and one who wrote deeply reasoned defenses both receive `status: 'completed'`. `mastery_score` is never updated. There is no mastery threshold before a learner progresses.\n\n## Required\nARCHIVE triggers a summative evaluation:\n- **>= 75**: `lesson_progress.status = 'mastered'`, full XP, unlock next lesson.\n- **50-74**: `status = 'completed_with_gaps'`, partial XP, surface top gap before next lesson unlocks.\n- **< 50**: `status = 'needs_retry'`, do not unlock next lesson, generate targeted remediation activity.\n\nLearners may demonstrate mastery at any time via a short mastery check on previously covered material.\n\n## Implementation\n- Create `computeSessionMastery(sessionId)` in `mastery-scorer.ts`. Inputs: artifact TRACE scores, `skill_evidence_events` coverage, defense word count, session duration. Output: `{ score, level, gaps[], strengths[] }`.\n- Subscribe to `LEARNING.STATE_COMPLETED` where `state === 'ARCHIVE'` → call `computeSessionMastery`.\n- Add `mastery_status` and `mastery_source` columns to `lesson_progress` via migration.\n- Update `adaptive_learning_state.mastery_score`.\n- Add `MASTERY_DEMONSTRATION` session mode: DEFEND-only, 3-turn, opens from any previously completed lesson.\n\n## RootWork Alignment\n**Restore (5Rs):** Meaningful summative evaluation IS the Restore mechanism — consolidation and reintegration of learning."
+    },
+
+    {
+      "id": "AI-06",
+      "title": "Skill taxonomy + learning objectives map on lessons (foundation for all intelligence)",
+      "priority": "critical",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": [],
+      "files": [
+        "supabase/migrations/",
+        "src/components/educator/ContentManager.tsx"
+      ],
+      "new_files": [
+        "supabase/migrations/021_skill_taxonomy.sql",
+        "src/lib/intelligence/skill-taxonomy-seed.ts"
+      ],
+      "body": "## Problem\nLessons have only `title`, `content`, and `type`. No `skill_objectives`, no `skill_tags`, no prerequisite graph, no `concept_keywords`. `adaptive_learning_state.strengths[]` and `weaknesses[]` are untyped text arrays — no controlled vocabulary. AI agents have no concept of what a lesson is supposed to teach. This is the foundational blocker for AI-02, AI-04, and CCSS-01.\n\n## Required\nEvery lesson must have:\n- `learning_objectives text[]`: 1-5 measurable skill statements.\n- `skill_tags text[]`: controlled vocabulary (e.g., `\"ELA.argument.claim\"`, `\"MATH.ratio.proportional_reasoning\"`).\n- `prerequisite_lesson_ids uuid[]`: ordered dependency graph.\n- `concept_keywords text[]`: terms whose appearance in artifacts signals content engagement.\n\nA `skill_taxonomy` master table: `(id, code, label, domain, rwComponent, difficulty, ccss_code, description)`.\n\n## Implementation\n1. Migration: `ALTER TABLE lessons ADD COLUMN learning_objectives text[] DEFAULT '{}'`, `skill_tags text[] DEFAULT '{}'`, `concept_keywords text[] DEFAULT '{}'`, `prerequisite_lesson_ids uuid[] DEFAULT '{}'`.\n2. Create `skill_taxonomy` table. Seed with ~50 codes covering ELA/Math/Communication aligned to 5Rs components.\n3. Add `skill_tags` multi-select field to educator lesson editor (connects to EDU-01 fix).\n4. Build `SkillTagAutocomplete` component searching `skill_taxonomy` table.\n\n## RootWork Alignment\n**TRACE — Reason and Extend:** Without a skill map, TRACE scoring is purely stylometric, not semantic."
+    },
+
+    {
+      "id": "AI-07",
+      "title": "Personalized agent probing: inject TRACE gaps and adaptation level into all prompts",
+      "priority": "high",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-01", "AI-06"],
+      "files": [
+        "src/lib/raca/layer3-agents/prompt-templates.ts",
+        "src/lib/raca/layer3-agents/agent-base.ts",
+        "src/lib/raca/layer4-epistemic/adaptation-engine.ts"
+      ],
+      "new_files": [
+        "src/lib/raca/layer3-agents/adaptation-scripts.ts"
+      ],
+      "body": "## Problem\n`buildPromptBundle` accepts `AgentContext` with TRACE scores, `adaptation_level`, `regulation_level`, and `mastery_score` — but these are never embedded into the prompt text. Every learner at every level receives identical probing strategy. The adaptation engine computes the level but never acts on it.\n\n## Required\nAgent prompts must dynamically adjust based on:\n1. `adaptation_level` (standard/guided/supported/scaffolded) → already computed, must now be applied.\n2. Specific TRACE gap: low `articulate` → ask for longer detail; low `extend` → probe for connections; low `check` → challenge assumptions.\n3. `mastery_score` history: retry sessions re-anchor to previously identified gap.\n4. Grade-level vocabulary calibration from learner profile.\n\n## Implementation\n- Replace static system prompts with `buildPersonalizedSystem(agentId, context)` in `prompt-templates.ts`.\n- Create `adaptation-scripts.ts`: `guided`, `supported`, `scaffolded` variants of each agent's core directive.\n- Add a `traceFocusDirective(trace: TraceFluency)` function: identifies lowest dimension, returns probe instruction (e.g., \"Ask for explicit Because/Therefore reasoning\").\n- Inject into system prompt: `[adaptation config text] + [TRACE focus directive] + [mastery context sentence]`.\n\n## RootWork Alignment\n**TRACE — all 6 dimensions:** Personalized probing is the primary mechanism for developing epistemic fluency."
+    },
+
+    {
+      "id": "AI-08",
+      "title": "Wire availability-detector.ts into REGULATE exit gate (currently dead code)",
+      "priority": "high",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-03"],
+      "files": [
+        "src/lib/raca/layer4-epistemic/availability-detector.ts",
+        "src/pages/SessionPageCore.tsx",
+        "src/lib/raca/layer1-cognitive-fsm/state-machine.ts"
+      ],
+      "body": "## Problem\n`src/lib/raca/layer4-epistemic/availability-detector.ts` is written but **never called anywhere** in the session flow. It exists as dead code. The detector assesses whether a learner is cognitively available — a critical gate for the RootWork framework — but the REGULATE state advances without invoking it.\n\n## Required\nRun the availability detector:\n1. At end of REGULATE state to confirm readiness for POSITION.\n2. When `regulation.level` drops below 50 (frustration signal from AI-03).\n3. Background monitor every 5 agent turns.\n\nOn result:\n- `available` → allow POSITION transition.\n- `limited` → show brief re-grounding prompt, re-run in 2 turns.\n- `unavailable` → offer Break option (pause session + calming activity from `regulation-content.ts`).\n\n## Implementation\n- Import and call `availabilityDetector` in `SessionPageCore.tsx` at REGULATE exit.\n- Pass: `regulation.level`, last 3 `response_time_ms` values, artifact `word_count` trend.\n- Log availability check results to `regulation_checkins` table (from AI-03 migration).\n- Add `<BreakOffering />` component: breathing exercise or calming image from `regulation-content.ts`.\n\n## RootWork Alignment\n**Regulate (5Rs):** Cognitive availability IS the Regulate phase output. The detector running = genuine regulatory assessment vs. checking a static number."
+    },
+
+    {
+      "id": "AI-09",
+      "title": "Cross-session memory: longitudinal context brief injected into all agent prompts",
+      "priority": "high",
+      "layer": "ai-engine",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-05"],
+      "files": [
+        "src/hooks/useAgent.ts",
+        "src/lib/raca/layer3-agents/agent-base.ts",
+        "src/lib/raca/layer3-agents/prompt-templates.ts"
+      ],
+      "new_files": [
+        "src/lib/intelligence/longitudinal-context.ts"
+      ],
+      "body": "## Problem\nEach session starts fresh. `AgentContext.session_history` takes only the last 5 events from the current session. If a learner struggled with argument framing in session 3, the agents in session 4 have no knowledge of it. `cognitive_profile` tracks aggregate averages but not longitudinal narrative.\n\n## Required\nAgent context must include `longitudinalContext` containing:\n1. Last 3 sessions summary (lesson title, mastery level, top gap identified).\n2. Persistent strengths/weaknesses from `adaptive_learning_state`.\n3. Vocabulary growth trend (avg `articulate` score over time).\n4. Any educator notes/flags.\n\nSummarized into a 150-word memory brief prepended to each agent's system prompt. Framing-agent opens new sessions by referencing what was previously explored.\n\n## Implementation\n- Create `buildLongitudinalContext(userId, courseId)` in `longitudinal-context.ts`: fetch last 3 completed `cognitive_sessions`, `adaptive_learning_state`, `epistemic_profile`. Return `MemoryBrief` object.\n- Serialize to ≤150 words via a `summarizeMemoryBrief()` template function.\n- Add `longitudinal_context: string` to `AgentContext` in `agent-base.ts`.\n- In `prompt-templates.ts` system prompt prefix: `\"Memory from previous sessions: [longitudinal_context]\"`.\n\n## RootWork Alignment\n**Reconnect (5Rs):** Reconnection requires the AI to KNOW what it is reconnecting the learner to. Generic encouragement ≠ genuine integration."
+    },
+
+    {
+      "id": "ASS-01",
+      "title": "Mastery Demonstration Mode: 'Prove I Know This' challenge for locked lessons",
+      "priority": "high",
+      "layer": "assessment",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-05"],
+      "files": [
+        "src/pages/CoursePage.tsx",
+        "src/components/dashboard/CourseCard.tsx",
+        "src/pages/SessionPageCore.tsx"
+      ],
+      "body": "## Problem\nLesson progression is strictly linear. No student who already understands a concept can demonstrate mastery and skip ahead. This directly violates the student agency principle — students should progress at their own pace based on demonstrated competence, not seat time.\n\n## Required\n- \"Prove I Know This\" button on every locked lesson card.\n- Launches a DEFEND-only RACA session seeded with the lesson's `skill_tags` and `concept_keywords`.\n- 3-turn structure: (1) explain in own words, (2) apply to novel scenario, (3) connect to prior knowledge.\n- Score via `computeSessionMastery()` (AI-05):\n  - >= 75: unlock lesson with `mastery_source = 'challenge'`.\n  - < 75: show specific gap feedback + 24-hour cooldown before retry.\n\n## Implementation\n- Add `mastery_source` column to `lesson_progress`: `'session' | 'challenge' | 'educator_granted'`.\n- Add `<MasteryCheckButton />` to locked lesson cards on `CoursePage`.\n- On click: create session with `session_mode = 'mastery_check'` — DEFEND-only path in `SessionPageCore`.\n- On pass: `upsert lesson_progress { status: 'mastery_demonstrated', mastery_source: 'challenge' }`.\n- On fail: show `MasteryGapFeedback` component + insert `mastery_cooldowns(user_id, lesson_id, available_at)` record.\n\n## RootWork Alignment\n**Student agency:** Mastery demonstration mode is the primary mechanism for self-paced progression. Knowledge demonstrated > knowledge absorbed."
+    },
+
+    {
+      "id": "ASS-02",
+      "title": "Spaced repetition queue: continuous assessment loop between sessions",
+      "priority": "high",
+      "layer": "assessment",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-02", "AI-05"],
+      "files": [
+        "src/components/learner/SmartReminders.tsx",
+        "src/pages/DashboardPage.tsx"
+      ],
+      "new_files": [
+        "src/lib/intelligence/spaced-repetition.ts",
+        "supabase/migrations/024_spaced_repetition_queue.sql"
+      ],
+      "body": "## Problem\nAssessment only happens inside explicit RACA sessions. Between sessions, the platform has no mechanism to surface knowledge decay, prompt micro-practice, or maintain the DFS assessment cycle. `SmartReminders.tsx` exists but generates no reminders based on gap profile or mastery decay curves.\n\n## Required\n1. After 3 days without activity on a \"mastered\" skill → surface a 1-question inline micro-check on dashboard.\n2. If 2+ gaps from last session → show \"Your focus area\" card before general course browsing.\n3. Weekly Skill Snapshot notification: skills reinforced vs. at-risk.\n4. Spaced repetition schedule: mastered skills resurface at 3→7→21-day intervals.\n\n## Implementation\n- Create `spaced_repetition_queue(user_id, skill_code, next_review_date, interval_days, mastery_level)` table.\n- After each ARCHIVE: for each mastered skill → insert review entry at +3 days.\n- `SmartReminders` queries this table on dashboard load; renders inline micro-check card.\n- On correct: reschedule +7 days. On incorrect: +1 day, add back to `weaknesses[]`.\n- Weekly digest: Edge Function cron aggregates queue state → sends notification.\n\n## RootWork Alignment\n**Reconnect (5Rs):** Spaced practice and inter-session continuity are the operational definition of Reconnect at platform level."
+    },
+
+    {
+      "id": "ASS-03",
+      "title": "Voice-first artifact submission pathway (VoiceInputButton integration)",
+      "priority": "medium",
+      "layer": "assessment",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": [],
+      "files": [
+        "src/components/ui/VoiceInputButton.tsx",
+        "src/components/raca/DraftEditor.tsx",
+        "src/components/raca/ReflectionPrompt.tsx",
+        "src/components/raca/DefensePanel.tsx",
+        "src/pages/SettingsPage.tsx"
+      ],
+      "body": "## Problem\n`VoiceInputButton.tsx` exists but is not wired into any artifact submission flow. All input is text-only. For learners with dyslexia, motor challenges, or verbal expressors, text-only submission creates an artificial barrier between knowledge and measured TRACE scores. Critical equity gap for a neurodivergent platform.\n\n## Required\n1. `VoiceInputButton` natively present in `DraftEditor`, `ReflectionPrompt`, and `DefensePanel`.\n2. Voice transcription populates the textarea; artifact tagged with `input_mode: 'voice'`.\n3. Settings option: `Preferred Input: Text | Voice | Both` — auto-focuses voice on prompt display.\n4. TRACE `Think` scoring: use `voice_start_time` delta vs. `prompt_display_time` as `responseTimeMs` for voice inputs.\n\n## Implementation\n- Wire `VoiceInputButton` into the three artifact components. On transcript received: `setContent(transcript)`, `setInputMode('voice')`.\n- Add `input_mode: 'text' | 'voice'` field to `Artifact` type and DB column.\n- In `fluency-tracker.ts` `scoreTRACE()`: accept `input_mode` — use `voice_start_time` delta when mode is voice.\n- In `SettingsPage` (connects to LEA-04 UX fix): add `preferredInputMode` selector stored in `settingsStore`.\n\n## RootWork Alignment\n**Regulate + Student Agency:** Voice is a regulatory accommodation. Requiring text-only is a structural scaffold that RootWork explicitly rejects."
+    },
+
+    {
+      "id": "CCSS-01",
+      "title": "Common Core standards schema: ccss_standards table + skill_to_ccss_map",
+      "priority": "high",
+      "layer": "standards",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-06"],
+      "files": ["supabase/migrations/"],
+      "new_files": [
+        "supabase/migrations/025_ccss_standards.sql",
+        "src/lib/intelligence/ccss-seed.ts"
+      ],
+      "body": "## Problem\nZero standards alignment infrastructure exists. No CCSS codes, no anchor standards, no grade band mapping. The platform cannot report which standards a student has demonstrated. Critical blocker for school district adoption.\n\n## Required\n1. `ccss_standards(id, code, domain, strand, grade_band, description, anchor_standard_code)` table.\n2. `skill_to_ccss_map(skill_code, ccss_code, alignment_strength: 'primary'|'secondary')` mapping every `skill_taxonomy` entry to CCSS codes.\n3. `student_ccss_evidence(user_id, ccss_code, session_ids[], evidence_count, demonstration_level: 'none'|'emerging'|'developing'|'proficient', last_demonstrated_at)` accumulation layer.\n4. After 3 evidence data points across different sessions → mark standard as `'emerging demonstration'`.\n\n## Implementation\n- Migration: create all 3 tables with RLS.\n- Seed ~80 ELA and Math anchor standards (CCSS.ELA-LITERACY.CCRA.W.1 through W.10, R.1-10, key Math domains).\n- Seed `skill_to_ccss_map` connecting all 50 skill_taxonomy entries to codes.\n- When `skill_evidence_events` records `evidence_type: 'present'` with `confidence >= 70`: trigger evidence accumulation update via DB trigger or Edge Function.\n\n## RootWork Alignment\n**Core framework value:** Students unwittingly master Common Core skills. The mapping is invisible to students but fully visible to educators and admins."
+    },
+
+    {
+      "id": "CCSS-02",
+      "title": "CCSS standards evidence view for educators: heatmap + drill-down + PDF export",
+      "priority": "high",
+      "layer": "standards",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["CCSS-01"],
+      "files": [
+        "src/components/educator/StudentLCPDashboard.tsx",
+        "src/pages/EducatorDashboardPage.tsx"
+      ],
+      "new_files": [
+        "src/components/educator/EducatorStandardsView.tsx"
+      ],
+      "body": "## Problem\nThe educator dashboard shows TRACE scores but zero content-standard evidence. An educator cannot tell a principal, parent, or IEP team which academic standards a student has demonstrated. Cognitive data is powerful but not translatable to accountability language schools require.\n\n## Required\n1. **Per-student standards heatmap**: grade bands on Y axis, standard codes on X axis. Color: gray=none, yellow=emerging, orange=developing, green=proficient.\n2. **Class-wide gap view**: which standards have fewest evidence data points across all students.\n3. **Drill-down**: click cell → modal showing sessions where evidence was collected + artifact excerpts from `skill_evidence_events`.\n4. **PDF export**: IEP-compatible per-student Standards Progress Report.\n\n## Implementation\n- Build `<EducatorStandardsView studentId={} />` using `student_ccss_evidence` data.\n- Use Recharts custom heatmap or CSS grid (avoid external heatmap deps).\n- Drill-down modal: fetch `skill_evidence_events` filtered by `user_id + ccss_code`.\n- PDF export: `@react-pdf/renderer` — 1-page report with school logo placeholder, student name, grade band, standards evidence table.\n- Add as new tab in `EducatorDashboardPage`: \"Standards Evidence\".\n\n## RootWork Alignment\n**Framework value proposition:** Invisible mastery happening inside sessions must be communicable to institutions that require it."
+    },
+
+    {
+      "id": "CCSS-03",
+      "title": "Student-facing Skill Power-ups: invisible standards as earned capabilities",
+      "priority": "medium",
+      "layer": "standards",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (1-2 days)",
+      "depends_on": ["CCSS-01"],
+      "files": [
+        "src/pages/ProfilePage.tsx",
+        "src/components/gamification/BadgeShelf.tsx"
+      ],
+      "new_files": [
+        "src/components/learner/SkillPowerUps.tsx"
+      ],
+      "body": "## Problem\nStudents see XP and achievement badges with no connection to the skills they are actually developing. The gamification layer is disconnected from the learning intelligence layer.\n\n## Required\n**Skill Power-ups**: earned growth statements students accumulate as they build skill evidence.\n- \"You are building your Argument Builder skill\" (maps invisibly to CCSS.ELA.W.1).\n- Each Power-up shows: visual icon, student-friendly name, progress bar to next level, brief description of how earned.\n- Levels: Discovering → Building → Owning (maps to emerging/developing/proficient).\n- Unlock notification at ARCHIVE: \"You leveled up your Argument Builder skill!\"\n\n## Implementation\n- Create `student_skill_powerups` DB view: join `skill_taxonomy(friendly_name, icon_code)` + `student_ccss_evidence`.\n- Build `<SkillPowerUps userId={} />` grid component: earned skill cards with icons and level indicators.\n- Add \"My Skills\" section to `/profile` page.\n- Wire into completion celebration flow (connects to AGY-03 session arc fix).\n- Expose to parents as \"Skills My Child is Developing\" (connects to PAR-05).\n\n## RootWork Alignment\n**Student agency:** Power-ups make invisible learning visible in a motivating way — capability accumulation, not grade-earning."
+    },
+
+    {
+      "id": "EDU-13",
+      "title": "Student frustration level dashboard: regulation sparkline + at-risk flags",
+      "priority": "high",
+      "layer": "educator",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-03"],
+      "files": [
+        "src/components/educator/StudentLCPDashboard.tsx",
+        "src/hooks/useStudentCognitiveProfiles.ts"
+      ],
+      "new_files": [
+        "src/components/educator/FrustrationIndicator.tsx"
+      ],
+      "body": "## Problem\nThe educator dashboard shows TRACE scores but no frustration level, no regulation trend, no at-risk signal. Regulation data exists in `cognitive_sessions.regulation` but is never surfaced. Educators have no visibility into which students are consistently dysregulating.\n\n## Required\n1. **Per-student regulation trend**: 7-day sparkline of session-end regulation level.\n2. **Frustration flag**: last 3 sessions with `regulation_final_level < 50` → amber flag \"May need support\".\n3. **Session-by-session regulation trace**: educators see within-session regulation arc (start → ARCHIVE level).\n4. **Class-wide \"Needs Attention\" panel**: students flagged amber/red with last active date + Send Message CTA.\n5. Never show diagnostic labels — only regulation level numbers and trend arrows.\n\n## Implementation\n- Extend `StudentLCPDashboard`: add `<FrustrationIndicator studentId={} />` per student.\n- Query: `cognitive_sessions` → `AVG(regulation->>'level')` for last 3 completed sessions per student.\n- Render colored dot: green ≥ 65, amber 50-64, red < 50.\n- On hover/click: `Recharts LineChart` of session date vs. final regulation level.\n- Class-wide panel: filter students with dot === red/amber, sort by `last_active`.\n\n## RootWork Alignment\n**Regulate (5Rs):** Educator visibility into student regulation is the operational mechanism for teacher-facilitated support — an explicit design requirement."
+    },
+
+    {
+      "id": "EDU-14",
+      "title": "Educator intervention trigger alerts: inactivity, struggle, regulation concern, growth milestone",
+      "priority": "high",
+      "layer": "educator",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["EDU-13"],
+      "files": [
+        "src/pages/EducatorDashboardPage.tsx"
+      ],
+      "new_files": [
+        "supabase/migrations/026_educator_alerts.sql",
+        "supabase/functions/generate-educator-alerts/index.ts",
+        "src/components/educator/AlertsPanel.tsx"
+      ],
+      "body": "## Problem\nEducators have no proactive alerts. They must manually navigate to check student status. No triggers for: student inactive 7 days, mastery score dropped, same lesson attempted 3x without mastery, regulation consistently < threshold.\n\n## Required\nTrigger-based alert system:\n1. **Inactivity**: no session in 7 days → \"[Student] hasn't engaged since [date]\".\n2. **Struggle signal**: same lesson attempted 3+ times without mastery → \"[Student] may need direct support\".\n3. **Regulation concern**: 3 consecutive sessions ending with `regulation < 50`.\n4. **Growth milestone**: student reaches `'proficient'` growth_trajectory first time → positive alert.\n\n## Implementation\n- Migration: `educator_alerts(educator_id, student_id, alert_type, severity, message, created_at, read_at)`.\n- Edge Function (nightly cron): query all `educator_student_links`, evaluate conditions, insert alert records.\n- Educator dashboard header: unread alert badge count.\n- `<AlertsPanel />` in Educator Overview tab: list by type icon, student name, dismiss/action buttons.\n\n## RootWork Alignment\n**Educator partnership:** The AI serves the educator-student relationship, not replacing it. Alerts help teachers focus human support where the AI signals a need."
+    },
+
+    {
+      "id": "EDU-15",
+      "title": "Learning Continuity Plan (LCP) generator: AI-populated form + PDF export",
+      "priority": "medium",
+      "layer": "educator",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "L (3-5 days)",
+      "depends_on": ["CCSS-01", "EDU-13", "AI-05"],
+      "files": [
+        "src/components/educator/StudentLCPDashboard.tsx",
+        "src/pages/EducatorDashboardPage.tsx"
+      ],
+      "new_files": [
+        "src/components/educator/LCPGenerator.tsx"
+      ],
+      "body": "## Problem\n`StudentLCPDashboard.tsx` is named \"LCP\" but only shows static TRACE bars — no actual Learning Continuity Plan is generated. For students with IEPs, 504 plans, or who are justice-involved (CECS primary use case), educators need a formal documented plan.\n\n## Required\nOne-click LCP generation per student:\n1. Auto-populated from: cognitive profile, mastery scores, TRACE averages, regulatory history, skill gaps.\n2. Document includes: student name/grade, growth trajectory, TRACE profile summary, top 3 learning goals (from `weaknesses[]`), recommended intervention approach (adaptation level), estimated pathway to next mastery tier.\n3. Educator can add narrative notes before export.\n4. Export as IEP-compatible PDF (2-page).\n\n## Implementation\n- Build `<LCPGenerator studentId={} />`: fetch full cognitive profile, adaptive state, TRACE averages, regulation history, skill gaps.\n- Pre-fill editable form: Goal 1/2/3 (from gap analysis), Strengths narrative (from top TRACE dimensions), Regulatory approach, Recommended supports.\n- Add educator narrative notes field.\n- Export via `@react-pdf/renderer`: 2-page PDF with header fields for student info, educator signature, date.\n\n## RootWork Alignment\n**CECS/GALS Foundation mission:** LCP is the documentation bridge between AI-driven insights and formal support systems (IEP teams, case workers, courts)."
+    },
+
+    {
+      "id": "PAR-05",
+      "title": "Parent growth narratives: AI-generated session stories (warm, score-free)",
+      "priority": "high",
+      "layer": "parent",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-05"],
+      "files": [
+        "src/components/parent/ParentGrowthNarrative.tsx",
+        "src/pages/ParentDashboardPage.tsx"
+      ],
+      "new_files": [
+        "supabase/functions/generate-parent-narrative/index.ts",
+        "supabase/migrations/027_session_parent_narratives.sql"
+      ],
+      "body": "## Problem\n`ParentGrowthNarrative.tsx` exists as a component shell — it fetches no data and renders nothing. Parents have zero window into what happens inside a RACA session. Raw TRACE scores are meaningless and potentially anxiety-inducing for parents.\n\n## Required\nAI-generated 3-paragraph Growth Narrative per completed session:\n1. What the learner explored and worked on.\n2. What thinking strengths were visible (positive framing from TRACE high points).\n3. What the learner is working toward next (from gaps + prescription).\n\nNo TRACE numbers, no dysregulation language — only growth-focused, student-centered language.\n\n## Implementation\n- Wire `ParentGrowthNarrative.tsx`: fetch session artifacts, TRACE scores, regulation arc, mastery outcome.\n- Call AI edge function with a `parent_narrative` system prompt: warm, positive, 3-paragraph, no clinical language, no scores.\n- Cache in `session_parent_narratives(session_id, narrative_text, generated_at)` table.\n- Display in parent dashboard session history.\n- Include in weekly email digest (connects to PAR-04 notification system).\n\n## RootWork Alignment\n**Reconnect — Family engagement:** Growth narratives make invisible learning visible to families in a way that builds support capacity without creating anxiety."
+    },
+
+    {
+      "id": "ADM-03",
+      "title": "Platform intelligence health dashboard for admins: mastery distribution, TRACE averages, agent heatmap",
+      "priority": "medium",
+      "layer": "admin",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-04", "AI-05", "CCSS-01"],
+      "files": [
+        "src/pages/AdminDashboardPage.tsx",
+        "src/components/admin/SystemAnalytics.tsx"
+      ],
+      "new_files": [
+        "src/components/admin/IntelligenceDashboard.tsx"
+      ],
+      "body": "## Problem\nNo admin panel exists (see ADM-01 from UX audit). When built, it needs platform-wide intelligence health visibility: AI engine performance, mastery threshold calibration, regulation trends by lesson type, TRACE dimension distribution.\n\n## Required\n1. **Agent invocation heatmap**: which agents called most, at what regulation levels.\n2. **Mastery distribution**: histogram of mastery scores across all sessions.\n3. **Regulation trend**: platform-wide avg regulation level per day — identify lessons causing dysregulation.\n4. **TRACE distribution**: which dimensions score lowest platform-wide.\n5. **Standards evidence rate**: how quickly students accumulate CCSS evidence data points.\n6. **Threshold Configuration panel**: admin adjusts `mastery_threshold` (default 75), `min_regulation_for_advance` (default 60), `frustration_signal_count` (default 2).\n\n## Implementation\n- Build `<IntelligenceDashboard />` in new \"Intelligence Health\" admin tab.\n- Aggregate queries: `agent_interactions`, `cognitive_sessions`, `epistemic_snapshots`, `student_ccss_evidence`.\n- Recharts: heatmap, histogram, LineChart, RadarChart, BarChart.\n- Threshold config panel: admin-only DB config table `platform_thresholds(key, value, updated_by, updated_at)`.\n\n## RootWork Alignment\n**Evidence-based practice:** Platform health data is the evidence base for refining the pedagogical engine — consistent with RootWork governance."
+    },
+
+    {
+      "id": "AGY-01",
+      "title": "Student learning goal setting: goal widget, progress tracking, agent integration",
+      "priority": "high",
+      "layer": "student-ux",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "L (3-5 days)",
+      "depends_on": ["AI-07"],
+      "files": [
+        "src/pages/DashboardPage.tsx",
+        "src/pages/ProfilePage.tsx"
+      ],
+      "new_files": [
+        "src/components/learner/GoalSettingWidget.tsx",
+        "src/components/learner/GoalProgressCard.tsx",
+        "supabase/migrations/028_student_learning_goals.sql"
+      ],
+      "body": "## Problem\nOnboarding asks \"What are your learning goals?\" but the selection is never connected to course recommendations, session framing, or agent probing strategy. Student voice is collected but ignored.\n\n## Required\n1. Goal setting widget on dashboard: text field + suggested prompts (\"I want to get better at...\") + optional skill tag selection.\n2. Goal persists and feeds into ROOT stage framing: agent opens each session referencing student goal.\n3. Students see progress toward goal using skill evidence data — not as a grade, but as \"getting closer\" visualization.\n4. Students can update goal at any time.\n5. Agents reference goal when probing: \"You said you wanted to get better at explaining your thinking — how does what you just wrote show that?\"\n\n## Implementation\n- Migration: `student_learning_goals(user_id, goal_text, set_at, progress_level, related_skill_tags[])`.\n- `<GoalSettingWidget />`: text field + skill tag selector. On save, tag to `skill_taxonomy` entries.\n- In session ROOT prompt: inject `\"Student goal: [goal_text]\"` into `diagnosticContext`.\n- `<GoalProgressCard />`: fetch `skill_evidence_events` for goal-related skill_tags, show sessions count building goal evidence + progress arc.\n\n## RootWork Alignment\n**Student agency (primary):** Goal setting operationalizes agency — students become co-designers of their learning, not recipients."
+    },
+
+    {
+      "id": "AGY-02",
+      "title": "Session mode choice: Deep Dive / Consolidation / Challenge at session start",
+      "priority": "medium",
+      "layer": "student-ux",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": [],
+      "files": [
+        "src/pages/LessonPage.tsx",
+        "src/pages/SessionPageCore.tsx"
+      ],
+      "new_files": [
+        "src/components/raca/SessionModeSelector.tsx"
+      ],
+      "body": "## Problem\nEvery RACA session follows the same 9-state arc regardless of student readiness or interest. No choice between modes. No way to consolidate previous material, skip ahead when ready, or do a quick challenge. Forced linearity undermines student agency.\n\n## Required\nAt session start, students choose from 3 modes (explained in student-friendly language, no mode labeled as better):\n1. **Deep Dive**: full ROOT → ARCHIVE arc (current default).\n2. **Consolidation**: begin at REVISE, working with a prior session artifact to strengthen it.\n3. **Challenge**: skip to APPLY/DEFEND immediately for students who feel ready.\n\nMode choice logged as `session_mode`; informs agent framing and next-session AI-09 memory.\n\n## Implementation\n- Add `session_mode: 'deep_dive' | 'consolidation' | 'challenge' | 'mastery_check'` to `cognitive_sessions` schema.\n- Build `<SessionModeSelector />`: 3 cards with friendly descriptions + icons. Show between LessonPage and session start.\n- In `SessionPageCore`: if `mode = 'consolidation'` → begin at REVISE with prior session artifact loaded; if `'challenge'` → begin at APPLY; if `'deep_dive'` → standard ROOT entry.\n\n## RootWork Alignment\n**Student agency + Regulate:** Mode choice is itself a regulatory support — respects diverse readiness states."
+    },
+
+    {
+      "id": "AGY-03",
+      "title": "Student-visible session arc: student-friendly state names + journey visualization + stage announcements",
+      "priority": "high",
+      "layer": "student-ux",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": [],
+      "files": [
+        "src/components/raca/StateTransitionBar.tsx",
+        "src/lib/raca/types/cognitive-states.ts",
+        "src/pages/SessionPageCore.tsx"
+      ],
+      "new_files": [
+        "src/components/raca/StudentSessionArc.tsx",
+        "src/components/raca/TransitionAnnouncement.tsx",
+        "src/components/raca/SessionSummaryCard.tsx"
+      ],
+      "body": "## Problem\n`StateTransitionBar` shows technical state labels (ROOT, REGULATE, POSITION...). Students have no understanding of what these states mean, why they progress through them, or what each stage accomplishes. The session feels like a state machine, not a learning journey.\n\n## Required\n1. Replace technical labels with student-friendly names:\n   - ROOT → Grounding | REGULATE → Getting Ready | POSITION → Asking the Big Question\n   - PLAN → Building My Thinking | APPLY → Making It Real | REVISE → Making It Better\n   - DEFEND → Proving It | RECONNECT → Connecting the Dots | ARCHIVE → What I Built\n2. Visual journey arc: SVG path with 9 waypoint circles; current position highlighted; completed waypoints filled.\n3. On each state entry: 2-second `TransitionAnnouncement` overlay — icon + stage name + 1-2 sentence plain-language description.\n4. At ARCHIVE: `SessionSummaryCard` — \"Here is what you built today\" with artifact excerpts, TRACE growth bar vs. last session, skill power-up earned.\n\n## Implementation\n- Add `studentFacingLabel: string` and `studentDescription: string` to `STATE_METADATA` in `cognitive-states.ts`.\n- Build `<StudentSessionArc />`: horizontal SVG path with 9 waypoints. Animate fill on state transition.\n- Build `<TransitionAnnouncement />`: 2-second overlay, honor `prefers-reduced-motion`.\n- Build `<SessionSummaryCard />`: shown at ARCHIVE, queries artifacts + TRACE delta.\n\n## RootWork Alignment\n**5Rs student experience:** Students must experience the learning arc as a hero journey with momentum — not as an opaque evaluation system."
+    },
+
+    {
+      "id": "AGY-04",
+      "title": "Amara Keyes AI guide persona: warm, consistent voice across all 6 agents",
+      "priority": "medium",
+      "layer": "student-ux",
+      "phase": "19",
+      "milestone": "Phase 19 — Intelligence Engine Core",
+      "effort": "M (2-3 days)",
+      "depends_on": [],
+      "files": [
+        "src/lib/raca/layer3-agents/prompt-templates.ts",
+        "src/components/raca/AgentMessage.tsx",
+        "src/components/raca/AgentPanel.tsx"
+      ],
+      "body": "## Problem\nAI agents respond as generic assistants. No persona, no name, no consistent voice. `AgentMessage.tsx` renders text without personality. For a platform built on relational pedagogy and therapeutic horticulture principles, this is a fundamental missed opportunity.\n\n## Required\nConsistent warm AI guide persona — **Amara** (aligned with Dr. Amara Keyes RWFW AI avatar):\n- Base persona injected into all agent system prompts: warm, intellectually curious, patient, specific, first-name basis, never clinical or evaluative, never uses test-oriented language.\n- Per-agent voice specialization:\n  - `framing-agent`: especially curious about questions and perspectives.\n  - `construction-agent`: encourages bold ideas, helps organize thinking.\n  - `critique-agent`: precise and encouraging, finds what's strong before noting gaps.\n  - `defense-agent`: respectful but direct — believes challenge is how we grow.\n  - `research-agent`: enthusiastic about discovery.\n- Inject learner `first_name` from profile into `AgentContext`.\n\n## Implementation\n- Add `BASE_PERSONA` constant to `prompt-templates.ts`.\n- Add per-agent voice addendum: `AGENT_VOICE_ADDENDA` map keyed by `AgentId`.\n- In `buildPersonalizedSystem()` (AI-07): prepend `BASE_PERSONA + AGENT_VOICE_ADDENDA[agentId]`.\n- In `AgentMessage.tsx`: show \"Amara\" as sender name with a consistent avatar icon.\n- Add `learner_first_name` to `AgentContext`; populate from `profiles.display_name.split(' ')[0]`.\n\n## RootWork Alignment\n**Relational pedagogy:** Learning happens in relationship. The AI guide must have warmth and consistency to function as a genuine learning partner."
+    },
+
+    {
+      "id": "DATA-01",
+      "title": "Student Learning Transcript: PDF export for IEP, transitions, parent-teacher conferences",
+      "priority": "medium",
+      "layer": "data",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["CCSS-01", "AI-05"],
+      "files": [
+        "src/pages/EducatorDashboardPage.tsx",
+        "src/pages/ParentDashboardPage.tsx"
+      ],
+      "new_files": [
+        "src/components/shared/LearningTranscript.tsx"
+      ],
+      "body": "## Problem\nAll learning data is trapped inside the platform. No way to export a student's learning record for IEP meetings, grade-level transitions, school transfers, or parent-teacher conferences. Rich data exists but cannot speak to the outside world.\n\n## Required\nStudent Learning Transcript PDF containing:\n- Student name, enrollment period, courses engaged.\n- Lessons completed with mastery levels and mastery source.\n- CCSS standards evidence summary.\n- TRACE profile summary (radar description in plain language).\n- Regulation pattern summary (consistent, variable, or improving).\n- 1-2 key artifact excerpts (top defense artifact).\n\nAvailable to educators for any enrolled student; parents for linked child; students for own record.\n\n## Implementation\n- Build `<LearningTranscript studentId={} />` using `@react-pdf/renderer`.\n- Queries: `lesson_progress`, `student_ccss_evidence`, `epistemic_profiles`, `cognitive_sessions` (count, avg regulation), top artifact from `cognitive_session_artifacts`.\n- Generate 2-page PDF: page 1 = header + course/lesson progress table + standards evidence; page 2 = TRACE radar description + regulation summary + artifact excerpt.\n- Add \"Export Transcript\" button to educator student view and parent dashboard.\n\n## RootWork Alignment\n**CECS/GALS mission:** Justice-involved youth and IEP students require formal transcript records for courts, case workers, and IEP teams."
+    },
+
+    {
+      "id": "DATA-02",
+      "title": "Real-time classroom view: live session monitoring for educators during active sessions",
+      "priority": "medium",
+      "layer": "data",
+      "phase": "20",
+      "milestone": "Phase 20 — Educator, Parent & Standards",
+      "effort": "M (2-3 days)",
+      "depends_on": ["AI-03"],
+      "files": [
+        "src/pages/EducatorDashboardPage.tsx"
+      ],
+      "new_files": [
+        "src/components/educator/LiveClassroomView.tsx"
+      ],
+      "body": "## Problem\nEducators can only see historical session data. During a classroom where students independently run RACA sessions, the educator has zero visibility into who is engaged, who is stuck, or whose regulation has dropped.\n\n## Required\nLive Classroom View in educator dashboard:\n- Grid of student cards for all enrolled students currently in active sessions.\n- Per card: current RACA state, time in current state (flag if > 8 min in one state), regulation level with color coding, last artifact word count.\n- Highlight cards: time_in_state > 480s OR regulation < 50.\n- \"Check In\" button → sends gentle soft notification to student: \"Your teacher wants to check in with you.\"\n- Updated via Supabase Realtime on `cognitive_sessions` table.\n\n## Implementation\n- Build `<LiveClassroomView classId={} />` with Supabase Realtime subscription.\n- `SELECT * FROM cognitive_sessions WHERE status='active' AND user_id IN (enrolled_student_ids)`.\n- Render responsive card grid. Compute `time_in_state` from `updated_at` delta.\n- Highlight cards: amber border for time flag, red border for regulation flag.\n- \"Check In\" CTA: insert `educator_checkins(educator_id, student_id, session_id, sent_at)` → triggers in-session notification banner.\n\n## RootWork Alignment\n**Educator partnership:** Live monitoring enables educators to intervene with human support precisely when the AI signals a need."
+    }
+  ]
+}
