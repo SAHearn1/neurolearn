@@ -1,15 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { startSession, endSession } from './session-manager'
+import { startSession, endSession, recordEvent } from './session-manager'
 import { useRuntimeStore } from './runtime-store'
 import { INITIAL_RUNTIME_STATE } from './runtime-reducer'
 
-/**
- * Session Manager — unit tests confirming that the RACA engine initialises
- * correctly and that the session lifecycle (start → end) works as expected.
- */
 describe('Session Manager', () => {
   beforeEach(() => {
-    // Reset store to initial state between tests while preserving dispatch.
     useRuntimeStore.setState(INITIAL_RUNTIME_STATE)
   })
 
@@ -76,6 +71,32 @@ describe('Session Manager', () => {
       endSession('completed')
       const { events } = useRuntimeStore.getState()
       expect(events.some((e) => e.kind === 'session_ended')).toBe(true)
+    })
+
+    it('does nothing when no active session exists', () => {
+      useRuntimeStore.setState(INITIAL_RUNTIME_STATE)
+      expect(() => endSession('completed')).not.toThrow()
+      expect(useRuntimeStore.getState().status).toBeNull()
+    })
+  })
+
+  describe('recordEvent', () => {
+    it('does not throw when no active session', () => {
+      expect(() => recordEvent('agent_responded', 'agent_response', { foo: 'bar' })).not.toThrow()
+    })
+
+    it('records an event into the store when session is active', () => {
+      startSession('user-1', { lesson_id: 'lesson-1', course_id: 'course-1' })
+      const initialCount = useRuntimeStore.getState().events.length
+      recordEvent('agent_responded', 'agent_response', { result: 'ok' })
+      expect(useRuntimeStore.getState().events.length).toBe(initialCount + 1)
+    })
+
+    it('records event with the correct kind', () => {
+      startSession('user-1', { lesson_id: 'lesson-1', course_id: 'course-1' })
+      recordEvent('state_transition', 'system', {})
+      const { events } = useRuntimeStore.getState()
+      expect(events.some((e) => e.kind === 'state_transition')).toBe(true)
     })
   })
 })

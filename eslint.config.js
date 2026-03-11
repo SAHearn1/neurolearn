@@ -6,7 +6,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'vite.config.js', 'vite.config.d.ts'],
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'vite.config.js', 'vite.config.d.ts'],
   },
   {
     files: ['**/*.{ts,tsx}'],
