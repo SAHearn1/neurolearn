@@ -118,3 +118,186 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criterion. Also added `@vitest/coverage-v8` dependency and excluded `coverage/**` from ESLint.
 
 **Files changed:** 15 new test files, `package.json`, `eslint.config.js`
+
+---
+
+## INC-008 — 2026-03-11 — Header/Sidebar/Footer shell never mounts (PageWrapper not wired to router)
+
+**Severity:** High — no persistent navigation, no logout button accessible to any authenticated user
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** `App.tsx` does not use `PageWrapper` as a layout route. Every authenticated page (`DashboardPage`, `CoursesPage`, etc.) is wrapped directly in `<ProtectedRoute><PageX /></ProtectedRoute>` without a parent `<Route element={<PageWrapper />}>`. The `Header`, `Sidebar`, and `Footer` components exist at `src/components/layout/` but are never mounted. DOM inspection at runtime confirmed `document.querySelector('header')` returns `null` on all authenticated pages.
+
+**Impact:** No global nav (Dashboard / Courses / Profile / Settings links), no logout/sign-out button reachable by mouse or keyboard, no sidebar. Users can only navigate via in-page links and the quick-links section at the bottom of DashboardPage.
+
+**Fix required:** In `App.tsx`, wrap all authenticated routes under a parent layout route: `<Route element={<PageWrapper />}> ... </Route>`, replacing the current flat `<ProtectedRoute>` wrapping pattern. Alternatively, include `<Header>` directly inside `ProtectedRoute` as a workaround.
+
+**Files to change:** `src/App.tsx`
+
+---
+
+## INC-009 — 2026-03-11 — RACA session heading shows raw lesson UUID instead of lesson title
+
+**Severity:** Medium — confusing UX, unprofessional display in session header
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** `SessionPage` renders the heading as `Lesson: {lessonId}` using the raw UUID from the URL params (`useParams()`), without fetching or displaying the actual lesson title. The lesson title is not passed to or fetched within `SessionPage`.
+
+**Observed:** Heading reads "Lesson: 0b79d43d-1dd6-44f3-856e-b87b4c8be600" instead of "Lesson 2 — Core Concepts".
+
+**Fix required:** Fetch the lesson record (title) in `SessionPage` using `lessonId` from `useParams()` and display the title in the heading.
+
+**Files to change:** `src/pages/SessionPage.tsx`
+
+---
+
+## INC-010 — 2026-03-11 — Lesson content renders raw markdown instead of parsed HTML
+
+**Severity:** Medium — lesson text unreadable; markdown syntax characters displayed literally
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** The Read tab (`TextLesson` / `LessonPage` read panel) and the Listen tab text panel both display `content_body` from the database as a raw string. Markdown is not parsed or rendered. Content such as `# Core Concepts\n\nThis is E2E test content` is shown verbatim including `#` and `\n`.
+
+**Observed:** Read tab shows `# Core Concepts\n\nThis is E2E test content for automated testing.` as plain text. Listen mode lesson text panel shows the same.
+
+**Fix required:** Integrate a markdown renderer (e.g. `react-markdown`) in the lesson content display component and in `ListenMode`'s text panel.
+
+**Files to change:** Lesson content display component (likely `src/components/lesson/TextLesson.tsx` or equivalent), `src/components/lesson/ListenMode.tsx`
+
+---
+
+## INC-011 — 2026-03-11 — RACA audit trail flush fails with RLS policy violation
+
+**Severity:** High — session audit events never persisted; compliance trail broken
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** Every RACA state transition triggers `audit-trail.ts` to flush events to `raca_audit_events`. The flush consistently fails with `[RACA Audit] Flush failed: new row violate...` — an RLS `INSERT` policy violation. The learner user (`e2e-learner@neurolearn.test`) does not satisfy the RLS insert policy for `raca_audit_events`.
+
+**Console error:** `[ERROR] [RACA Audit] Flush failed: new row violate... src/lib/raca/layer0-runtime/audit-trail.ts:41`
+**HTTP error:** `POST /rest/v1/raca_audit_events` → 403 (policy violation)
+
+**Impact:** No audit trail is written for any session. RACA spec §X audit requirements are unmet. Session history and TRACE scoring may be degraded.
+
+**Fix required:** Review and correct the RLS INSERT policy on `raca_audit_events`. Policy should allow authenticated learners to insert rows where `user_id = auth.uid()`. Check migration that created the table for the correct policy definition.
+
+**Files to change:** Relevant Supabase migration for `raca_audit_events` RLS policies.
+
+---
+
+## INC-012 — 2026-03-11 — epistemic_profiles and adaptive_learning_state return HTTP 406 for learner
+
+**Severity:** Medium — Cognitive Growth / TRACE radar on dashboard and profile page permanently empty for learners
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** Fetches to `epistemic_profiles?select=*&user_id=eq.<uid>` and `adaptive_learning_state?select=*&user_id=eq.<uid>&course_id=eq.<cid>` return HTTP 406. A 406 from PostgREST usually means the `Accept` header does not match available content types, or the query violates an RLS policy in a way that returns no rows and the client requests `return=representation`. Most likely cause: the learner has no row in `epistemic_profiles` (it is created lazily) and the RLS SELECT policy does not permit the query to return zero rows cleanly, or the table's RLS is blocking the SELECT entirely.
+
+**Impact:** Dashboard "Your Thinking Profile" and "Cognitive Profile" sections always show empty state. Profile page "Cognitive Growth" always shows "Complete a deep learning session" even after sessions.
+
+**Fix required:** Verify RLS SELECT policies on `epistemic_profiles` and `adaptive_learning_state` allow `auth.uid() = user_id`. Ensure the client handles a missing row (empty array) without triggering 406. Consider upserting an empty profile row on first login.
+
+**Files to change:** Supabase migration for `epistemic_profiles` and `adaptive_learning_state` RLS policies; possibly `src/hooks/useCognitiveProfile.ts` and `src/hooks/useAdaptiveLearning.ts`.
+
+---
+
+## INC-013 — 2026-03-11 — Homepage does not redirect authenticated users to dashboard
+
+**Severity:** Low — minor UX confusion; logged-in users see "Get started" CTA instead of dashboard entry point
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** `HomePage` (at `/`) does not check auth state. A logged-in user navigating to `/` sees the public marketing page with "Get started — it's free" and "I already have an account" CTAs, instead of being redirected to `/dashboard` or shown a "Go to dashboard" link.
+
+**Fix required:** In `HomePage` (or in the `/` route definition), detect an active session and redirect to `/dashboard`.
+
+**Files to change:** `src/pages/HomePage.tsx` or `src/App.tsx` (the `/` route)
+
+---
+
+## INC-014 — 2026-03-11 — Course detail progress counter shows wrong denominator (1/1 vs 1/3)
+
+**Severity:** Low — misleading progress display
+**Detected:** Student role E2E exploration (this session)
+**Fixed:** Not yet fixed
+
+**Root cause:** The course detail hero (CoursePage header) shows "1/1 lessons done" for a course with 3 lessons. The denominator is likely sourced from the progress table (lessons completed) rather than the total lesson count from the course record or lesson list.
+
+**Observed:** Course "E2E Test Course — Reading Fundamentals" has 3 lessons. Header shows "1/1 lessons done" when 1 of 3 is complete.
+
+**Fix required:** Compute denominator from total lesson count (from the lessons query), not from the progress count.
+
+**Files to change:** `src/pages/CoursePage.tsx` or the progress calculation in the relevant hook.
+
+---
+
+## INC-010 — 2026-03-10 — Lesson content_body Markdown rendered as raw text in RichContentPanel
+
+**Severity:** High — all learners see raw `#`, `**`, `\n` characters instead of formatted lesson content
+**Detected:** Code audit
+**Fixed:** This session
+
+**Root cause:** `lessons.content_body` stores Markdown. `RichContentPanel.parseContent()` sliced the raw string into `HtmlBlock` segments and passed them directly to DOMPurify → `dangerouslySetInnerHTML`. DOMPurify sanitizes HTML, not Markdown — so Markdown symbols passed through verbatim and were rendered as literal text in the browser.
+
+**Fix:** Added `marked` (v17) dependency. Added `looksLikeMarkdown()` heuristic and `markdownToHtml()` helper in `RichContentPanel.tsx`. All plain-text segments produced by `parseContent()` are now run through `markdownToHtml()` before being stored as `HtmlBlock.content`. The existing DOMPurify sanitization step remains unchanged — parse first, sanitize second. `ListenMode.stripHtml()` correctly receives HTML from this point forward and already uses `HTMLElement.textContent` to extract plain text for TTS, so no changes were needed there.
+
+**Files changed:** `src/components/lesson/RichContentPanel.tsx`, `package.json` (added `marked`)
+
+---
+
+## INC-011 — 2026-03-11 — RACA audit trail flush fails when auditPersistence flag is enabled
+
+**Severity:** High (when VITE_RACA_ENABLE_AUDIT=true) — audit trail empty for all learner sessions
+**Detected:** Student role E2E exploration (Playwright, session `a57c1e78`)
+**Fixed:** Deferred — audit flag defaults to `false`; no production impact until flag is enabled
+
+**Root cause:** The INSERT policy on `raca_audit_events` is structurally correct (confirmed via `pg_policies`). The runtime failure is a client-side timing issue: `cognitive_sessions` INSERT may not have committed when the first `raca_audit_events` flush fires, causing the RLS subquery `session_id IN (SELECT id FROM cognitive_sessions WHERE user_id = auth.uid())` to return no rows and reject the INSERT. Only manifests when `VITE_RACA_ENABLE_AUDIT=true`.
+
+**Fix required:** In `src/lib/raca/layer0-runtime/`, await confirmation of the `cognitive_sessions` row before starting the audit flush interval.
+
+**Files to change:** `src/lib/raca/layer0-runtime/audit-trail.ts`, `src/lib/raca/layer0-runtime/session-manager.ts`
+
+---
+
+## INC-012 — 2026-03-11 — epistemic_profiles and adaptive_learning_state return HTTP 406
+
+**Severity:** Medium — TRACE radar and Cognitive Profile permanently empty
+**Detected:** Student role E2E exploration (Playwright, session `a57c1e78`)
+**Fixed:** Commit `3c91b4a`
+
+**Root cause:** `useCognitiveProfile` and `useAdaptiveLearning` called `.single()` which sends `Accept: application/vnd.pgrst.object+json`. PostgREST returns HTTP 406 when no row exists. RLS policies were correct.
+
+**Fix:** Replaced `.single()` with `.maybeSingle()` in both hooks. Empty result now returns HTTP 200 with `null`.
+
+**Files changed:** `src/hooks/useCognitiveProfile.ts`, `src/hooks/useAdaptiveLearning.ts`
+
+---
+
+## INC-013 — 2026-03-11 — Homepage renders for authenticated users instead of redirecting
+
+**Severity:** Low — marketing page shown to logged-in users
+**Detected:** Student role E2E exploration (Playwright, session `a57c1e78`)
+**Fixed:** Commit `3c91b4a`
+
+**Root cause:** `HomePage` had no auth check. The `/` route rendered unconditionally.
+
+**Fix:** Added `useAuthStore` check at top of `HomePage`. Returns `<Navigate replace to="/dashboard" />` when user is authenticated.
+
+**Files changed:** `src/pages/HomePage.tsx`
+
+---
+
+## INC-014 — 2026-03-11 — Course detail shows wrong progress denominator
+
+**Severity:** Low — "1/1 lessons done" displayed for multi-lesson courses
+**Detected:** Student role E2E exploration (Playwright, session `a57c1e78`)
+**Fixed:** Commit `3c91b4a`
+
+**Root cause:** `total = courseProgress?.total_lessons ?? lessons.length` — `total_lessons` stored in the progress row was incorrect (equal to completed count). The `??` fallback only fires when the value is null/undefined.
+
+**Fix:** Changed to `total = lessons.length || courseProgress?.total_lessons || 0` — always prefers the live lesson count from the already-loaded `lessons` array.
+
+**Files changed:** `src/pages/CoursePage.tsx`
