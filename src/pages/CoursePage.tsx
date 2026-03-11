@@ -9,6 +9,7 @@ import { useCourse } from '../hooks/useCourses'
 import { useLessons } from '../hooks/useLessons'
 import { useEnrollment } from '../hooks/useEnrollment'
 import { useLessonProgress, useCourseProgress } from '../hooks/useProgress'
+import { MasteryCheckSession } from '../components/raca/MasteryCheckSession'
 import { XP_PER_LESSON } from '../lib/xp'
 import type { CourseLevel } from '../types/course'
 
@@ -137,6 +138,8 @@ export function CoursePage() {
   const { isEnrolled, loading: enrollLoading, enroll } = useEnrollment(courseId)
   const { progress: courseProgress } = useCourseProgress(courseId)
   const [enrolling, setEnrolling] = useState(false)
+  const [masteryCheckOpen, setMasteryCheckOpen] = useState(false)
+  const [masteryCheckResult, setMasteryCheckResult] = useState<'passed' | 'failed' | null>(null)
 
   if (courseLoading || lessonsLoading || enrollLoading) {
     return (
@@ -223,6 +226,69 @@ export function CoursePage() {
               ))}
               <CompletionTrophy total={lessons.length} />
             </ol>
+          </section>
+        )}
+
+        {/* #326: Summative course mastery check — shown when all lessons are complete */}
+        {isEnrolled && completed >= total && total > 0 && lessons.length > 0 && (
+          <section
+            aria-labelledby="course-mastery-heading"
+            className="rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-purple-50 p-6"
+          >
+            <h2 id="course-mastery-heading" className="mb-1 text-lg font-bold text-brand-900">
+              Course Mastery Check
+            </h2>
+            <p className="mb-4 text-sm text-brand-700">
+              You&apos;ve completed all lessons. Prove your mastery with a summative response —
+              explain the core ideas of this course in your own words.
+            </p>
+
+            {masteryCheckResult === 'passed' && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-xl border border-green-200 bg-green-50 p-4 text-center"
+              >
+                <p className="font-semibold text-green-800">Course mastery confirmed! 🎓</p>
+                <p className="mt-1 text-sm text-green-700">
+                  Outstanding work — you&apos;ve demonstrated deep understanding.
+                </p>
+              </div>
+            )}
+
+            {masteryCheckResult === 'failed' && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center"
+              >
+                <p className="font-semibold text-amber-800">
+                  Keep reviewing — you&apos;ll get there
+                </p>
+                <p className="mt-1 text-sm text-amber-700">
+                  Return after more practice and try again in 24 hours.
+                </p>
+              </div>
+            )}
+
+            {masteryCheckResult === null && !masteryCheckOpen && (
+              <Button
+                onClick={() => setMasteryCheckOpen(true)}
+                aria-label="Start course mastery check"
+              >
+                Start mastery check
+              </Button>
+            )}
+
+            {masteryCheckOpen && masteryCheckResult === null && (
+              <MasteryCheckSession
+                lessonId={lessons[lessons.length - 1].id}
+                onComplete={(passed) => {
+                  setMasteryCheckResult(passed ? 'passed' : 'failed')
+                  setMasteryCheckOpen(false)
+                }}
+              />
+            )}
           </section>
         )}
 
