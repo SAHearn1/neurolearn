@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useLesson } from '../hooks/useLessons'
 import { useRacaSession } from '../hooks/useRacaSession'
 import { useCognitiveState } from '../hooks/useCognitiveState'
 import { useEpistemicProfile } from '../hooks/useEpistemicProfile'
@@ -27,6 +28,7 @@ import type { ArtifactKind } from '../lib/raca/types/artifacts'
 export function SessionPageCore() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
   const navigate = useNavigate()
+  const { lesson } = useLesson(lessonId)
 
   const session = useRacaSession()
   const cognitive = useCognitiveState()
@@ -84,7 +86,7 @@ export function SessionPageCore() {
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">
               RACA Session
             </p>
-            <h1 className="text-2xl font-bold text-slate-900">Lesson: {lessonId}</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{lesson?.title ?? 'Loading…'}</h1>
           </div>
           <Button variant="ghost" onClick={handleEndSession}>
             End session

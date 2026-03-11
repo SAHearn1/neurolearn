@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { useAuthStore } from '../store/authStore'
 
 const FEATURES = [
   {
@@ -19,6 +20,9 @@ const FEATURES = [
 ]
 
 export function HomePage() {
+  const user = useAuthStore((s) => s.user)
+  if (user) return <Navigate replace to="/dashboard" />
+
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero */}

@@ -148,7 +148,7 @@ export function CoursePage() {
 
   const level = (course?.level ?? 'beginner') as CourseLevel
   const completed = courseProgress?.completed_lessons ?? 0
-  const total = courseProgress?.total_lessons ?? lessons.length
+  const total = lessons.length || courseProgress?.total_lessons || 0
 
   return (
     <main id="main-content" className="mx-auto w-full max-w-4xl flex flex-col gap-6 pb-12">

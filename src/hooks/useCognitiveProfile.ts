@@ -32,10 +32,9 @@ export function useCognitiveProfile(): UseCognitiveProfileResult {
         .from('epistemic_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
       if (cancelled) return
-      if (err && err.code !== 'PGRST116') {
-        // PGRST116 = no row found (profile built after first session)
+      if (err) {
         setError(err.message)
       } else {
         setCognitiveProfile(data ?? null)

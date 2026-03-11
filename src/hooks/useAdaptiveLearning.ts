@@ -42,9 +42,9 @@ export function useAdaptiveLearning(courseId: string | undefined) {
         .select('*')
         .eq('user_id', user.id)
         .eq('course_id', courseId)
-        .single()
+        .maybeSingle()
 
-      if (err && err.code !== 'PGRST116') throw err
+      if (err) throw err
       setState(data as AdaptiveLearningState | null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load adaptive state')
