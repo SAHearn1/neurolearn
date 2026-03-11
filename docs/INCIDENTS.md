@@ -64,7 +64,7 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 
 **Severity:** Medium — Build warning on every production build; degraded load on low-bandwidth networks
 **Detected:** Vite build output warning (chunk size exceeds 500 kB limit)
-**Fixed:** Commit (this session)
+**Fixed:** PR #276
 
 **Root cause:** The main entry bundle (`index.js`) included all vendor dependencies (`@supabase/supabase-js`, `@sentry/react`, `react-router-dom`, `zustand`, `zod`) plus all public route pages (LoginPage, SignUpPage, PasswordResetPage, CheckEmailPage, UpdatePasswordPage, HomePage) bundled eagerly. No `manualChunks` splitting was configured.
 
@@ -76,3 +76,22 @@ _Part of: SAHearn1/rwfw-agent-governance ecosystem_
 **Result:** Main bundle reduced from 518 kB → 192 kB (63% reduction). No chunks exceed 400 kB. Build warning eliminated.
 
 **Files changed:** `vite.config.ts`, `src/App.tsx`
+
+---
+
+## INC-006 — 2026-03-10 — RACA engine disabled by default via feature flags
+
+**Severity:** High — adaptive session experience never activated; users always received fallback UI
+**Detected:** Issue review / code inspection (this session)
+**Fixed:** PR #274
+
+**Root cause:** `.env.example` set all `VITE_RACA_ENABLE_*` flags to `false`. `feature-flags.ts` treated any absent/false env var as `false`, so the engine was always off unless every flag was manually set. `SessionPage` gated on `racaFlags.runtime` and showed a fallback UI whenever it was `false`. `useRacaSession.start()` additionally blocked session start when `racaFlags.runtime` was `false`.
+
+**Fix:**
+
+- `feature-flags.ts`: `readFlag()` now accepts a `devDefault` parameter (default `true`). In development, when a flag env var is absent or empty the dev default is used rather than defaulting to `false`. Flags requiring external services (`AGENTS`, `AUDIT`) default to `false`.
+- `.env.example`: Updated development defaults — stable flags set to `true`; service-dependent flags (`AGENTS`, `AUDIT`) remain `false` with explanatory comments.
+- `useRacaSession.ts`: Removed the redundant `!racaFlags.runtime` guard in `start()` — `SessionPage` already gates on this flag before rendering.
+- Added 29 new unit tests covering session engine initialisation, adaptive loop, and regulation state updates.
+
+**Files changed:** `src/lib/raca/feature-flags.ts`, `src/hooks/useRacaSession.ts`, `.env.example`, `src/lib/raca/layer0-runtime/session-manager.test.ts` (new), `src/lib/raca/layer4-epistemic/adaptation-engine.test.ts` (new)
