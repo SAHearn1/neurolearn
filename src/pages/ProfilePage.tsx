@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useProfile } from '../hooks/useProfile'
 import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
 import { SessionHistory } from '../components/raca/SessionHistory'
+import { SkillPowerUps } from '../components/profile/SkillPowerUps'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -244,6 +245,10 @@ export function ProfilePage() {
           <p className="text-xs text-slate-500 mt-0.5">Your recent deep learning sessions.</p>
         </div>
         <SessionHistory />
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SkillPowerUps />
       </section>
     </main>
   )

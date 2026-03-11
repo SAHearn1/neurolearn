@@ -6,9 +6,10 @@ import { UserManagement } from '../components/admin/UserManagement'
 import { ContentModeration } from '../components/admin/ContentModeration'
 import { SystemAnalytics } from '../components/admin/SystemAnalytics'
 import { AuditLogViewer } from '../components/admin/AuditLogViewer'
+import { IntelligenceDashboard } from '../components/admin/IntelligenceDashboard'
 import { useAdminStats } from '../hooks/useAdminStats'
 
-type Tab = 'overview' | 'users' | 'content' | 'analytics' | 'audit'
+type Tab = 'overview' | 'users' | 'content' | 'analytics' | 'audit' | 'intelligence'
 
 export function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -20,6 +21,7 @@ export function AdminDashboardPage() {
     { key: 'content', label: 'Content Moderation' },
     { key: 'analytics', label: 'Analytics' },
     { key: 'audit', label: 'Audit Log' },
+    { key: 'intelligence', label: 'Platform Intelligence' },
   ]
 
   return (
@@ -151,6 +153,14 @@ export function AdminDashboardPage() {
         hidden={activeTab !== 'audit'}
       >
         <AuditLogViewer />
+      </div>
+      <div
+        id="admin-panel-intelligence"
+        role="tabpanel"
+        aria-labelledby="admin-tab-intelligence"
+        hidden={activeTab !== 'intelligence'}
+      >
+        <IntelligenceDashboard />
       </div>
     </main>
   )
