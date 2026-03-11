@@ -9,7 +9,7 @@ const links = [
 
 export function Sidebar() {
   return (
-    <aside aria-label="Secondary" className="hidden w-64 shrink-0 lg:block">
+    <aside aria-label="Secondary" className="hidden w-64 shrink-0 md:block">
       <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
         <ul className="space-y-1">
           {links.map((link) => (

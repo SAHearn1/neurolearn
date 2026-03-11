@@ -26,6 +26,8 @@ import { RegulationCheckIn } from '../components/raca/RegulationCheckIn'
 import type { RegulationLevel } from '../components/raca/RegulationCheckIn'
 import { TransitionAnnouncement } from '../components/raca/TransitionAnnouncement'
 import { SessionSummaryCard } from '../components/raca/SessionSummaryCard'
+import { DiagnosticBanner } from '../components/raca/DiagnosticBanner'
+import { useSessionDiagnostic } from '../hooks/useSessionDiagnostic'
 import { Button } from '../components/ui/Button'
 import { scoreTRACE } from '../lib/raca/layer4-epistemic/fluency-tracker'
 import { traceSessionXPBreakdown } from '../lib/xp'
@@ -200,6 +202,9 @@ export function SessionPageCore() {
     setShowSummary(true)
   }, [artifacts, cognitive.stateHistory, session])
 
+  // P21-05: Session diagnostic for personalized start banner
+  const { diagnostic } = useSessionDiagnostic(lessonId)
+
   const availableAgents = getAgentDefinitionsForState(cognitive.currentState)
 
   const sessionXP = useMemo(() => {
@@ -314,6 +319,9 @@ export function SessionPageCore() {
           currentState={cognitive.currentState}
           stateHistory={cognitive.stateHistory}
         />
+
+        {/* P21-05: Personalised diagnostic banner — auto-dismisses after 4s */}
+        {diagnostic && <DiagnosticBanner diagnostic={diagnostic} />}
 
         {/* P21-02: Break offering card */}
         {showBreakOffering && (

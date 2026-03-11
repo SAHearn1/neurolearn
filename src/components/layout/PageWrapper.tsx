@@ -9,7 +9,7 @@ export function PageWrapper() {
   const isLessonRoute = /^\/courses\/[^/]+\/lessons\/[^/]+$/.test(location.pathname)
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-x-hidden">
       <Header />
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-6 py-6">
         <Sidebar />
