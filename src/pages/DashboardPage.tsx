@@ -18,6 +18,10 @@ import { BadgeShelf } from '../components/gamification/BadgeShelf'
 import { XPBar } from '../components/ui/XPBar'
 import { TraceRadar } from '../components/ui/TraceRadar'
 import { StreakCalendar } from '../components/dashboard/StreakCalendar'
+import { GoalSettingWidget } from '../components/dashboard/GoalSettingWidget'
+import { GoalProgressCard } from '../components/dashboard/GoalProgressCard'
+import { NextChallengeCard } from '../components/dashboard/NextChallengeCard'
+import { SpacedRepetitionCard } from '../components/dashboard/SpacedRepetitionCard'
 import { useCognitiveProfile } from '../hooks/useCognitiveProfile'
 import type { TraceScores } from '../components/ui/TraceRadar'
 import { useAdaptiveLearning } from '../hooks/useAdaptiveLearning'
@@ -26,6 +30,9 @@ import { useOnboarding } from '../hooks/useOnboarding'
 import { useCourseProgress } from '../hooks/useProgress'
 import { useProfile } from '../hooks/useProfile'
 import { useRacaStreak } from '../hooks/useRacaStreak'
+import { useStudentGoals } from '../hooks/useStudentGoals'
+import { useGapAnalysis } from '../hooks/useGapAnalysis'
+import { useSpacedRepetition } from '../hooks/useSpacedRepetition'
 import { useCourses } from '../hooks/useCourses'
 import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { racaFlags } from '../lib/raca/feature-flags'
@@ -173,6 +180,9 @@ export function DashboardPage() {
     defendSessions,
     hasDeepThinkerSession,
   } = useRacaStreak()
+  const { activeGoal } = useStudentGoals()
+  const { gaps } = useGapAnalysis()
+  const { dueItems } = useSpacedRepetition()
 
   const displayName = profile?.display_name ?? 'learner'
   const streakDays = profile?.streak_days ?? 0
@@ -273,6 +283,18 @@ export function DashboardPage() {
             </div>
           </section>
         )}
+
+        {/* Learning Tools — Phase 19-20 student intelligence widgets */}
+        <section aria-label="Learning tools" className="space-y-3">
+          <h2 className="text-xl font-bold text-slate-900">Learning Tools</h2>
+          <GoalSettingWidget />
+          {activeGoal !== null && (
+            <GoalProgressCard goal={activeGoal} sessionCount={totalRacaSessions} />
+          )}
+          <NextChallengeCard gaps={gaps} />
+          {/* TODO(GAP-003): SpacedRepetitionCard links will work once course_id is added to spaced_repetition_queue */}
+          <SpacedRepetitionCard dueItems={dueItems} />
+        </section>
 
         {/* Continue Learning */}
         {firstCourse && (

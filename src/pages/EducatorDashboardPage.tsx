@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
@@ -12,14 +12,62 @@ import { CourseAssignment } from '../components/educator/CourseAssignment'
 import { ContentManager } from '../components/educator/ContentManager'
 import { EducatorAnalytics } from '../components/educator/EducatorAnalytics'
 import { StudentLCPDashboard } from '../components/educator/StudentLCPDashboard'
+import { supabase } from '../../utils/supabase/client'
+import { AlertsPanel } from '../components/educator/AlertsPanel'
+import { AlertBadge } from '../components/educator/AlertBadge'
+import { NeedsAttentionPanel } from '../components/educator/NeedsAttentionPanel'
+import { useEducatorAlerts } from '../hooks/useEducatorAlerts'
+import { useStudentRegulation } from '../hooks/useStudentRegulation'
 
-type Tab = 'overview' | 'classes' | 'progress' | 'assignments' | 'content' | 'analytics' | 'growth'
+type Tab =
+  | 'overview'
+  | 'classes'
+  | 'progress'
+  | 'assignments'
+  | 'content'
+  | 'analytics'
+  | 'growth'
+  | 'alerts'
 
 export function EducatorDashboardPage() {
   const user = useAuthStore((s) => s.user)
   const { profile, loading: profileLoading, error: profileError } = useEducatorProfile()
   const { classes, loading: classesLoading } = useClassManagement()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
+  const [studentIds, setStudentIds] = useState<string[]>([])
+  const [studentNames, setStudentNames] = useState<Record<string, string>>({})
+
+  const { unreadCount } = useEducatorAlerts()
+  const { summaries, loading: regulationLoading } = useStudentRegulation(studentIds)
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    const run = async () => {
+      const { data: linkData } = await supabase
+        .from('educator_student_links')
+        .select('student_id')
+        .eq('educator_id', user.id)
+      if (cancelled || !linkData) return
+      const ids = (linkData as { student_id: string }[]).map((r) => r.student_id)
+      setStudentIds(ids)
+      if (ids.length === 0) return
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('user_id', ids)
+      if (cancelled || !profileData) return
+      const names: Record<string, string> = {}
+      for (const p of profileData as { user_id: string; display_name: string | null }[]) {
+        names[p.user_id] = p.display_name ?? 'Student'
+      }
+      setStudentNames(names)
+    }
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
 
   const displayName = (user?.user_metadata?.display_name as string | undefined) ?? 'Educator'
 
@@ -47,6 +95,7 @@ export function EducatorDashboardPage() {
     { key: 'assignments', label: 'Assignments' },
     { key: 'content', label: 'Content' },
     { key: 'analytics', label: 'Analytics' },
+    { key: 'alerts', label: 'Alerts' },
   ]
 
   return (
@@ -94,7 +143,14 @@ export function EducatorDashboardPage() {
               }`}
               onClick={() => setActiveTab(tab.key)}
             >
-              {tab.label}
+              {tab.key === 'alerts' ? (
+                <span className="flex items-center gap-1.5">
+                  Alerts
+                  <AlertBadge count={unreadCount} />
+                </span>
+              ) : (
+                tab.label
+              )}
             </button>
           ))}
         </div>
@@ -171,6 +227,19 @@ export function EducatorDashboardPage() {
         hidden={activeTab !== 'analytics'}
       >
         <EducatorAnalytics />
+      </div>
+      <div
+        id="edu-panel-alerts"
+        role="tabpanel"
+        aria-labelledby="edu-tab-alerts"
+        hidden={activeTab !== 'alerts'}
+      >
+        <div className="space-y-4">
+          <AlertsPanel />
+          {!regulationLoading && (
+            <NeedsAttentionPanel summaries={summaries} studentNames={studentNames} />
+          )}
+        </div>
       </div>
     </main>
   )
