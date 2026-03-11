@@ -19,6 +19,12 @@ export interface AgentContext {
     text_size: string
     reduce_motion: boolean
   }
+  /** AI-09/#340: TRACE fluency scores from last epistemic evaluation (0–10 per dimension) */
+  traceProfile?: Record<string, number>
+  /** AI-09/#340: Active CCSS standard codes for this lesson (e.g. ["CCSS.ELA-LITERACY.W.5.1"]) */
+  ccssStandardCodes?: string[]
+  /** AI-09/#340: Outcome from the learner's most recent prior session on this lesson */
+  priorSessionOutcome?: 'proficient' | 'in_progress' | 'developing' | 'not_started'
 }
 
 export interface AgentInvokeRequest {

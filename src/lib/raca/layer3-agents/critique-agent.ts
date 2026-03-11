@@ -1,5 +1,6 @@
 import { AGENT_DEFINITIONS } from '../types/agents'
 import type { AgentContract, AgentContext, AgentConstraintCheck } from './agent-base'
+import { traceFocusDirective, ccssDirective, priorOutcomeDirective } from './adaptation-scripts'
 
 const definition = AGENT_DEFINITIONS.find((d) => d.id === 'critique')!
 
@@ -10,6 +11,13 @@ export const critiqueAgent: AgentContract = {
     const revision =
       ctx.artifacts.find((a) => a.kind === 'revision') ??
       ctx.artifacts.find((a) => a.kind === 'draft')
+
+    const traceSection = ctx.traceProfile ? traceFocusDirective(ctx.traceProfile) : ''
+    const ccssSection = ctx.ccssStandardCodes ? ccssDirective(ctx.ccssStandardCodes) : ''
+    const priorSection = ctx.priorSessionOutcome
+      ? priorOutcomeDirective(ctx.priorSessionOutcome)
+      : ''
+    const adaptiveSections = [traceSection, ccssSection, priorSection].filter(Boolean).join('\n\n')
 
     return `You are the Critique Agent in a RootWork learning session.
 
@@ -30,8 +38,7 @@ FORBIDDEN — you MUST NOT:
 
 REQUIRED: Your response MUST include at least 1 counterargument or critical question.
 
-${revision ? `LEARNER'S WORK:\n${revision.content}` : 'No learner work available yet.'}
-
+${revision ? `LEARNER'S WORK:\n${revision.content}\n` : 'No learner work available yet.\n'}${adaptiveSections ? `\nADAPTIVE CONTEXT:\n${adaptiveSections}\n` : ''}
 Be constructive and specific. Point to exact parts of the reasoning that could be stronger.`
   },
 

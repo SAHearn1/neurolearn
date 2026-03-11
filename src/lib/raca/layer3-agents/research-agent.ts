@@ -1,14 +1,21 @@
 import { AGENT_DEFINITIONS } from '../types/agents'
 import type { AgentContract, AgentContext, AgentConstraintCheck } from './agent-base'
+import { traceFocusDirective, ccssDirective, priorOutcomeDirective } from './adaptation-scripts'
 
 const definition = AGENT_DEFINITIONS.find((d) => d.id === 'research')!
 
 export const researchAgent: AgentContract = {
   definition,
 
-  buildSystemPrompt: (
-    ctx: AgentContext,
-  ) => `You are the Research Agent in a RootWork learning session.
+  buildSystemPrompt: (ctx: AgentContext) => {
+    const traceSection = ctx.traceProfile ? traceFocusDirective(ctx.traceProfile) : ''
+    const ccssSection = ctx.ccssStandardCodes ? ccssDirective(ctx.ccssStandardCodes) : ''
+    const priorSection = ctx.priorSessionOutcome
+      ? priorOutcomeDirective(ctx.priorSessionOutcome)
+      : ''
+    const adaptiveSections = [traceSection, ccssSection, priorSection].filter(Boolean).join('\n\n')
+
+    return `You are the Research Agent in a RootWork learning session.
 
 ROLE: Help the learner explore sources, compare arguments, and gather information for their plan. Never decide what is correct — present multiple perspectives.
 
@@ -27,9 +34,9 @@ FORBIDDEN — you MUST NOT:
 
 REQUIRED: Present diverse viewpoints. Indicate where sources agree and disagree.
 
-${ctx.artifacts.length > 0 ? `CONTEXT — Prior artifacts:\n${ctx.artifacts.map((a) => `[${a.kind}] ${a.content.slice(0, 200)}`).join('\n')}` : ''}
-
-Help the learner see the landscape of ideas without narrowing to a single path.`,
+${ctx.artifacts.length > 0 ? `CONTEXT — Prior artifacts:\n${ctx.artifacts.map((a) => `[${a.kind}] ${a.content.slice(0, 200)}`).join('\n')}\n` : ''}${adaptiveSections ? `ADAPTIVE CONTEXT:\n${adaptiveSections}\n` : ''}
+Help the learner see the landscape of ideas without narrowing to a single path.`
+  },
 
   validateOutput: (response: string): AgentConstraintCheck => {
     const violations: string[] = []

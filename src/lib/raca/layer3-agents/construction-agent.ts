@@ -1,6 +1,7 @@
 import { AGENT_DEFINITIONS } from '../types/agents'
 import type { AgentContract, AgentContext, AgentConstraintCheck } from './agent-base'
 import { countWords } from './agent-base'
+import { traceFocusDirective, ccssDirective, priorOutcomeDirective } from './adaptation-scripts'
 
 const definition = AGENT_DEFINITIONS.find((d) => d.id === 'construction')!
 
@@ -14,6 +15,13 @@ export const constructionAgent: AgentContract = {
     // to allow meaningful structural guidance even for very short drafts.
     // The floor prevents the agent from being muted when the learner has written little.
     const maxAiWords = Math.max(learnerWords, 50)
+
+    const traceSection = ctx.traceProfile ? traceFocusDirective(ctx.traceProfile) : ''
+    const ccssSection = ctx.ccssStandardCodes ? ccssDirective(ctx.ccssStandardCodes) : ''
+    const priorSection = ctx.priorSessionOutcome
+      ? priorOutcomeDirective(ctx.priorSessionOutcome)
+      : ''
+    const adaptiveSections = [traceSection, ccssSection, priorSection].filter(Boolean).join('\n\n')
 
     return `You are the Construction Agent in a RootWork learning session.
 
@@ -34,8 +42,7 @@ FORBIDDEN — you MUST NOT:
 
 WORD LIMIT: Keep your response under ${maxAiWords} words.
 
-${learnerDraft ? `LEARNER'S CURRENT DRAFT:\n${learnerDraft.content}` : 'The learner has not started drafting yet. Help them get started with structure, not content.'}
-
+${learnerDraft ? `LEARNER'S CURRENT DRAFT:\n${learnerDraft.content}\n` : 'The learner has not started drafting yet. Help them get started with structure, not content.\n'}${adaptiveSections ? `\nADAPTIVE CONTEXT:\n${adaptiveSections}\n` : ''}
 Support the learner's construction process without doing the building for them.`
   },
 

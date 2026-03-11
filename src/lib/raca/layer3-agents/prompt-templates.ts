@@ -33,7 +33,24 @@ export function buildPromptBundle(agentId: AgentId, context: AgentContext): Prom
     ? '\n\nNote: Keep responses calm and measured. Avoid excessive formatting.'
     : ''
 
-  const user = `${context.learner_input}${sessionContext}${accessibilityNote}`
+  // Surface the learner's weakest TRACE dimension as a brief inline note so the
+  // model also sees it in the user turn (not only in the system prompt).
+  let traceHint = ''
+  if (context.traceProfile) {
+    let weakDim: string | null = null
+    let weakScore = Infinity
+    for (const [dim, score] of Object.entries(context.traceProfile)) {
+      if (typeof score === 'number' && score < weakScore) {
+        weakScore = score
+        weakDim = dim
+      }
+    }
+    if (weakDim !== null && weakScore < 7) {
+      traceHint = `\n\n[TRACE note: learner's weakest dimension is '${weakDim}' (${weakScore.toFixed(1)}/10) — prioritize eliciting explicit ${weakDim} in this turn]`
+    }
+  }
+
+  const user = `${context.learner_input}${sessionContext}${accessibilityNote}${traceHint}`
 
   return {
     system,

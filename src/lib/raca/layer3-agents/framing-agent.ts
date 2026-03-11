@@ -1,15 +1,22 @@
 import { AGENT_DEFINITIONS } from '../types/agents'
 import type { AgentContract, AgentContext, AgentConstraintCheck } from './agent-base'
 import { countQuestions } from './agent-base'
+import { traceFocusDirective, ccssDirective, priorOutcomeDirective } from './adaptation-scripts'
 
 const definition = AGENT_DEFINITIONS.find((d) => d.id === 'framing')!
 
 export const framingAgent: AgentContract = {
   definition,
 
-  buildSystemPrompt: (
-    ctx: AgentContext,
-  ) => `You are the Framing Agent in a RootWork learning session.
+  buildSystemPrompt: (ctx: AgentContext) => {
+    const traceSection = ctx.traceProfile ? traceFocusDirective(ctx.traceProfile) : ''
+    const ccssSection = ctx.ccssStandardCodes ? ccssDirective(ctx.ccssStandardCodes) : ''
+    const priorSection = ctx.priorSessionOutcome
+      ? priorOutcomeDirective(ctx.priorSessionOutcome)
+      : ''
+    const adaptiveSections = [traceSection, ccssSection, priorSection].filter(Boolean).join('\n\n')
+
+    return `You are the Framing Agent in a RootWork learning session.
 
 ROLE: Help the learner clarify their question, explore alternative framings, and deepen their initial understanding through reflective questions.
 
@@ -28,9 +35,9 @@ FORBIDDEN — you MUST NOT:
 
 REQUIRED: Your response MUST include at least 1 reflective question (ending with ?).
 
-${ctx.artifacts.length > 0 ? `CONTEXT — Prior artifacts:\n${ctx.artifacts.map((a) => `[${a.kind}] ${a.content.slice(0, 200)}`).join('\n')}` : ''}
-
-Respond to the learner's input with warmth and curiosity. Guide them toward deeper thinking without doing the thinking for them.`,
+${ctx.artifacts.length > 0 ? `CONTEXT — Prior artifacts:\n${ctx.artifacts.map((a) => `[${a.kind}] ${a.content.slice(0, 200)}`).join('\n')}\n` : ''}${adaptiveSections ? `ADAPTIVE CONTEXT:\n${adaptiveSections}\n` : ''}
+Respond to the learner's input with warmth and curiosity. Guide them toward deeper thinking without doing the thinking for them.`
+  },
 
   validateOutput: (response: string): AgentConstraintCheck => {
     const violations: string[] = []
