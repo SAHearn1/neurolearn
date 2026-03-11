@@ -22,6 +22,7 @@ import { EpistemicDashboard } from '../components/raca/EpistemicDashboard'
 import { RegulationIntervention } from '../components/raca/RegulationIntervention'
 import { AuditTimeline } from '../components/raca/AuditTimeline'
 import { SessionModeSelector } from '../components/raca/SessionModeSelector'
+import { PriorSessionSummary } from '../components/raca/PriorSessionSummary'
 import { BreakOffering } from '../components/raca/BreakOffering'
 import { RegulationCheckIn } from '../components/raca/RegulationCheckIn'
 import type { RegulationLevel } from '../components/raca/RegulationCheckIn'
@@ -68,21 +69,28 @@ export function SessionPageCore() {
 
   // AI-09/#323: Session personalization — fetch prior mastery status + TRACE profile
   // so all agent invocations are contextualised for returning learners.
+  // #324: also tracks priorMasteryScore + priorDataLoaded for pre-session summary screen.
   const [priorOutcome, setPriorOutcome] =
     useState<AgentSessionPersonalization['priorSessionOutcome']>(undefined)
+  const [priorMasteryScore, setPriorMasteryScore] = useState<number | null>(null)
   const [traceProfileData, setTraceProfileData] = useState<Record<string, number> | undefined>(
     undefined,
   )
+  const [priorDataLoaded, setPriorDataLoaded] = useState(false)
+  const [showPriorSummary, setShowPriorSummary] = useState(false)
 
   useEffect(() => {
-    if (!user?.id || !lessonId) return
+    if (!user?.id || !lessonId) {
+      const id = setTimeout(() => setPriorDataLoaded(true), 0)
+      return () => clearTimeout(id)
+    }
     let cancelled = false
 
     const fetchPersonalization = async () => {
       const [masteryResult, epistemicResult] = await Promise.all([
         supabase
           .from('adaptive_learning_state')
-          .select('mastery_status')
+          .select('mastery_status, mastery_score_float')
           .eq('user_id', user.id)
           .eq('lesson_id', lessonId)
           .maybeSingle(),
@@ -98,13 +106,21 @@ export function SessionPageCore() {
         | AgentSessionPersonalization['priorSessionOutcome']
         | null
         | undefined
-      if (status) setPriorOutcome(status)
+      if (status) {
+        setPriorOutcome(status)
+        if (status !== 'not_started') setShowPriorSummary(true)
+      }
+
+      const score = masteryResult.data?.mastery_score_float as number | null | undefined
+      if (typeof score === 'number') setPriorMasteryScore(score)
 
       const traceAvg = epistemicResult.data?.trace_averages as
         | Record<string, number>
         | null
         | undefined
       if (traceAvg) setTraceProfileData(traceAvg)
+
+      setPriorDataLoaded(true)
     }
 
     void fetchPersonalization()
@@ -309,7 +325,7 @@ export function SessionPageCore() {
     return traceSessionXPBreakdown(trace.overall)
   }, [cognitive.currentState, artifacts])
 
-  // ── P21-01: Pre-session mode selector ────────────────────────────────────
+  // ── P21-01: Pre-session mode selector (with #324 returning-learner summary) ──
   if (!sessionStarted) {
     return (
       <main id="main-content" className="mx-auto flex min-h-screen w-full max-w-2xl flex-col p-6">
@@ -319,7 +335,18 @@ export function SessionPageCore() {
           </p>
           <h1 className="text-2xl font-bold text-slate-900">{lesson?.title ?? 'Loading…'}</h1>
         </header>
-        <SessionModeSelector onSelect={handleModeSelect} />
+        {/* #324: show prior progress summary for returning learners before mode selection */}
+        {priorDataLoaded && showPriorSummary && priorOutcome && priorOutcome !== 'not_started' ? (
+          <PriorSessionSummary
+            lessonTitle={lesson?.title ?? ''}
+            priorOutcome={priorOutcome}
+            masteryScore={priorMasteryScore}
+            traceProfile={traceProfileData}
+            onContinue={() => setShowPriorSummary(false)}
+          />
+        ) : (
+          <SessionModeSelector onSelect={handleModeSelect} />
+        )}
       </main>
     )
   }
