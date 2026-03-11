@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Alert } from '../components/ui/Alert'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
@@ -54,6 +54,9 @@ function EnrollButton({ courseId }: { courseId: string }) {
 
 export function CoursesPage() {
   const { courses, loading, error } = useCourses()
+  const [searchParams] = useSearchParams()
+  const lessonId = searchParams.get('lesson')
+  const cardRefs = useRef<Map<string, HTMLElement>>(new Map())
   const [search, setSearch] = useState('')
   const [difficulty, setDifficulty] = useState<'all' | CourseLevel>('all')
   const [sort, setSort] = useState<'newest' | 'az' | 'shortest'>('newest')
@@ -72,6 +75,14 @@ export function CoursesPage() {
       result.sort((a, b) => (a.lesson_count ?? 0) - (b.lesson_count ?? 0))
     return result
   }, [courses, search, difficulty, sort])
+
+  useEffect(() => {
+    if (!lessonId || loading) return
+    const el = cardRefs.current.get(lessonId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [lessonId, loading])
 
   const clearFilters = () => {
     setSearch('')
@@ -160,7 +171,14 @@ export function CoursesPage() {
       <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((course) => (
           <article
-            className="card-hover flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+            id={`lesson-${course.id}`}
+            ref={(el) => {
+              if (el) cardRefs.current.set(course.id, el)
+              else cardRefs.current.delete(course.id)
+            }}
+            className={`card-hover flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm ${
+              lessonId === course.id ? 'border-brand-500 ring-2 ring-brand-500' : 'border-slate-200'
+            }`}
             key={course.id}
           >
             <div className="relative">
