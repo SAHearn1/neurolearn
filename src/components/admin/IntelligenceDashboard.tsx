@@ -130,7 +130,7 @@ export function IntelligenceDashboard() {
           Platform Overview
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Active Learners" value={stats?.totalActiveLearners ?? 0} />
+          <StatCard label="Registered Learners" value={stats?.totalActiveLearners ?? 0} />
           <StatCard
             label="Avg Mastery"
             value={Math.round((stats?.averageMasteryScore ?? 0) * 100)}
@@ -145,7 +145,59 @@ export function IntelligenceDashboard() {
         </div>
       </section>
 
-      {/* Section 2: Standards Coverage */}
+      {/* Section 2: 5Rs Phase Distribution */}
+      <section aria-labelledby="five-r-heading">
+        <h3
+          id="five-r-heading"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500"
+        >
+          Active Sessions — 5Rs Distribution
+        </h3>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          {stats?.fiveRDistribution && Object.values(stats.fiveRDistribution).some((v) => v > 0) ? (
+            <div className="space-y-3">
+              {Object.entries(stats.fiveRDistribution).map(([phase, count]) => {
+                const total = Object.values(stats.fiveRDistribution).reduce((a, b) => a + b, 0)
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                const colors: Record<string, string> = {
+                  Relate: 'bg-blue-400',
+                  Regulate: 'bg-amber-400',
+                  Reason: 'bg-brand-500',
+                  Repair: 'bg-purple-400',
+                  Restore: 'bg-green-400',
+                }
+                return (
+                  <div key={phase}>
+                    <div className="mb-1 flex items-center justify-between text-xs">
+                      <span className="font-medium text-slate-700">{phase}</span>
+                      <span className="text-slate-500">
+                        {count} session{count !== 1 ? 's' : ''} ({pct}%)
+                      </span>
+                    </div>
+                    <div
+                      className="h-2.5 overflow-hidden rounded-full bg-slate-100"
+                      role="progressbar"
+                      aria-label={`${phase}: ${pct}%`}
+                      aria-valuenow={pct}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${colors[phase] ?? 'bg-slate-400'}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">No active sessions at this time.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Section 3: Standards Coverage */}
       <section aria-labelledby="coverage-heading">
         <h3
           id="coverage-heading"
