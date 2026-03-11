@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.head_ref, 'agent-operating-system-install') || contains(github.head_ref, 'governance')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: |
           for f in AGENTS.md .github/PULL_REQUEST_TEMPLATE.md repo.intelligence.yml; do
             [ -f "$f" ] && echo "OK: $f" || { echo "MISSING: $f"; exit 1; }
