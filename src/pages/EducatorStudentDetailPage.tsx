@@ -19,7 +19,7 @@ interface SessionEntry {
   current_state: string
   status: string
   session_mode: string | null
-  created_at: string
+  started_at: string
   updated_at: string
   lesson_id: string | null
   lesson_title: string | null
@@ -116,9 +116,9 @@ export function EducatorStudentDetailPage() {
         supabase.from('profiles').select('display_name').eq('user_id', studentId).maybeSingle(),
         supabase
           .from('cognitive_sessions')
-          .select('id, current_state, status, session_mode, created_at, updated_at, lesson_id')
+          .select('id, current_state, status, session_mode, started_at, updated_at, lesson_id')
           .eq('user_id', studentId)
-          .order('created_at', { ascending: false })
+          .order('started_at', { ascending: false })
           .limit(20),
         supabase
           .from('epistemic_profiles')
@@ -154,8 +154,8 @@ export function EducatorStudentDetailPage() {
           : Promise.resolve({ data: [] }),
         lessonIds.length > 0
           ? supabase
-              .from('adaptive_learning_state')
-              .select('lesson_id, mastery_status, mastery_score_float')
+              .from('lesson_progress')
+              .select('lesson_id, mastery_status, score')
               .eq('user_id', studentId)
               .in('lesson_id', lessonIds)
           : Promise.resolve({ data: [] }),
@@ -171,7 +171,7 @@ export function EducatorStudentDetailPage() {
           (masteryRes.data as {
             lesson_id: string
             mastery_status: string
-            mastery_score_float: number
+            score: number
           }[]) ?? []
         ).map((m) => [m.lesson_id, m]),
       )
@@ -182,7 +182,7 @@ export function EducatorStudentDetailPage() {
           current_state: string
           status: string
           session_mode: string | null
-          created_at: string
+          started_at: string
           updated_at: string
           lesson_id: string | null
         }) => {
@@ -194,7 +194,7 @@ export function EducatorStudentDetailPage() {
           return {
             ...s,
             lesson_title: s.lesson_id ? (lessonMap.get(s.lesson_id) ?? null) : null,
-            mastery_score: mastery?.mastery_score_float ?? null,
+            mastery_score: mastery?.score ?? null,
             mastery_status: mastery?.mastery_status ?? null,
             fiveRPhase,
           }
@@ -309,7 +309,7 @@ export function EducatorStudentDetailPage() {
                         )}
                       </div>
                       <p className="mt-0.5 text-xs text-slate-400">
-                        {formatDate(s.created_at)} ·{' '}
+                        {formatDate(s.started_at)} ·{' '}
                         {s.status === 'active' ? (
                           <span className="font-medium text-green-600">In progress</span>
                         ) : (

@@ -390,3 +390,26 @@ return () => clearTimeout(id)
 **Fix:** `supabase secrets set ANTHROPIC_API_KEY=<key>` run against the production project.
 
 **Files changed:** None (Supabase secret configuration only)
+
+---
+
+## INC-017 — 2026-03-12 — Educator student detail page: three RLS gaps + two schema bugs
+
+**Severity:** High — educator portal non-functional; student names, session history, and TRACE data all blank
+**Detected:** Playwright QA after seed-e2e.ts fix (#343)
+**Fixed:** This session — migration 059 + EducatorStudentDetailPage.tsx fixes
+
+**Root cause (three issues):**
+
+1. `profiles`, `cognitive_sessions`, and `epistemic_profiles` tables only had `auth.uid() = user_id` SELECT policies. Educators querying a student's rows received empty results because auth.uid() is the educator's UID, not the student's.
+2. `EducatorStudentDetailPage.tsx` queried `cognitive_sessions` with `created_at` (column doesn't exist — actual column is `started_at`), causing a 400 Bad Request.
+3. Same file queried `adaptive_learning_state` for per-lesson mastery data, but `lesson_id` and `mastery_status` columns don't exist on that table — they live on `lesson_progress`.
+
+**Fix:**
+
+- Migration `059_educator_rls_student_read.sql`: added educator SELECT policies on `profiles`, `cognitive_sessions`, and `epistemic_profiles`. Each policy authorises via either an `educator_student_links` row or a `class_enrollments → classes` join.
+- `EducatorStudentDetailPage.tsx`: replaced `created_at` → `started_at` in select and order clauses; replaced `adaptive_learning_state` → `lesson_progress` with `score` in place of `mastery_score_float`.
+
+**Files changed:** `supabase/migrations/059_educator_rls_student_read.sql`, `src/pages/EducatorStudentDetailPage.tsx`
+
+---
