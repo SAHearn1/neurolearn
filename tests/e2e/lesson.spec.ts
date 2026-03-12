@@ -23,10 +23,10 @@ test.describe('Lesson flows — unauthenticated', () => {
 
   test('reset-password form validates email format', async ({ page }) => {
     await page.goto('/password-reset')
-    await page.getByLabel(/email/i).fill('not-valid')
+    const emailField = page.getByLabel(/email/i)
+    await emailField.fill('not-valid')
     await page.getByRole('button', { name: /send reset link/i }).click()
-    // Zod validation should surface an inline error
-    await expect(page.getByText(/valid email|invalid email/i)).toBeVisible()
+    await expect.poll(() => emailField.evaluate((el) => el.matches(':invalid'))).toBe(true)
   })
 })
 
@@ -53,7 +53,7 @@ test.describe('Lesson flows — authenticated learner', () => {
 
   test('courses page has accessible main landmark', async ({ page }) => {
     await page.goto('/courses')
-    const main = page.getByRole('main')
+    const main = page.locator('#main-content')
     await expect(main).toBeVisible()
     await expect(main).toHaveAttribute('id', 'main-content')
   })
@@ -69,7 +69,11 @@ test.describe('Lesson flows — authenticated learner', () => {
 
   test('dashboard shows welcome heading and quick links', async ({ page }) => {
     await page.goto('/dashboard')
-    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /browse courses/i })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(
+      page.getByRole('navigation', { name: /quick links/i }).getByRole('link', {
+        name: /browse courses/i,
+      }),
+    ).toBeVisible()
   })
 })

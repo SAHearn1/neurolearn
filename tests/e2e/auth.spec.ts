@@ -6,7 +6,7 @@ test.skip(() => !process.env.PLAYWRIGHT_RUN, 'Requires PLAYWRIGHT_RUN=true')
 test.describe('Authentication flows', () => {
   test('login page loads and shows form', async ({ page }) => {
     await page.goto('/login')
-    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByLabel(/password/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
@@ -14,10 +14,11 @@ test.describe('Authentication flows', () => {
 
   test('login shows validation error for invalid email', async ({ page }) => {
     await page.goto('/login')
-    await page.getByLabel(/email/i).fill('not-an-email')
+    const emailField = page.getByLabel(/email/i)
+    await emailField.fill('not-an-email')
     await page.getByLabel(/password/i).fill('password')
     await page.getByRole('button', { name: /sign in/i }).click()
-    await expect(page.getByRole('alert')).toBeVisible()
+    await expect.poll(() => emailField.evaluate((el) => el.matches(':invalid'))).toBe(true)
   })
 
   test('signup page has age confirmation checkbox', async ({ page }) => {

@@ -12,7 +12,7 @@ test.describe('Parent portal — unauthenticated', () => {
   test('login page after /parent redirect has correct form elements', async ({ page }) => {
     await page.goto('/parent')
     await expect(page).toHaveURL(/login/)
-    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
   })
@@ -53,13 +53,20 @@ test.describe('Parent portal — authenticated', () => {
     await page.goto('/parent')
     await expect(page.getByRole('tab', { name: /message/i })).toBeVisible()
   })
+})
+
+test.describe('Parent portal — role guard', () => {
+  test.skip(
+    () => !process.env.E2E_LEARNER_EMAIL,
+    'Set E2E_LEARNER_EMAIL and E2E_LEARNER_PASSWORD to run role-guard test',
+  )
 
   test('non-parent role is redirected away from /parent', async ({ page }) => {
-    test.skip(!process.env.E2E_LEARNER_EMAIL, 'Set E2E_LEARNER_EMAIL to run role-guard test')
     await page.goto('/login')
     await page.getByLabel(/email/i).fill(process.env.E2E_LEARNER_EMAIL!)
     await page.getByLabel(/password/i).fill(process.env.E2E_LEARNER_PASSWORD!)
     await page.getByRole('button', { name: /sign in/i }).click()
+    await expect(page).toHaveURL(/dashboard/)
     await page.goto('/parent')
     await expect(page).toHaveURL(/dashboard/)
   })

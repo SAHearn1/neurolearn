@@ -14,7 +14,7 @@ test.describe('Educator portal — unauthenticated', () => {
   }) => {
     await page.goto('/educator')
     await expect(page).toHaveURL(/login/)
-    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
   })
@@ -49,7 +49,7 @@ test.describe('Educator portal — authenticated', () => {
 
   test('educator dashboard shows Classes tab', async ({ page }) => {
     await page.goto('/educator')
-    await expect(page.getByRole('tab', { name: /class/i })).toBeVisible()
+    await expect(page.getByRole('tab', { name: 'Classes' })).toBeVisible()
   })
 
   test('educator dashboard shows Analytics tab', async ({ page }) => {
@@ -61,14 +61,20 @@ test.describe('Educator portal — authenticated', () => {
     await page.goto('/educator')
     await expect(page.getByRole('tab', { name: /content/i })).toBeVisible()
   })
+})
+
+test.describe('Educator portal — role guard', () => {
+  test.skip(
+    () => !process.env.E2E_LEARNER_EMAIL,
+    'Set E2E_LEARNER_EMAIL and E2E_LEARNER_PASSWORD to run role-guard test',
+  )
 
   test('non-educator learner role is redirected away from /educator', async ({ page }) => {
-    // This test requires a learner-role test account
-    test.skip(!process.env.E2E_LEARNER_EMAIL, 'Set E2E_LEARNER_EMAIL to run role-guard test')
     await page.goto('/login')
     await page.getByLabel(/email/i).fill(process.env.E2E_LEARNER_EMAIL!)
     await page.getByLabel(/password/i).fill(process.env.E2E_LEARNER_PASSWORD!)
     await page.getByRole('button', { name: /sign in/i }).click()
+    await expect(page).toHaveURL(/dashboard/)
     await page.goto('/educator')
     await expect(page).toHaveURL(/dashboard/)
   })
