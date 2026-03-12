@@ -22,7 +22,7 @@ interface QueueRow {
  */
 export function useSpacedRepetition(): {
   dueItems: (SpacedRepetitionItem & { id: string })[]
-  scheduleReview: (lessonId: string, skillCodes: string[]) => Promise<void>
+  scheduleReview: (lessonId: string, courseId: string | null, skillCodes: string[]) => Promise<void>
   markReviewed: (itemId: string, quality: number) => Promise<void>
   loading: boolean
 } {
@@ -73,15 +73,16 @@ export function useSpacedRepetition(): {
   }, [fetchDueItems])
 
   const scheduleReview = useCallback(
-    async (lessonId: string, skillCodes: string[]) => {
+    async (lessonId: string, courseId: string | null, skillCodes: string[]) => {
       if (!user?.id) return
 
-      const scheduled = scheduleAfterSession(lessonId, skillCodes)
+      const scheduled = scheduleAfterSession(lessonId, courseId, skillCodes)
 
       const rows = scheduled.map((item) => ({
         user_id: user.id,
         lesson_id: item.lessonId,
         skill_code: item.skillCode,
+        course_id: item.courseId,
         due_at: item.dueAt.toISOString(),
         interval_days: item.intervalDays,
         ease_factor: item.easeFactor,

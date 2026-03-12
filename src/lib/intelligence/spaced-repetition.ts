@@ -58,10 +58,12 @@ export function computeNextInterval(
  */
 export function scheduleAfterSession(
   lessonId: string,
+  courseId: string | null,
   skillCodes: string[],
 ): Array<{
   lessonId: string
   skillCode: string
+  courseId: string | null
   dueAt: Date
   intervalDays: number
   easeFactor: number
@@ -72,6 +74,7 @@ export function scheduleAfterSession(
   return skillCodes.map((skillCode) => ({
     lessonId,
     skillCode,
+    courseId,
     dueAt,
     intervalDays: 3,
     easeFactor: 2.5,

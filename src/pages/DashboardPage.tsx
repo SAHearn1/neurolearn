@@ -292,7 +292,6 @@ export function DashboardPage() {
             <GoalProgressCard goal={activeGoal} sessionCount={totalRacaSessions} />
           )}
           <NextChallengeCard gaps={gaps} />
-          {/* TODO(GAP-003): SpacedRepetitionCard links will work once course_id is added to spaced_repetition_queue */}
           <SpacedRepetitionCard dueItems={dueItems} />
         </section>
 
