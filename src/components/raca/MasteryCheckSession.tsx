@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useMasteryScoring } from '../../hooks/useMasteryScoring'
 
 interface MasteryCheckSessionProps {
+  courseId: string
   lessonId: string
   onComplete: (passed: boolean) => void
 }
@@ -13,7 +14,7 @@ interface MasteryCheckSessionProps {
  * A simplified session wrapper for mastery check mode.
  * Skips full RACA flow and goes straight to a DEFEND-style prompt.
  */
-export function MasteryCheckSession({ lessonId, onComplete }: MasteryCheckSessionProps) {
+export function MasteryCheckSession({ courseId, lessonId, onComplete }: MasteryCheckSessionProps) {
   const user = useAuthStore((s) => s.user)
   const { archiveSession } = useMasteryScoring()
   const [response, setResponse] = useState('')
@@ -30,6 +31,7 @@ export function MasteryCheckSession({ lessonId, onComplete }: MasteryCheckSessio
       const masteryResult = await archiveSession({
         sessionId: '',
         lessonId,
+        courseId,
         statesCompleted: ['DEFEND'],
         artifactText: response,
         sessionDurationMs: 0,

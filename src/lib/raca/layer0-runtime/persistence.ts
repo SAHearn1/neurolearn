@@ -60,6 +60,7 @@ export async function saveSessionRemote(): Promise<void> {
 
   if (error) {
     console.error('[RACA Persistence] Remote save failed:', error.message)
+    throw error
   }
 }
 

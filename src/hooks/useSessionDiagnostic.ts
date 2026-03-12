@@ -29,7 +29,7 @@ interface EpistemicRow {
  * Queries adaptive_learning_state + epistemic_profiles for the current user
  * and returns a DiagnosticContext used to personalise the ROOT stage prompt.
  */
-export function useSessionDiagnostic(lessonId: string | undefined): {
+export function useSessionDiagnostic(courseId: string | undefined): {
   diagnostic: DiagnosticContext | null
   loading: boolean
 } {
@@ -38,7 +38,7 @@ export function useSessionDiagnostic(lessonId: string | undefined): {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.id || !lessonId) {
+    if (!user?.id || !courseId) {
       setLoading(false)
       return
     }
@@ -55,20 +55,20 @@ export function useSessionDiagnostic(lessonId: string | undefined): {
               'current_difficulty_float, mastery_score_float, recommended_lesson_id, last_assessment_at',
             )
             .eq('user_id', user.id)
+            .eq('course_id', courseId)
             .order('updated_at', { ascending: false })
-            .limit(1)
-            .maybeSingle(),
+            .limit(1),
           supabase
             .from('epistemic_profiles')
             .select('trace_averages')
             .eq('user_id', user.id)
-            .maybeSingle(),
+            .limit(1),
         ])
 
         if (cancelled) return
 
-        const adaptive = adaptiveResult.data as AdaptiveRow | null
-        const epistemic = epistemicResult.data as EpistemicRow | null
+        const adaptive = ((adaptiveResult.data as AdaptiveRow[] | null) ?? [])[0] ?? null
+        const epistemic = ((epistemicResult.data as EpistemicRow[] | null) ?? [])[0] ?? null
 
         const isFirstSession = adaptive === null
 
@@ -95,7 +95,7 @@ export function useSessionDiagnostic(lessonId: string | undefined): {
     return () => {
       cancelled = true
     }
-  }, [user?.id, lessonId])
+  }, [user?.id, courseId])
 
   return { diagnostic, loading }
 }

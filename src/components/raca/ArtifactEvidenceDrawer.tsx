@@ -97,7 +97,7 @@ export function ArtifactEvidenceDrawer({
       // Fetch session metadata + lesson title
       const { data: sessionRow } = await supabase
         .from('cognitive_sessions')
-        .select('lesson_id, created_at')
+        .select('lesson_id, started_at')
         .eq('id', sessionId)
         .eq('user_id', studentId)
         .maybeSingle()
@@ -112,8 +112,8 @@ export function ArtifactEvidenceDrawer({
         const [lessonRes, masteryRes] = await Promise.all([
           supabase.from('lessons').select('title').eq('id', sessionRow.lesson_id).maybeSingle(),
           supabase
-            .from('adaptive_learning_state')
-            .select('mastery_status, mastery_score_float')
+            .from('lesson_progress')
+            .select('mastery_status, score')
             .eq('user_id', studentId)
             .eq('lesson_id', sessionRow.lesson_id)
             .maybeSingle(),
@@ -121,7 +121,7 @@ export function ArtifactEvidenceDrawer({
         if (!cancelled) {
           lessonTitle = lessonRes.data?.title ?? null
           masteryStatus = masteryRes.data?.mastery_status ?? null
-          masteryScore = masteryRes.data?.mastery_score_float ?? null
+          masteryScore = masteryRes.data?.score ?? null
         }
       }
 
@@ -132,7 +132,7 @@ export function ArtifactEvidenceDrawer({
         lesson_title: lessonTitle,
         mastery_status: masteryStatus,
         mastery_score: masteryScore,
-        created_at: sessionRow?.created_at ?? null,
+        created_at: sessionRow?.started_at ?? null,
       })
 
       // Fetch artifacts + interactions in parallel

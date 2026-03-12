@@ -93,6 +93,7 @@ export function SessionPageCore() {
   )
   const [priorDataLoaded, setPriorDataLoaded] = useState(false)
   const [showPriorSummary, setShowPriorSummary] = useState(false)
+  const [sessionError, setSessionError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user?.id || !lessonId) {
@@ -108,16 +109,30 @@ export function SessionPageCore() {
           .select('mastery_status, score')
           .eq('user_id', user.id)
           .eq('lesson_id', lessonId)
-          .maybeSingle(),
+          .limit(1),
         supabase
           .from('epistemic_profiles')
           .select('trace_averages')
           .eq('user_id', user.id)
-          .maybeSingle(),
+          .limit(1),
       ])
       if (cancelled) return
 
-      const status = masteryResult.data?.mastery_status as
+      const masteryRow =
+        (
+          masteryResult.data as Array<{
+            mastery_status: AgentSessionPersonalization['priorSessionOutcome']
+            score: number | null
+          }> | null
+        )?.[0] ?? null
+      const epistemicRow =
+        (
+          epistemicResult.data as Array<{
+            trace_averages: Record<string, number> | null
+          }> | null
+        )?.[0] ?? null
+
+      const status = masteryRow?.mastery_status as
         | AgentSessionPersonalization['priorSessionOutcome']
         | null
         | undefined
@@ -126,13 +141,10 @@ export function SessionPageCore() {
         if (status !== 'not_started') setShowPriorSummary(true)
       }
 
-      const score = masteryResult.data?.score as number | null | undefined
+      const score = masteryRow?.score as number | null | undefined
       if (typeof score === 'number') setPriorMasteryScore(score)
 
-      const traceAvg = epistemicResult.data?.trace_averages as
-        | Record<string, number>
-        | null
-        | undefined
+      const traceAvg = epistemicRow?.trace_averages as Record<string, number> | null | undefined
       if (traceAvg) setTraceProfileData(traceAvg)
 
       setPriorDataLoaded(true)
@@ -225,11 +237,16 @@ export function SessionPageCore() {
   // P21-01: Mode selected → start session
   const handleModeSelect = useCallback(
     async (mode: SelectableMode) => {
+      setSessionError(null)
       setSelectedMode(mode)
-      await session.start({ lesson_id: lessonId ?? '', course_id: courseId ?? '' })
-      sessionStartedAtRef.current = Date.now()
-      prevStateRef.current = null // reset so the initial ROOT→first-state fires announcement
-      setSessionStarted(true)
+      try {
+        await session.start({ lesson_id: lessonId ?? '', course_id: courseId ?? '' })
+        sessionStartedAtRef.current = Date.now()
+        prevStateRef.current = null // reset so the initial ROOT→first-state fires announcement
+        setSessionStarted(true)
+      } catch (err) {
+        setSessionError(err instanceof Error ? err.message : 'Unable to start session')
+      }
     },
     [session, lessonId, courseId],
   )
@@ -313,15 +330,24 @@ export function SessionPageCore() {
       })
       // Persist artifact to DB for session history artifact_count
       if (session.sessionId) {
-        void supabase.from('raca_artifacts').insert({
-          id: artifactId,
-          session_id: session.sessionId,
-          kind,
-          state,
-          content,
-          word_count: wordCount,
-          version,
-        })
+        void (async () => {
+          try {
+            const { error } = await supabase.from('raca_artifacts').insert({
+              id: artifactId,
+              session_id: session.sessionId,
+              kind,
+              state,
+              content,
+              word_count: wordCount,
+              version,
+            })
+            if (error) {
+              setSessionError('Unable to save session artifact. Please try again.')
+            }
+          } catch {
+            setSessionError('Unable to save session artifact. Please try again.')
+          }
+        })()
       }
       epistemic.processMessage(content, [])
       // Issue #321: persist skill evidence for substantive artifact kinds
@@ -334,6 +360,7 @@ export function SessionPageCore() {
 
   // P21-06: End session → compute summary → show card before navigating
   const handleEndSession = useCallback(async () => {
+    setSessionError(null)
     const traceScores = artifacts.length > 0 ? scoreTRACE(artifacts) : null
     const durationMs = sessionStartedAtRef.current ? Date.now() - sessionStartedAtRef.current : 0
     const wordCount = artifacts.reduce((sum, a) => sum + (a.word_count ?? 0), 0)
@@ -344,11 +371,12 @@ export function SessionPageCore() {
       traceScores,
     })
     // Issue #322: archive mastery score and run CCSS bridge
-    if (lessonId) {
+    if (lessonId && courseId) {
       try {
         await archiveSession({
           sessionId: session.sessionId ?? '',
           lessonId,
+          courseId,
           statesCompleted: cognitive.stateHistory,
           artifactText: artifacts.map((a) => a.content).join('\n\n'),
           artifacts: artifacts.map((a) => ({
@@ -359,8 +387,9 @@ export function SessionPageCore() {
           sessionDurationMs: durationMs,
           traceScores: traceScores ? (traceScores as unknown as Record<string, number>) : undefined,
         })
-      } catch {
-        // Non-critical — session still ends cleanly
+      } catch (err) {
+        setSessionError(err instanceof Error ? err.message : 'Unable to archive session results.')
+        return
       }
     }
     // Call epistemic-analyze to update LCP (Learner Cognitive Profile) — #348
@@ -387,12 +416,17 @@ export function SessionPageCore() {
         // Non-critical — profile update is fire-and-forget
       }
     }
-    await session.end(false)
+    try {
+      await session.end(false)
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : 'Unable to finalize session.')
+      return
+    }
     setShowSummary(true)
-  }, [artifacts, cognitive.stateHistory, session, lessonId, archiveSession, user])
+  }, [artifacts, cognitive.stateHistory, session, lessonId, courseId, archiveSession, user])
 
   // P21-05: Session diagnostic for personalized start banner
-  const { diagnostic } = useSessionDiagnostic(lessonId)
+  const { diagnostic } = useSessionDiagnostic(courseId)
 
   const availableAgents = getAgentDefinitionsForState(cognitive.currentState)
 
@@ -412,6 +446,11 @@ export function SessionPageCore() {
           </p>
           <h1 className="text-2xl font-bold text-slate-900">{lesson?.title ?? 'Loading…'}</h1>
         </header>
+        {sessionError && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {sessionError}
+          </div>
+        )}
         {/* #324: show prior progress summary for returning learners before mode selection */}
         {priorDataLoaded && showPriorSummary && priorOutcome && priorOutcome !== 'not_started' ? (
           <PriorSessionSummary
@@ -525,6 +564,12 @@ export function SessionPageCore() {
             End session
           </Button>
         </header>
+
+        {sessionError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {sessionError}
+          </div>
+        )}
 
         <CognitiveStateIndicator
           currentState={cognitive.currentState}

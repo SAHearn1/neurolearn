@@ -1,3 +1,5 @@
+@import url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,16 +15,6 @@ body {
   font-family: var(--font-family-base);
   background: linear-gradient(160deg, #eef2ff 0%, #faf5ff 60%, #ffffff 100%);
   color: #111827;
-}
-
-/* OpenDyslexic font for dyslexia-friendly reading */
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/gh/antijingoist/opendyslexic@master/compiled/OpenDyslexic-Regular.otf')
-    format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
 }
 
 .font-dyslexic,

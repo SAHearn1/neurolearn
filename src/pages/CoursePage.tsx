@@ -282,6 +282,7 @@ export function CoursePage() {
 
             {masteryCheckOpen && masteryCheckResult === null && (
               <MasteryCheckSession
+                courseId={courseId!}
                 lessonId={lessons[lessons.length - 1].id}
                 onComplete={(passed) => {
                   setMasteryCheckResult(passed ? 'passed' : 'failed')

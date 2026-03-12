@@ -1,6 +1,23 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+const storage: Record<string, string> = {}
+
+vi.stubGlobal('localStorage', {
+  getItem: (key: string) => storage[key] ?? null,
+  setItem: (key: string, value: string) => {
+    storage[key] = value
+  },
+  removeItem: (key: string) => {
+    delete storage[key]
+  },
+  clear: () => {
+    for (const key of Object.keys(storage)) {
+      delete storage[key]
+    }
+  },
+})
+
 /**
  * Supabase mock factory — provides chainable query builders
  * that mirror the real Supabase client API.

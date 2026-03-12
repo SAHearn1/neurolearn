@@ -12,6 +12,7 @@ export function useMasteryScoring(): {
   archiveSession: (params: {
     sessionId: string
     lessonId: string
+    courseId: string
     statesCompleted: string[]
     artifactText: string
     artifacts?: ArtifactInput[]
@@ -25,6 +26,7 @@ export function useMasteryScoring(): {
     async (params: {
       sessionId: string
       lessonId: string
+      courseId: string
       statesCompleted: string[]
       artifactText: string
       artifacts?: ArtifactInput[]
@@ -35,34 +37,34 @@ export function useMasteryScoring(): {
 
       if (!user?.id) return result
 
-      // Persist mastery_score_float to adaptive_learning_state (lesson-scoped)
-      try {
-        await supabase
-          .from('adaptive_learning_state')
-          .update({
-            mastery_score_float: result.masteryScore,
-            last_assessment_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-          .eq('lesson_id', params.lessonId)
-      } catch {
-        // Non-critical — swallow
+      // Persist course-level mastery score to adaptive_learning_state.
+      const { error: adaptiveError } = await supabase
+        .from('adaptive_learning_state')
+        .update({
+          mastery_score_float: result.masteryScore,
+          last_assessment_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id)
+        .eq('course_id', params.courseId)
+
+      if (adaptiveError) {
+        throw adaptiveError
       }
 
       // Persist mastery_status to lesson_progress
-      try {
-        await supabase
-          .from('lesson_progress')
-          .update({
-            mastery_status: result.masteryStatus,
-            mastery_source: 'raca_session',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-          .eq('lesson_id', params.lessonId)
-      } catch {
-        // Non-critical — swallow
+      const { error: progressError } = await supabase
+        .from('lesson_progress')
+        .update({
+          mastery_status: result.masteryStatus,
+          mastery_source: 'raca_session',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id)
+        .eq('lesson_id', params.lessonId)
+
+      if (progressError) {
+        throw progressError
       }
 
       // CCSS bridge: aggregate skill_evidence_events → student_ccss_evidence

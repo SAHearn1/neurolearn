@@ -16,7 +16,7 @@ export interface StudentSessionStatus {
   isActive: boolean // active if lastActiveAt within last 10 minutes
   /** #332: lesson title from active session */
   lessonTitle: string | null
-  /** #332: mastery score from adaptive_learning_state for current lesson */
+  /** #332: mastery score from lesson_progress for the active lesson */
   masteryScore: number | null
   /** #332: 5Rs phase derived from current cognitive state */
   fiveRPhase: string | null
@@ -38,6 +38,12 @@ interface SessionRow {
   current_state: string
   updated_at: string
   lesson_id: string | null
+}
+
+interface LessonProgressRow {
+  user_id: string
+  lesson_id: string
+  score: number | null
 }
 
 function levelToNumber(level: string): number {
@@ -131,17 +137,17 @@ export function useClassroomRealtime(studentIds: string[]): {
         }
       }
 
-      // Fetch mastery scores for active sessions (#332)
+      // Fetch lesson-level mastery scores for active sessions (#332)
       const masteryMap = new Map<string, number>()
       if (lessonIds.length > 0) {
         const { data: mastery } = await supabase
-          .from('adaptive_learning_state')
-          .select('user_id, lesson_id, mastery_score_float')
+          .from('lesson_progress')
+          .select('user_id, lesson_id, score')
           .in('user_id', ids)
           .in('lesson_id', lessonIds)
-        for (const m of mastery ?? []) {
-          if (typeof m.mastery_score_float === 'number') {
-            masteryMap.set(`${m.user_id}:${m.lesson_id}`, m.mastery_score_float)
+        for (const m of (mastery as LessonProgressRow[] | null) ?? []) {
+          if (typeof m.score === 'number') {
+            masteryMap.set(`${m.user_id}:${m.lesson_id}`, m.score)
           }
         }
       }
