@@ -1,0 +1,100 @@
+name: Normalize Spaced-Repetition Issues
+
+# One-shot workflow: run once to normalize the 5-issue spaced-repetition set.
+# After it completes successfully it should be deleted (or this trigger disabled).
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Issue 1 — Define spaced-repetition trigger and completion contract
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const lines = [
+              'Summary',
+              'The spaced-repetition queue schema exists and the library is wired, but the trigger event and completion event have not been formally agreed. Downstream issues that wire scheduling and review completion reference a product contract that has not been captured in a tracked issue.',
+              '',
+              'Scope',
+              '- Identify and confirm the trigger event: the exact learner action that causes a `spaced_repetition_queue` row to be created',
+              '- Identify and confirm the completion event: the exact learner action that marks a queue row reviewed and advances the interval',
+              '- Confirm the required queue row fields against the current migration schema: `lesson_id`, `course_id`, `user_id`, `skills`, `next_review_date`, `interval_days`',
+              '- Document the contract so that #349 and #350 can reference it without ambiguity',
+              '',
+              'Acceptance criteria',
+              '- The trigger event is named and agreed',
+              '- The completion event is named and agreed',
+              '- Required queue row fields are listed and match the current migration schema',
+              '- This issue is referenced from #349 and #350 as the contract source',
+              '',
+              'Non-goals',
+              '- No implementation in this issue',
+              '- No migration changes unless schema diverges from the agreed contract',
+              '- No UI changes',
+            ];
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Define spaced-repetition trigger and completion contract',
+              body: lines.join('\n'),
+            });
+            console.log(`Created issue #${issue.number}: ${issue.html_url}`);
+
+      - name: Update #351 — Replace body with canonical Issue 4 body
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const lines = [
+              'Summary',
+              'The queue write and read paths exist, but there are no integration tests that verify the full lifecycle from trigger through review completion.',
+              '',
+              'Scope',
+              '- Test that the trigger event creates a `spaced_repetition_queue` row with required fields',
+              '- Test that the due item query returns the correct row for a seeded learner',
+              '- Test that the review completion path advances the queue item and writes the next interval',
+              '',
+              'Acceptance criteria',
+              '- Vitest integration tests cover queue row creation from the trigger event',
+              '- Vitest integration tests cover the due item read path',
+              '- Vitest integration tests cover queue advancement after review completion',
+              '- Tests use seeded fixtures and pass in CI',
+              '',
+              'Non-goals',
+              '- No E2E browser tests (covered in #353)',
+              '- No new scheduling logic',
+              '- No UI coverage',
+            ];
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 351,
+              body: lines.join('\n'),
+            });
+            console.log('Updated #351 body');
+
+      - name: Close #352 as duplicate of #351
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 352,
+              body: 'Duplicate of #351.',
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 352,
+              state: 'closed',
+              state_reason: 'not_planned',
+            });
+            console.log('Closed #352 as duplicate of #351');

@@ -443,3 +443,33 @@ return () => clearTimeout(id)
 - `src/lib/intelligence/skill-evidence-extractor.ts` — removed `artifact_id` from insert
 - `src/pages/SessionPageCore.tsx` — raca_artifacts persist + epistemic-analyze call + lesson_progress query fix
 - `src/hooks/useSessionDiagnostic.ts` — removed `lesson_id` filter, `.order+.limit(1)`, `.maybeSingle()` both queries
+
+---
+
+## INC-019 — 2026-03-12 — Spaced-repetition issue backlog normalization
+
+**Severity:** Low — issue tracking inconsistency, no user-visible regression
+**Detected:** Manual review of issues #349–#353
+**Fixed:** This session (workflow-assisted)
+
+**Root cause:**
+
+Issues #349–#353 were created to form a coherent 5-issue spaced-repetition feature set, but three problems were present:
+
+1. **#351 wrong body** — Issue was created with an auto-generated bug-report template body instead of the canonical integration-test issue body for the queue lifecycle.
+2. **#352 duplicate** — Created within 32 seconds of #351 with the same title and no body; never closed as duplicate.
+3. **Issue 1 of the 5-issue set missing** — The foundational contract/spec issue ("Define spaced-repetition trigger and completion contract") was never created, leaving #349 and #350 referencing an undocumented "product contract".
+
+**Fix:**
+
+Added `.github/workflows/normalize-spaced-rep-issues.yml` — a one-shot `workflow_dispatch` workflow that:
+
+- Creates the missing contract/spec issue with the canonical Issue 1 body
+- Replaces #351's body with the canonical Issue 4 body (integration tests for queue lifecycle)
+- Comments "Duplicate of #351." on #352 and closes it as `not_planned`
+
+Note: #353 already holds the canonical Issue 5 body and required no change.
+
+**Files changed:**
+
+- `.github/workflows/normalize-spaced-rep-issues.yml` — one-shot normalization workflow (delete after first successful run)
