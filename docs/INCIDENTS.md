@@ -125,15 +125,13 @@ Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criteri
 
 **Severity:** High — no persistent navigation, no logout button accessible to any authenticated user
 **Detected:** Student role E2E exploration (this session)
-**Fixed:** Not yet fixed
+**Fixed:** Resolved — `App.tsx` updated to use layout route pattern
 
-**Root cause:** `App.tsx` does not use `PageWrapper` as a layout route. Every authenticated page (`DashboardPage`, `CoursesPage`, etc.) is wrapped directly in `<ProtectedRoute><PageX /></ProtectedRoute>` without a parent `<Route element={<PageWrapper />}>`. The `Header`, `Sidebar`, and `Footer` components exist at `src/components/layout/` but are never mounted. DOM inspection at runtime confirmed `document.querySelector('header')` returns `null` on all authenticated pages.
+**Root cause:** `App.tsx` did not use `PageWrapper` as a layout route. Every authenticated page (`DashboardPage`, `CoursesPage`, etc.) was wrapped directly in `<ProtectedRoute><PageX /></ProtectedRoute>` without a parent `<Route element={<PageWrapper />}>`. The `Header`, `Sidebar`, and `Footer` components existed at `src/components/layout/` but were never mounted.
 
-**Impact:** No global nav (Dashboard / Courses / Profile / Settings links), no logout/sign-out button reachable by mouse or keyboard, no sidebar. Users can only navigate via in-page links and the quick-links section at the bottom of DashboardPage.
+**Fix:** All authenticated routes in `App.tsx` are now nested under a parent layout route `<Route element={<PageWrapper />}>`. `PageWrapper` renders `<Header />`, `<Sidebar />`, `<Outlet />`, and `<Footer />` — the `Outlet` receives the nested route page. The session route (`/courses/:courseId/lessons/:lessonId/session`) is included in the layout, giving the session page the global shell while `SessionPageCore` renders its own full-width content inside the outlet.
 
-**Fix required:** In `App.tsx`, wrap all authenticated routes under a parent layout route: `<Route element={<PageWrapper />}> ... </Route>`, replacing the current flat `<ProtectedRoute>` wrapping pattern. Alternatively, include `<Header>` directly inside `ProtectedRoute` as a workaround.
-
-**Files to change:** `src/App.tsx`
+**Files changed:** `src/App.tsx`
 
 ---
 
@@ -141,15 +139,13 @@ Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criteri
 
 **Severity:** Medium — confusing UX, unprofessional display in session header
 **Detected:** Student role E2E exploration (this session)
-**Fixed:** Not yet fixed
+**Fixed:** Resolved — `SessionPageCore.tsx` fetches and renders lesson title via `useLesson`
 
-**Root cause:** `SessionPage` renders the heading as `Lesson: {lessonId}` using the raw UUID from the URL params (`useParams()`), without fetching or displaying the actual lesson title. The lesson title is not passed to or fetched within `SessionPage`.
+**Root cause:** The session heading originally rendered the raw UUID from `useParams()` without fetching the lesson record.
 
-**Observed:** Heading reads "Lesson: 0b79d43d-1dd6-44f3-856e-b87b4c8be600" instead of "Lesson 2 — Core Concepts".
+**Fix:** `SessionPageCore` calls `useLesson(lessonId)` at mount (line 79) and renders `{lesson?.title ?? 'Loading…'}` in both the pre-session header (line 447) and the active session header (line 561). The fix was applied in `SessionPageCore.tsx` rather than `SessionPage.tsx` because the heading lives inside the lazily-loaded core component, not the outer shell.
 
-**Fix required:** Fetch the lesson record (title) in `SessionPage` using `lessonId` from `useParams()` and display the title in the heading.
-
-**Files to change:** `src/pages/SessionPage.tsx`
+**Files changed:** `src/pages/SessionPageCore.tsx`
 
 ---
 
