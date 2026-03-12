@@ -413,3 +413,33 @@ return () => clearTimeout(id)
 **Files changed:** `supabase/migrations/059_educator_rls_student_read.sql`, `src/pages/EducatorStudentDetailPage.tsx`
 
 ---
+
+---
+
+## INC-018 — 2026-03-12 — Bugs #345–#348: font 404, regulation_checkins constraint, skill_evidence insert, raca_artifacts/epistemic_profiles not persisted
+
+**Severity:** High — font accessibility broken; regulation and skill evidence writes failing; profile cognitive growth section always empty
+**Detected:** Playwright E2E session + code audit
+**Fixed:** This session
+
+**Root cause (5 bugs):**
+
+1. **#345 — OpenDyslexic font 404**: `@font-face` URL used wrong jsDelivr package name (`open-dyslexic@1.0.3`). Corrected to GitHub-hosted CDN path `gh/antijingoist/opendyslexic@master/compiled/OpenDyslexic-Regular.otf`.
+
+2. **#347a — `regulation_checkins` INSERT constraint violation**: Original CHECK constraint only allowed `'ready'|'distracted'|'struggling'`. `FormativeCheckIn` (used at POSITION→PLAN, PLAN→APPLY, REVISE→DEFEND) inserts `'confident'|'unsure'|'need_more_time'`. Migration 060 expanded the constraint to cover both value sets.
+
+3. **#347b — `skill_evidence_events` INSERT failure**: `saveSkillEvidence()` included `artifact_id` field which doesn't exist on the table. Removed the column from the insert.
+
+4. **#348a — `raca_artifacts` count always 0**: No DB persist code existed — artifacts were dispatched only to the in-memory runtime store. Added `supabase.from('raca_artifacts').insert(...)` in `SessionPageCore.tsx`'s `saveArtifact` callback.
+
+5. **#348b — `epistemic_profiles` (Cognitive Growth) always empty**: `epistemic-analyze` edge function was never called from the frontend. Added fire-and-forget fetch call in `handleEndSession` after session completes.
+
+6. **`useSessionDiagnostic.ts` 400+406 errors**: `adaptive_learning_state` was queried with `.eq('lesson_id', lessonId)` — that column doesn't exist (table is course-scoped). Fixed by removing the `lesson_id` filter and using `.order('updated_at').limit(1)`. Both queries used `.single()` which returns 406 when no row exists; changed both to `.maybeSingle()`.
+
+**Files changed:**
+
+- `src/styles/index.css` — font URL
+- `supabase/migrations/060_regulation_checkins_expand_check.sql` — constraint expansion (applied)
+- `src/lib/intelligence/skill-evidence-extractor.ts` — removed `artifact_id` from insert
+- `src/pages/SessionPageCore.tsx` — raca_artifacts persist + epistemic-analyze call + lesson_progress query fix
+- `src/hooks/useSessionDiagnostic.ts` — removed `lesson_id` filter, `.order+.limit(1)`, `.maybeSingle()` both queries

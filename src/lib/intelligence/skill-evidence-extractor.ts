@@ -98,7 +98,6 @@ export async function saveSkillEvidence(
       user_id: evidence.userId,
       session_id: evidence.sessionId,
       lesson_id: evidence.lessonId ?? null,
-      artifact_id: evidence.artifactId ?? null,
       cognitive_state: evidence.cognitiveState,
       agent_id: evidence.agentId,
       evidence_type: evidence.evidenceType,

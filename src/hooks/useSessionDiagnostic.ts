@@ -55,13 +55,14 @@ export function useSessionDiagnostic(lessonId: string | undefined): {
               'current_difficulty_float, mastery_score_float, recommended_lesson_id, last_assessment_at',
             )
             .eq('user_id', user.id)
-            .eq('lesson_id', lessonId)
-            .single(),
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
           supabase
             .from('epistemic_profiles')
             .select('trace_averages')
             .eq('user_id', user.id)
-            .single(),
+            .maybeSingle(),
         ])
 
         if (cancelled) return

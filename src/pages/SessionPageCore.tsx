@@ -104,8 +104,8 @@ export function SessionPageCore() {
     const fetchPersonalization = async () => {
       const [masteryResult, epistemicResult] = await Promise.all([
         supabase
-          .from('adaptive_learning_state')
-          .select('mastery_status, mastery_score_float')
+          .from('lesson_progress')
+          .select('mastery_status, score')
           .eq('user_id', user.id)
           .eq('lesson_id', lessonId)
           .maybeSingle(),
@@ -126,7 +126,7 @@ export function SessionPageCore() {
         if (status !== 'not_started') setShowPriorSummary(true)
       }
 
-      const score = masteryResult.data?.mastery_score_float as number | null | undefined
+      const score = masteryResult.data?.score as number | null | undefined
       if (typeof score === 'number') setPriorMasteryScore(score)
 
       const traceAvg = epistemicResult.data?.trace_averages as
@@ -311,6 +311,18 @@ export function SessionPageCore() {
           created_at: new Date().toISOString(),
         },
       })
+      // Persist artifact to DB for session history artifact_count
+      if (session.sessionId) {
+        void supabase.from('raca_artifacts').insert({
+          id: artifactId,
+          session_id: session.sessionId,
+          kind,
+          state,
+          content,
+          word_count: wordCount,
+          version,
+        })
+      }
       epistemic.processMessage(content, [])
       // Issue #321: persist skill evidence for substantive artifact kinds
       if (EVIDENCE_KINDS.includes(kind)) {
@@ -351,9 +363,33 @@ export function SessionPageCore() {
         // Non-critical — session still ends cleanly
       }
     }
+    // Call epistemic-analyze to update LCP (Learner Cognitive Profile) — #348
+    if (user?.id && session.sessionId && traceScores) {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
+        void fetch(`${supabaseUrl}/functions/v1/epistemic-analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            user_id: user.id,
+            session_id: session.sessionId,
+            artifacts: artifacts.map((a) => ({
+              kind: a.kind,
+              content: a.content,
+              word_count: a.word_count ?? 0,
+            })),
+            trace_scores: traceScores,
+          }),
+        })
+      } catch {
+        // Non-critical — profile update is fire-and-forget
+      }
+    }
     await session.end(false)
     setShowSummary(true)
-  }, [artifacts, cognitive.stateHistory, session, lessonId, archiveSession])
+  }, [artifacts, cognitive.stateHistory, session, lessonId, archiveSession, user])
 
   // P21-05: Session diagnostic for personalized start banner
   const { diagnostic } = useSessionDiagnostic(lessonId)

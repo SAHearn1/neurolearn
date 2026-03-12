@@ -18,7 +18,7 @@ body {
 /* OpenDyslexic font for dyslexia-friendly reading */
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf')
+  src: url('https://cdn.jsdelivr.net/gh/antijingoist/opendyslexic@master/compiled/OpenDyslexic-Regular.otf')
     format('opentype');
   font-weight: normal;
   font-style: normal;
