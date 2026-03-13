@@ -48,7 +48,14 @@ function voiceQuality(v: SpeechSynthesisVoice): 0 | 1 | 2 {
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2] as const
 
-type AudioMode = 'idle' | 'loading' | 'elevenlabs' | 'browser'
+// Playback mode:
+//   'idle'        — not started
+//   'el-loading'  — fetching ElevenLabs audio
+//   'el-playing'  — HTMLAudioElement playing ElevenLabs audio
+//   'ss-playing'  — window.speechSynthesis playing (fallback)
+//   'paused'      — paused (either path)
+//   'done'        — finished
+type PlaybackMode = 'idle' | 'el-loading' | 'el-playing' | 'ss-playing' | 'paused' | 'done'
 
 export function ListenMode({ content }: ListenModeProps) {
   const reduceMotion = useSettingsStore((s) => s.accessibility.reduce_motion)
@@ -56,13 +63,15 @@ export function ListenMode({ content }: ListenModeProps) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [selectedVoice, setSelectedVoice] = useState<string>('')
   const [speed, setSpeed] = useState<number>(1)
-  const [playing, setPlaying] = useState(false)
+  const [mode, setMode] = useState<PlaybackMode>('idle')
+  // charIndex drives karaoke highlighting (speechSynthesis path uses word boundaries;
+  // ElevenLabs path uses audio.currentTime / duration ratio — approximate)
   const [charIndex, setCharIndex] = useState(-1)
-  const [audioMode, setAudioMode] = useState<AudioMode>('idle')
-  const [elProgress, setElProgress] = useState(0)
+  // Whether to attempt ElevenLabs this session (disabled on first failure)
+  const [elEnabled, setElEnabled] = useState(true)
 
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const elAudioUrlRef = useRef<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const blobUrlRef = useRef<string | null>(null)
   const activeWordRef = useRef<HTMLSpanElement | null>(null)
 
   const plainText = useMemo(() => stripHtml(content), [content])
@@ -92,48 +101,41 @@ export function ListenMode({ content }: ListenModeProps) {
     }
   }, [])
 
-  // Auto-scroll active word into view whenever charIndex advances
+  // Auto-scroll active word into view when charIndex advances
   useEffect(() => {
     if (!reduceMotion && activeWordRef.current) {
       activeWordRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
   }, [charIndex, reduceMotion])
 
-  // Revoke EL blob URL on unmount
-  useEffect(() => {
-    return () => {
-      if (elAudioUrlRef.current) URL.revokeObjectURL(elAudioUrlRef.current)
+  const revokeBlobUrl = useCallback(() => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current)
+      blobUrlRef.current = null
     }
   }, [])
 
-  // Apply speed to HTML audio element whenever it changes
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = speed
-  }, [speed])
-
-  const stopBrowser = useCallback(() => {
+  const stopAll = useCallback(() => {
     window.speechSynthesis.cancel()
-  }, [])
-
-  const stop = useCallback(() => {
-    stopBrowser()
     if (audioRef.current) {
       audioRef.current.pause()
-      audioRef.current.currentTime = 0
+      audioRef.current.src = ''
+      audioRef.current = null
     }
-    setPlaying(false)
+    revokeBlobUrl()
+    setMode('idle')
     setCharIndex(-1)
-    setElProgress(0)
-    setAudioMode('idle')
-  }, [stopBrowser])
+  }, [revokeBlobUrl])
 
-  const tryElevenLabs = useCallback(async (): Promise<string | null> => {
+  // ElevenLabs playback path
+  const playElevenLabs = useCallback(async (): Promise<boolean> => {
+    setMode('el-loading')
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
       const { data: sessionData } = await supabase.auth.getSession()
       const token = sessionData.session?.access_token
-      if (!token || !supabaseUrl) return null
+      if (!token) return false
 
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
       const res = await fetch(`${supabaseUrl}/functions/v1/tts-generate`, {
         method: 'POST',
         headers: {
@@ -143,20 +145,47 @@ export function ListenMode({ content }: ListenModeProps) {
         body: JSON.stringify({ text: plainText }),
       })
 
-      const ct = res.headers.get('content-type') ?? ''
-      if (!res.ok || !ct.includes('audio')) return null
+      const contentType = res.headers.get('content-type') ?? ''
+      if (!res.ok || !contentType.includes('audio')) {
+        setElEnabled(false)
+        setMode('idle')
+        return false
+      }
 
       const blob = await res.blob()
-      if (elAudioUrlRef.current) URL.revokeObjectURL(elAudioUrlRef.current)
       const url = URL.createObjectURL(blob)
-      elAudioUrlRef.current = url
-      return url
-    } catch {
-      return null
-    }
-  }, [plainText])
+      blobUrlRef.current = url
 
-  const playBrowser = useCallback(() => {
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.playbackRate = speed
+
+      audio.onended = () => {
+        setMode('done')
+        setCharIndex(plainText.length)
+        revokeBlobUrl()
+      }
+      audio.onerror = () => {
+        setMode('idle')
+        revokeBlobUrl()
+      }
+      audio.ontimeupdate = () => {
+        const ratio = audio.currentTime / (audio.duration || 1)
+        setCharIndex(Math.floor(ratio * plainText.length))
+      }
+
+      await audio.play()
+      setMode('el-playing')
+      return true
+    } catch {
+      setElEnabled(false)
+      setMode('idle')
+      return false
+    }
+  }, [plainText, speed, revokeBlobUrl])
+
+  // SpeechSynthesis playback path (karaoke with word-boundary events)
+  const playSpeechSynthesis = useCallback(() => {
     const utterance = new SpeechSynthesisUtterance(plainText)
     utterance.rate = speed
     const voice = voices.find((v) => v.name === selectedVoice)
@@ -166,60 +195,43 @@ export function ListenMode({ content }: ListenModeProps) {
       if (e.name === 'word') setCharIndex(e.charIndex)
     }
     utterance.onend = () => {
-      setPlaying(false)
+      setMode('done')
       setCharIndex(plainText.length)
     }
-    utterance.onerror = () => {
-      setPlaying(false)
-      setAudioMode('idle')
-    }
+    utterance.onerror = () => setMode('idle')
 
     window.speechSynthesis.speak(utterance)
-    setPlaying(true)
+    setMode('ss-playing')
     setCharIndex(0)
-    setAudioMode('browser')
-  }, [speed, selectedVoice, voices, plainText])
+  }, [plainText, speed, selectedVoice, voices])
 
   const play = useCallback(async () => {
-    stop()
-    setAudioMode('loading')
-
-    const elUrl = await tryElevenLabs()
-    if (elUrl && audioRef.current) {
-      audioRef.current.src = elUrl
-      audioRef.current.playbackRate = speed
-      audioRef.current.play().catch(() => {
-        // EL audio playback failed — fall through to browser
-        playBrowser()
-      })
-      setPlaying(true)
-      setAudioMode('elevenlabs')
+    stopAll()
+    if (elEnabled) {
+      const success = await playElevenLabs()
+      if (!success) playSpeechSynthesis()
     } else {
-      playBrowser()
+      playSpeechSynthesis()
     }
-  }, [stop, tryElevenLabs, speed, playBrowser])
+  }, [elEnabled, stopAll, playElevenLabs, playSpeechSynthesis])
 
   const pause = useCallback(() => {
-    if (audioMode === 'elevenlabs' && audioRef.current) {
-      if (playing) {
-        audioRef.current.pause()
-        setPlaying(false)
-      } else {
-        audioRef.current.play().catch(() => undefined)
-        setPlaying(true)
-      }
-    } else {
-      if (playing) {
-        window.speechSynthesis.pause()
-        setPlaying(false)
-      } else {
-        window.speechSynthesis.resume()
-        setPlaying(true)
-      }
+    if (mode === 'el-playing') {
+      audioRef.current?.pause()
+      setMode('paused')
+    } else if (mode === 'paused' && audioRef.current) {
+      audioRef.current.play()
+      setMode('el-playing')
+    } else if (mode === 'ss-playing') {
+      window.speechSynthesis.pause()
+      setMode('paused')
+    } else if (mode === 'paused') {
+      window.speechSynthesis.resume()
+      setMode('ss-playing')
     }
-  }, [playing, audioMode])
+  }, [mode])
 
-  useEffect(() => () => stop(), [stop])
+  useEffect(() => () => stopAll(), [stopAll])
 
   if (!supported) {
     return (
@@ -229,63 +241,36 @@ export function ListenMode({ content }: ListenModeProps) {
     )
   }
 
-  const isPaused = !playing && (charIndex >= 0 || (audioMode === 'elevenlabs' && elProgress > 0))
-  const progress =
-    audioMode === 'elevenlabs'
-      ? elProgress
-      : charIndex < 0
-        ? 0
-        : Math.round((charIndex / plainText.length) * 100)
+  const playing = mode === 'el-playing' || mode === 'ss-playing'
+  const isPaused = mode === 'paused'
+  const isLoading = mode === 'el-loading'
+  const progress = charIndex < 0 ? 0 : Math.round((charIndex / plainText.length) * 100)
+
+  const buttonLabel = isLoading
+    ? '⏳ Loading…'
+    : playing
+      ? '⏸ Pause'
+      : isPaused
+        ? '▶ Resume'
+        : '▶ Play'
 
   return (
     <div className="space-y-4">
-      {/* Hidden HTML audio element for ElevenLabs playback */}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption -- captions not applicable for dynamic TTS audio */}
-      <audio
-        ref={audioRef}
-        onTimeUpdate={() => {
-          const el = audioRef.current
-          if (el && el.duration) setElProgress(Math.round((el.currentTime / el.duration) * 100))
-        }}
-        onEnded={() => {
-          setPlaying(false)
-          setElProgress(100)
-          setAudioMode('idle')
-        }}
-        onError={() => {
-          setPlaying(false)
-          setAudioMode('idle')
-        }}
-      />
-
       {/* Playback controls */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
-          onClick={
-            audioMode === 'loading'
-              ? undefined
-              : playing
-                ? pause
-                : isPaused
-                  ? pause
-                  : () => void play()
-          }
+          onClick={playing || isPaused ? pause : () => void play()}
           variant={playing ? 'secondary' : 'primary'}
-          disabled={audioMode === 'loading'}
+          disabled={isLoading}
+          aria-label={buttonLabel}
         >
-          {audioMode === 'loading'
-            ? '⏳ Loading…'
-            : playing
-              ? '⏸ Pause'
-              : isPaused
-                ? '▶ Resume'
-                : '▶ Play'}
+          {buttonLabel}
         </Button>
-        <Button variant="secondary" onClick={stop} disabled={audioMode === 'idle'}>
+        <Button variant="secondary" onClick={stopAll} disabled={mode === 'idle'} aria-label="Stop">
           ⏹ Stop
         </Button>
 
-        {audioMode === 'elevenlabs' && (
+        {mode === 'el-playing' && (
           <span className="text-xs text-slate-400" title="Powered by ElevenLabs">
             ✦ AI voice
           </span>
@@ -309,8 +294,8 @@ export function ListenMode({ content }: ListenModeProps) {
         </div>
       </div>
 
-      {/* Voice selector — only shown in browser mode */}
-      {audioMode !== 'elevenlabs' && enVoices.length > 1 && (
+      {/* Voice selector — speechSynthesis only; hidden when using ElevenLabs */}
+      {!elEnabled && enVoices.length > 1 && (
         <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
           Voice:
           <select
@@ -337,10 +322,11 @@ export function ListenMode({ content }: ListenModeProps) {
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
+          aria-label="Playback progress"
         />
       </div>
 
-      {/* Karaoke text — active word auto-scrolls into view (browser mode only) */}
+      {/* Karaoke text — active word highlighted and auto-scrolled into view */}
       <div
         className="max-h-72 overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700"
         aria-live="off"
@@ -350,9 +336,8 @@ export function ListenMode({ content }: ListenModeProps) {
           const nextWordIdx = tokens.findIndex((t, j) => j > i && t.text.trim().length > 0)
           const nextStart = nextWordIdx >= 0 ? tokens[nextWordIdx].start : plainText.length
           const isWord = tok.text.trim().length > 0
-          const isActive =
-            audioMode === 'browser' && isWord && charIndex >= tok.start && charIndex < nextStart
-          const isPastWord = audioMode === 'browser' && isWord && charIndex >= nextStart
+          const isActive = isWord && charIndex >= tok.start && charIndex < nextStart
+          const isPastWord = isWord && charIndex >= nextStart
 
           return (
             <span

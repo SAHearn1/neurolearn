@@ -23,11 +23,11 @@ NeuroLearn combines visual, auditory, and kinesthetic learning pathways to help 
 
 | Layer        | Technology                           |
 | ------------ | ------------------------------------ |
-| Frontend     | React 18, TypeScript, Vite           |
+| Frontend     | React 19, TypeScript, Vite           |
 | Styling      | Tailwind CSS, PostCSS                |
 | Backend / DB | Supabase (PostgreSQL, Auth, Storage) |
 | State        | Zustand                              |
-| Routing      | React Router v6                      |
+| Routing      | react-router-dom 7.x                 |
 | Testing      | Vitest, React Testing Library        |
 | Linting      | ESLint, Prettier                     |
 | Deployment   | Vercel / Netlify                     |
@@ -87,7 +87,7 @@ neurolearn/
 
 ## ✅ Implementation Status
 
-The scaffold backlog in `FILE_CHECKLIST.md` is now fully completed (83/83 files).
+The initial scaffold backlog in `FILE_CHECKLIST.md` is complete, but the platform backlog is still active.
 Current implementation includes:
 
 - Route-based app navigation and nested layout shell (`Header`, `Sidebar`, `Footer`, `FocusMode`)
@@ -96,7 +96,16 @@ Current implementation includes:
 - Lesson and dashboard component modules under `src/components/lesson` and `src/components/dashboard`
 - Initial hooks, Zustand stores, shared types, Supabase helpers, and starter SQL migrations/seed
 - Hooks now support Supabase-backed reads/writes with local fallback when env is not configured
-- Issue tracking and sequencing are maintained in `ISSUE_PROGRESS.md`
+- Issue tracking and sequencing are maintained in `ISSUE_PROGRESS.md` and the live GitHub issue queue
+
+The current open backlog includes:
+
+- `#230` Replace browser TTS with ElevenLabs neural voice in ListenMode
+- `#268` Documentation drift across README, ADRs, and architecture docs
+- `#269` RACA intelligence engine default-disabled feature flags
+- `#270` Test coverage expansion across hooks, pages, and dashboards
+- `#271` Client bundle size reduction
+- `#272` Missing favicon asset
 
 ## 🗺 Roadmap
 
@@ -104,7 +113,7 @@ Current implementation includes:
 - [x] Authentication (Supabase Auth)
 - [x] User profiles and learning preferences
 - [x] Core lesson components (text, audio, interactive)
-- [x] Adaptive learning algorithm (RACA 5-layer architecture)
+- [~] RACA intelligence engine foundations implemented; adaptive session experience remains under active development
 - [x] Progress dashboard
 - [x] Educator / parent portal
 - [x] Mobile-responsive design
@@ -116,24 +125,28 @@ Current implementation includes:
 These rules are **mandatory** for all contributors and must be enforced in code review.
 
 ### Service Role Key
+
 - The **service role key** (`SUPABASE_SERVICE_ROLE_KEY`) bypasses Row Level Security.
 - It must **never** be included in the client bundle (`src/`, `public/`).
 - It is only permitted in Vercel serverless functions or other server-side runtimes.
 - `utils/supabase/server.ts` is a placeholder for future SSR use — never import it from client components.
 
 ### Admin Role Assignment
+
 - Users cannot self-assign `role = 'admin'` via the signup form.
   Migration `027_signup_role_from_metadata.sql` enforces this at the DB trigger level.
 - Admin promotion must be done manually in the Supabase dashboard or via a
   server-side function using the service role key.
 
 ### Redirect Allowlist
+
 - All auth redirect URLs (password reset, OAuth callbacks) must be listed in:
   - `supabase/config.toml` → `additional_redirect_urls` (local dev)
   - Supabase dashboard → **Authentication → URL Configuration** (production)
 - Never trust user-supplied redirect parameters without validation.
 
 ### Developer Checklist (pre-merge)
+
 - [ ] No `SUPABASE_SERVICE_ROLE_KEY` reference in `src/` or `public/`
 - [ ] No `import … from 'utils/supabase/server'` in client components
 - [ ] New auth redirect URLs added to both `config.toml` and Supabase dashboard

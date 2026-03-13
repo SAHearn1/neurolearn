@@ -60,6 +60,11 @@ coverage/
 vite.config.d.ts
 vite.config.js
 
+# ─── Claude Code agent worktrees ────────────────────
+# Automated agent sessions create git worktrees here.
+# Never commit worktree checkouts — they are ephemeral.
+.claude/worktrees/
+
 # ─── OS files ───────────────────────────────────────
 .DS_Store
 Thumbs.db

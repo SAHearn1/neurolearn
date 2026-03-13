@@ -10,18 +10,18 @@ NeuroLearn is a multimodal learning platform for neurodivergent learners requiri
 
 ## Decision
 
-- **Frontend:** React 18 + TypeScript + Vite (SPA architecture)
+- **Frontend:** React 19 + TypeScript + Vite (SPA architecture)
 - **Backend/DB:** Supabase (PostgreSQL, Auth, Edge Functions, Realtime, Storage)
 - **State Management:** Zustand (client state) + Supabase hooks (server state)
 - **Styling:** Tailwind CSS 3 with custom brand palette
-- **Routing:** React Router v6 (client-side)
+- **Routing:** `react-router-dom` 7.x (client-side)
 - **Testing:** Vitest + React Testing Library
 - **Deployment:** Vercel (automatic preview/production deployments)
 - **AI Integration:** Anthropic Claude via Supabase Edge Functions
 
 ## Rationale
 
-- React 18 provides Suspense and lazy loading for code splitting
+- React 19 provides Suspense-compatible rendering and lazy loading for code splitting
 - Supabase gives us PostgreSQL (with RLS), auth, and Edge Functions in one platform — no separate backend server needed
 - Zustand is lightweight (< 1KB) and pairs well with Supabase's real-time subscriptions
 - Vite provides fast HMR and optimized builds

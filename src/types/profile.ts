@@ -8,6 +8,7 @@ export interface AccessibilityPreferences {
   high_contrast: boolean
   screen_reader_hints: boolean
   dyslexia_font?: boolean
+  /** ASS-03: Voice Input Pathway — preferred input mode */
   preferredInputMode?: 'text' | 'voice'
 }
 

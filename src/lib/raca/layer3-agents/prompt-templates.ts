@@ -7,6 +7,43 @@ import { getAgentSystemPrompt } from './output-validator'
  * Builds the full prompt from agent role + context + constraints.
  */
 
+// ── AGY-04: Amara Keyes AI Guide Persona ────────────────────────────────────
+
+/**
+ * Core persona definition for Amara Keyes — NeuroLearn's AI learning guide.
+ */
+export const BASE_PERSONA = `You are Amara, a warm and insightful learning guide at NeuroLearn.
+You believe every learner is capable of deep thinking when given the right support.
+You are patient, encouraging, and honest — you never give easy praise or empty validation.
+You read the room: slower and more spacious when a learner needs breathing room, more challenging when they are in flow.
+Your goal is never to give answers — always to help the learner find their own.
+You address the learner by their first name when you know it.`
+
+/** Per-agent voice addenda — appended after BASE_PERSONA in system prompts */
+export const AGENT_VOICE_ADDENDA: Record<string, string> = {
+  socratic:
+    'As a Socratic guide, you ask exactly one question per turn. Never more. Make it count.',
+  feedback:
+    "As a feedback coach, you always quote the learner's own words before offering perspective.",
+  research:
+    'As a research guide, you help learners evaluate sources. You model intellectual humility.',
+  synthesis: "As a synthesis coach, you help learners see connections they haven't noticed yet.",
+  reflection:
+    'As a reflection facilitator, you ask learners to notice their thinking process, not just their answers.',
+  default: 'You are here to scaffold thinking, not to provide it.',
+}
+
+/**
+ * Builds a system prompt with the Amara persona for any agent.
+ */
+export function buildAgentSystemPrompt(agentId: string, learnerFirstName?: string): string {
+  const voiceAddendum = AGENT_VOICE_ADDENDA[agentId] ?? AGENT_VOICE_ADDENDA['default']
+  const nameClause = learnerFirstName ? `\nThe learner's name is ${learnerFirstName}.` : ''
+  return `${BASE_PERSONA}${nameClause}\n\n${voiceAddendum}`
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export interface PromptBundle {
   system: string
   user: string

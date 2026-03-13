@@ -2,7 +2,22 @@
 
 This log tracks completed repository issues/workstreams and what is next.
 
-## Issue Summary (as of 2026-03-08)
+## Active Backlog Snapshot (as of 2026-03-09)
+
+Historical workstreams below remain useful as an implementation record, but they are not the full current backlog.
+
+Current open GitHub issues:
+
+- `#230` Replace browser TTS with ElevenLabs neural voice in ListenMode
+- `#268` Documentation drift across README, ADRs, and architecture docs
+- `#269` RACA intelligence engine disabled by default and incomplete feature flags
+- `#270` Insufficient test coverage across hooks, pages, and dashboard workflows
+- `#271` Large client bundle size reducing initial load performance
+- `#272` Missing favicon asset referenced by HTML entry point
+
+RACA intelligence engine work is still under active development.
+
+## Historical Issue Summary (snapshot from 2026-03-08)
 
 | Category                 | Total   | Closed  | Open  | % Complete |
 | ------------------------ | ------- | ------- | ----- | ---------- |
@@ -234,10 +249,55 @@ This log tracks completed repository issues/workstreams and what is next.
 
 ## Status
 
-All 147 issues resolved (131 code + 16 operational). Two items executed live via MCP:
+The historical issue set summarized above was resolved at the time of that snapshot. The repository now has additional open backlog items listed at the top of this file.
+
+Two items executed live via MCP:
 
 - Migrations 030–034 applied to production Supabase
 - All 8 RACA flags + AI provider vars set in Vercel production
 
 Remaining manual items require external accounts (GitHub secrets, Sentry, Anthropic, LHCI).
 See `.planning/GAP_ANALYSIS.md` for exact steps.
+
+---
+
+## Phase 19 — Intelligence Engine Core
+
+| ID     | Title                        | Status      | Notes                                                                       |
+| ------ | ---------------------------- | ----------- | --------------------------------------------------------------------------- |
+| AI-06  | Adaptive Difficulty Engine   | ✅ Complete | Edge function + hook + migration                                            |
+| AI-03  | TRACE Fluency Auto-Scorer    | ✅ Complete | RegulationCheckIn + FrustrationDetector + trace-score stub                  |
+| AGY-03 | Agent Orchestration Bus      | ✅ Complete | StudentSessionArc + TransitionAnnouncement + SessionSummaryCard             |
+| AI-01  | Diagnostic Gate              | ✅ Complete | useSessionDiagnostic + DiagnosticBanner + diagnostic-utils                  |
+| AI-04  | Skill Evidence Collection    | ✅ Complete | skill-evidence-extractor + migration 042 + useSkillEvidence                 |
+| AI-05  | Summative Mastery at ARCHIVE | ✅ Complete | mastery-scorer + migration 043 + useMasteryScoring                          |
+| AI-02  | Gap Detection + Prescription | ✅ Complete | gap-analysis + migration 044 + useGapAnalysis + NextChallengeCard           |
+| AI-07  | Personalized Agent Probing   | ✅ Complete | adaptation-scripts with buildPersonalizedSystem                             |
+| AI-08  | Availability Detector        | ✅ Complete | layer0-runtime/availability-detector + BreakOffering + useAvailabilityCheck |
+
+## Phase 19 Extension — Mastery, Goals, Session Modes & Voice
+
+| ID     | Title                        | Status      | Notes                                                                                                      |
+| ------ | ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| ASS-01 | Mastery Demonstration Mode   | ✅ Complete | MasteryCheckButton + MasteryCheckSession + useMasteryCheck + migration 045                                 |
+| AGY-01 | Student Learning Goals       | ✅ Complete | GoalSettingWidget + GoalProgressCard + useStudentGoals + migration 046                                     |
+| AGY-02 | Session Mode Choice Selector | ✅ Complete | SessionModeSelector + useSessionMode + migration 047                                                       |
+| AGY-04 | Amara Keyes AI Guide Persona | ✅ Complete | BASE_PERSONA + AGENT_VOICE_ADDENDA + buildAgentSystemPrompt in prompt-templates; AgentMessage isAmara prop |
+| AI-09  | Cross-Session Memory Brief   | ✅ Complete | longitudinal-context.ts + useLongitudinalContext                                                           |
+| ASS-02 | Spaced Repetition Queue      | ✅ Complete | SM-2 algorithm in spaced-repetition.ts + useSpacedRepetition + SpacedRepetitionCard + migration 048        |
+| ASS-03 | Voice Input Pathway          | ✅ Complete | VoiceInputButton updated (className + reduce_motion) + InputModeToggle + InputMode type + migration 049    |
+
+## Phase 20 — Standards, Intelligence & Educator Tooling
+
+| ID      | Title                            | Status      | Notes                                                                                                                                 |
+| ------- | -------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| CCSS-01 | Common Core Standards Schema     | ✅ Complete | ccss_standards + skill_to_ccss_map + student_ccss_evidence (migration 050) + ccss-seed.ts                                             |
+| CCSS-02 | Educator Standards Evidence View | ✅ Complete | EducatorStandardsView + useCcssStandards + useCcssExport (window.print)                                                               |
+| CCSS-03 | Student Skill Power-Ups          | ✅ Complete | SkillPowerUps component + useSkillPowerUps                                                                                            |
+| EDU-13  | Student Frustration Dashboard    | ✅ Complete | FrustrationIndicator + NeedsAttentionPanel + useStudentRegulation                                                                     |
+| EDU-14  | Educator Intervention Alerts     | ✅ Complete | educator_alerts (migration 051) + AlertsPanel + AlertBadge + useEducatorAlerts                                                        |
+| EDU-15  | LCP Generator                    | ✅ Complete | LCPGenerator + useLcpGenerator (window.print)                                                                                         |
+| PAR-05  | Parent Growth Narratives         | ✅ Complete | session_parent_narratives (migration 052) + SessionNarrativeCard + useParentNarratives + generate-parent-narrative edge function stub |
+| ADM-03  | Platform Intelligence Dashboard  | ✅ Complete | platform_thresholds (migration 053) + IntelligenceDashboard + usePlatformStats + usePlatformThresholds                                |
+| DATA-01 | Learning Transcript              | ✅ Complete | LearningTranscript component + useLearningTranscript                                                                                  |
+| DATA-02 | Real-Time Classroom View         | ✅ Complete | educator_checkins (migration 054) + LiveClassroomView + useClassroomRealtime (30s poll)                                               |

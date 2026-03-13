@@ -15,6 +15,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Prune stale git worktrees
+        run: git worktree prune
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:

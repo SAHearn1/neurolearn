@@ -17,6 +17,12 @@ interface AdaptiveLearningState {
   updated_at: string
 }
 
+export interface DifficultyUpdateResult {
+  difficulty: number
+  mastery_score: number
+  recommended_lesson_id: string | null
+}
+
 interface DifficultyAdjustment {
   newDifficulty: 'easy' | 'medium' | 'hard' | 'adaptive'
   reason: string
@@ -142,6 +148,57 @@ export function useAdaptiveLearning(courseId: string | undefined) {
     return ((data?.length ?? 0) / 14) * 7 // lessons per week
   }, [user?.id, courseId])
 
+  /**
+   * AI-06: Adaptive Difficulty Engine — calls the `adaptive-difficulty` edge
+   * function with the result of a completed lesson session.
+   *
+   * @param lessonId - ID of the lesson just completed
+   * @param score - Normalised float 0.0–1.0 (fraction of max score)
+   * @param duration - Session duration in milliseconds
+   */
+  const triggerDifficultyUpdate = useCallback(
+    async (
+      lessonId: string,
+      score: number,
+      duration: number,
+    ): Promise<DifficultyUpdateResult | null> => {
+      if (!user?.id) return null
+
+      try {
+        const { data: sessionData, error: sessionErr } = await supabase.auth.getSession()
+        if (sessionErr || !sessionData.session) {
+          throw new Error('No active session — cannot call adaptive-difficulty function')
+        }
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+        const fnUrl = `${supabaseUrl}/functions/v1/adaptive-difficulty`
+
+        const res = await fetch(fnUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+          body: JSON.stringify({ userId: user.id, lessonId, score, duration }),
+        })
+
+        if (!res.ok) {
+          const errBody = await res.text()
+          throw new Error(`adaptive-difficulty function error ${res.status}: ${errBody}`)
+        }
+
+        const result = (await res.json()) as DifficultyUpdateResult
+        // Refresh local state after the edge function updates the DB
+        await fetchState()
+        return result
+      } catch (e) {
+        console.error('triggerDifficultyUpdate failed:', e)
+        return null
+      }
+    },
+    [user?.id, fetchState],
+  )
+
   return {
     state,
     loading,
@@ -149,6 +206,7 @@ export function useAdaptiveLearning(courseId: string | undefined) {
     computeDifficultyAdjustment,
     updateAdaptiveState,
     computeLearningVelocity,
+    triggerDifficultyUpdate,
     refetch: fetchState,
   }
 }

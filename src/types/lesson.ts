@@ -1,6 +1,9 @@
 export type LessonType = 'text' | 'video' | 'audio' | 'interactive' | 'quiz'
 export type LessonStatus = 'draft' | 'published' | 'archived'
 
+/** ASS-03: Voice Input Pathway — tracks whether input was typed or dictated */
+export type InputMode = 'text' | 'voice'
+
 export interface Lesson {
   id: string
   course_id: string

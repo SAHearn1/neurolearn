@@ -121,6 +121,8 @@ Line coverage increased from ~64% to ~73%, meeting the ≥70% acceptance criteri
 
 ---
 
+<<<<<<< Updated upstream
+
 ## INC-008 — 2026-03-11 — Header/Sidebar/Footer shell never mounts (PageWrapper not wired to router)
 
 **Severity:** High — no persistent navigation, no logout button accessible to any authenticated user
@@ -439,3 +441,19 @@ return () => clearTimeout(id)
 - `src/lib/intelligence/skill-evidence-extractor.ts` — removed `artifact_id` from insert
 - `src/pages/SessionPageCore.tsx` — raca_artifacts persist + epistemic-analyze call + lesson_progress query fix
 - `src/hooks/useSessionDiagnostic.ts` — removed `lesson_id` filter, `.order+.limit(1)`, `.maybeSingle()` both queries
+
+---
+
+## INC-019 — 2026-03-12 — ListenMode using browser speechSynthesis only; no ElevenLabs integration (#230)
+
+**Severity:** Low — feature gap, not a runtime failure
+**Detected:** Post-phase review; identified as the sole genuinely incomplete code item across Phases 18–20
+**Fixed:** This session
+
+**Root cause:** `ListenMode.tsx` was implemented using `window.speechSynthesis` exclusively. No ElevenLabs integration existed. The issue (#230) was created and tracked but implementation deferred.
+
+**Fix:** Refactored `ListenMode.tsx` to a 6-state `PlaybackMode` machine (`idle | el-loading | el-playing | ss-playing | paused | done`). On Play, attempts ElevenLabs first via the `tts-generate` edge function; on failure or missing key, falls back transparently to `window.speechSynthesis` with word-boundary karaoke. Voice selector hidden when ElevenLabs is active (`elEnabled` flag). Audio element created programmatically (not via JSX ref) for clean blob URL lifecycle. Added `aria-label` to playback controls.
+
+**Activation:** Set `ELEVENLABS_API_KEY` secret in Supabase project settings. Without it, the function returns `{ fallback: true }` and the component silently uses speechSynthesis.
+
+**Files changed:** `src/components/lesson/ListenMode.tsx`

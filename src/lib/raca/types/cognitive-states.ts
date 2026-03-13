@@ -92,19 +92,39 @@ export interface CognitiveTransition {
   conditions: string[]
 }
 
-export const STUDENT_STATE_LABELS: Record<string, { label: string; description: string }> = {
-  ROOT: { label: 'Take a breath', description: 'Ground yourself before we begin.' },
-  REGULATE: { label: 'How are you feeling?', description: 'Check in with your mind and body.' },
+export interface StudentStateLabel {
+  label: string
+  description: string
+}
+
+export const STUDENT_STATE_LABELS: Record<string, StudentStateLabel> = {
+  ROOT: { label: 'Take a breath', description: 'Get centered before we begin.' },
+  REGULATE: {
+    label: 'Check in with yourself',
+    description: 'Notice how you are feeling right now.',
+  },
   POSITION: {
     label: 'What do you want to know?',
-    description: 'Frame the question in your own words.',
+    description: 'State the question in your own words.',
   },
-  PLAN: { label: 'Make a plan', description: 'Map the steps you will take.' },
-  APPLY: { label: 'Write your first attempt', description: 'Build a draft response.' },
-  REVISE: { label: 'Improve your thinking', description: 'Strengthen your draft.' },
-  DEFEND: { label: 'Explain your why', description: 'Justify your reasoning.' },
-  RECONNECT: { label: 'Look back and grow', description: 'Reflect on what you have learned.' },
-  ARCHIVE: { label: 'Save your insights', description: 'Capture and celebrate your progress.' },
+  PLAN: { label: 'Make a plan', description: 'How will you approach this?' },
+  APPLY: {
+    label: 'Write your first attempt',
+    description: 'Get your thinking on paper — it does not need to be perfect.',
+  },
+  REVISE: {
+    label: 'Improve your thinking',
+    description: 'Look back and make it stronger.',
+  },
+  DEFEND: { label: 'Explain your why', description: 'Can you justify your reasoning?' },
+  RECONNECT: {
+    label: 'Look back and grow',
+    description: 'What did you learn about how you think?',
+  },
+  ARCHIVE: {
+    label: 'Save your insights',
+    description: 'Your thinking is preserved for next time.',
+  },
 }
 
 export const VALID_TRANSITIONS: CognitiveTransition[] = [

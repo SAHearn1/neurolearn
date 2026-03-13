@@ -1,8 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
+import { useSettingsStore } from '../../store/settingsStore'
 
 interface VoiceInputButtonProps {
   onTranscript: (text: string) => void
   disabled?: boolean
+  /** Optional additional class names */
+  className?: string
 }
 
 type SpeechRecognitionInstance = {
@@ -38,10 +41,16 @@ function newRecognition(): SpeechRecognitionInstance | null {
  * Microphone button that transcribes speech to text via Web Speech API.
  * Appends the transcript to the parent field via onTranscript.
  * Renders nothing when the browser does not support the API.
+ * Respects reduce_motion from settingsStore (no pulse animation if true).
  */
-export function VoiceInputButton({ onTranscript, disabled = false }: VoiceInputButtonProps) {
+export function VoiceInputButton({
+  onTranscript,
+  disabled = false,
+  className = '',
+}: VoiceInputButtonProps) {
   const [recording, setRecording] = useState(false)
   const recRef = useRef<SpeechRecognitionInstance | null>(null)
+  const reduceMotion = useSettingsStore((s) => s.accessibility.reduce_motion)
 
   const start = useCallback(() => {
     if (!SPEECH_SUPPORTED || recording) return
@@ -80,12 +89,14 @@ export function VoiceInputButton({ onTranscript, disabled = false }: VoiceInputB
         recording
           ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100'
           : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
-      } disabled:cursor-not-allowed disabled:opacity-50`}
+      } disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {recording ? (
         <>
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+            {!reduceMotion && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+            )}
             <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
           </span>
           Stop

@@ -1,13 +1,14 @@
 # NeuroLearn — Smoke Test Gap Analysis & Issue Backlog
 
-_Generated: 2026-03-02 | Status updated: 2026-03-04_
+_Generated: 2026-03-02 | Status updated: 2026-03-09_
 
 ## Executive Summary
 
-The historical backlog documented in this file has been fully resolved.
+The historical backlog documented in this file has been resolved, but the repository backlog is not empty.
 
 - All previously listed issues (ISSUE-001 through ISSUE-014) are now closed.
-- Implementation completion is tracked in `ISSUE_PROGRESS.md`, which reports **120/120 total issues closed**.
+- Current repository backlog is tracked in GitHub Issues and summarized in `ISSUE_PROGRESS.md`.
+- RACA intelligence engine work remains under active development.
 
 ## Backlog Status
 
@@ -28,8 +29,15 @@ The historical backlog documented in this file has been fully resolved.
 | ISSUE-013 | CI/CD migration automation                    | P2                | ✅ Closed      |
 | ISSUE-014 | Session bundle-size optimization              | P3                | ✅ Closed      |
 
-## Remaining Open Issues
+## Current Open Issues
 
-None.
+The live repository backlog currently includes:
 
-For the canonical project-wide rollup, see `ISSUE_PROGRESS.md`.
+- `#230` Replace browser TTS with ElevenLabs neural voice in ListenMode
+- `#268` Documentation drift across README, ADRs, and architecture docs
+- `#269` RACA intelligence engine disabled by default and incomplete feature flags
+- `#270` Insufficient test coverage across hooks, pages, and dashboard workflows
+- `#271` Large client bundle size reducing initial load performance
+- `#272` Missing favicon asset referenced by HTML entry point
+
+For the canonical project-wide rollup, see `ISSUE_PROGRESS.md` and the GitHub issue tracker.
